@@ -109,5 +109,13 @@ func Login(ctx *gin.Context) {
 	ctx.SetSameSite(http.SameSiteLaxMode)
 	ctx.SetCookie("Authorization", tokenString, 3600*24*7, "", "", false, true) // 3600*24*7 = 7 days
 
-	ctx.JSON(http.StatusOK, gin.H{"token": tokenString})
+	ctx.JSON(http.StatusOK, gin.H{"message": "Logged In"})
+}
+
+func Logout(ctx *gin.Context) {
+	// Assuming the Authorization token is stored in a cookie named "Authorization"
+
+	// TODO: Update the options in the cookie to match the actual path, domain and secure (all mandatory for security sake)
+	ctx.SetSameSite(http.SameSiteLaxMode)
+	ctx.SetCookie("Authorization", "", -1, "", "", false, true)
 }

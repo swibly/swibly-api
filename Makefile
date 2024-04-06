@@ -6,6 +6,9 @@ GOBUILD=$(GO) build
 GOCLEAN=$(GO) clean
 GOTEST=$(GO) test
 
+include .env
+export
+
 all: build run
 
 build: cmd/api/main.go
@@ -14,9 +17,21 @@ build: cmd/api/main.go
 run:
 	PORT=8080 "$(BUILD_FOLDER)/$(BUILD_FILE)"
 
-clean:
+clean: down
 	@# Use "$(GOCLEAN)" so it removes any self-compiled bins (not using `make build`)
 	$(GOCLEAN)
 	-rm -r $(BUILD_FOLDER)
+
+tidy:
+	go mod tidy -e
+
+up:
+	docker compose up -d
+
+down:
+	docker compose down
+
+psql:
+	docker exec -it arkhon-db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
 
 .PHONY: build run all

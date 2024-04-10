@@ -12,110 +12,130 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
 
-func Register(ctx *gin.Context) {
-	var body struct {
-		Fullname string
-		Username string
-		Email    string
-		Password string
+func generateJWT(userID uint) (string, error) {
+	// Generate JWT token
+	// "sub" is the subject of the token (ID)
+	// "exp" is the expiration date
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub": userID,
+		"exp": time.Now().Add(time.Hour * 24 * 7).Unix(), // Will add 7 days
+	})
+
+	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+
+	// Only related to internal error, not user input
+	if err != nil {
+		return "", err
 	}
 
-	if ctx.BindJSON(&body) != nil {
+	return tokenString, nil
+}
+
+func register(fullname, username, email, password string) (uint, error) {
+	var existingUser model.User
+	if err := loader.DB.Model(&model.User{}).Where("username = ? OR email = ?", username, email).First(&existingUser).Error; err == nil {
+		return 0, errors.New("username or email is already defined")
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 10)
+
+	if err != nil {
+		return 0, err
+	}
+
+	user := model.User{
+		Fullname: fullname,
+		Username: username,
+		Email:    email,
+		Password: string(hashedPassword),
+	}
+
+	if err := loader.DB.Create(&user).Error; err != nil {
+		return 0, err
+	}
+
+	return user.ID, nil
+}
+
+func login(username, email, password string) (uint, error) {
+	if username == "" && email == "" {
+		return 0, errors.New("not a valid username or email")
+	}
+
+	var user model.User
+
+	if err := loader.DB.Model(&model.User{}).Where("username = ? OR email = ?", username, email).First(&user).Error; err != nil {
+		return 0, err
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		return 0, err
+	}
+
+	return user.ID, nil
+}
+
+func RegisterHandler(ctx *gin.Context) {
+	var body struct {
+		Fullname string `json:"fullname"`
+		Username string `json:"username"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	if err := ctx.BindJSON(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Bad body formatting"})
 		return
 	}
 
-	// Check if the user exists by getting the first entry in the database and checking if it's an error
-	var existingUser model.User
-	if err := loader.DB.Where("username = ? OR email = ?", body.Username, body.Email).First(&existingUser).Error; err == nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "User already exists"})
-		return
-	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
-		log.Println("Failed to query database:", err)
+	userID, err := register(body.Fullname, body.Username, body.Email, body.Password)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		log.Println(err)
 		return
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), 10)
+	token, err := generateJWT(userID)
 
-	// This is related to GenerateFromPassword (not user input) error
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		log.Println(err)
 		return
 	}
 
-	user := model.User{Fullname: body.Fullname, Username: body.Username, Email: body.Email, Password: string(hash)}
-	result := loader.DB.Create(&user)
-
-	// Again, this is related only to the error of the db insertion, not the user input itself
-	if result.Error != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
-		log.Println("Couldn't insert user in database", result.Error)
-		return
-	}
-
-	ctx.JSON(http.StatusOK, gin.H{"message": "User created"})
+	ctx.JSON(http.StatusOK, gin.H{"token": token})
 }
 
-func Login(ctx *gin.Context) {
-	// FIXME: Email is the only method available, should be Email and Username
+func LoginHandler(ctx *gin.Context) {
 	var body struct {
-		Email    string
-		Password string
+		Username string `json:"username" default:""`
+		Email    string `json:"email" default:""`
+		Password string `json:"password" default:""`
 	}
 
-	if ctx.BindJSON(&body) != nil {
+	if err := ctx.ShouldBindJSON(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Bad body formatting"})
 		return
 	}
 
-	var user model.User
-	// Check user two times, first by email, then by password
-	if err := loader.DB.Where("email = ?", body.Email).First(&user).Error; err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
-		log.Println("Failed to find user by email:", err)
+	userID, err := login(body.Username, body.Email, body.Password)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		log.Println(err)
 		return
 	}
 
-	// Compare hashed password
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password)); err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": "No user found with that email or password"})
-		log.Println("Couldn't get by hash and password:", err)
-		return
-	}
+	token, err := generateJWT(userID)
 
-	// Generate JWT token
-	// "sub" is the subject of the token (user.ID)
-	// "exp" is the expiration date
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": user.ID,
-		"exp": time.Now().Add(time.Hour * 24 * 7).Unix(), // Will add 7 days
-	})
-
-	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
-
-	// Same thing, only related to internal error, not user input
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
-		log.Println("Couldn't generate token:", err)
+		log.Println(err)
 		return
 	}
 
-	// TODO: Update the options in the cookie to match the actual path, domain and secure (all mandatory for security sake)
-	ctx.SetSameSite(http.SameSiteLaxMode)
-	ctx.SetCookie("Authorization", tokenString, 3600*24*7, "", "", false, true) // 3600*24*7 = 7 days
-
-	ctx.JSON(http.StatusOK, gin.H{"message": "Logged In"})
-}
-
-func Logout(ctx *gin.Context) {
-	// Assuming the Authorization token is stored in a cookie named "Authorization"
-
-	// TODO: Update the options in the cookie to match the actual path, domain and secure (all mandatory for security sake)
-	ctx.SetSameSite(http.SameSiteLaxMode)
-	ctx.SetCookie("Authorization", "", -1, "", "", false, true)
+	ctx.JSON(http.StatusOK, gin.H{"token": token})
 }

@@ -6,7 +6,6 @@ import (
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/controller"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/loader"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -32,9 +31,8 @@ func createRouter() *gin.Engine {
 	v1 := router.Group("/v1")
 	user := v1.Group("/user")
 	{
-		user.POST("/register", controller.Register)
-		user.POST("/login", controller.Login)
-		user.POST("/logout", middleware.RequireAuth, controller.Logout)
+		user.POST("/register", controller.RegisterHandler)
+		user.POST("/login", controller.LoginHandler)
 	}
 
 	return router

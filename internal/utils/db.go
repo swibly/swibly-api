@@ -1,4 +1,4 @@
-package loader
+package utils
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ import (
 var DB *gorm.DB
 
 func LoadDB() {
-	// NOTE: It's assuming the .env is already loaded
+	// NOTE: It's assuming the .env is already loaded OR env variables are already defined in system
 	var err error
 
 	postgres_host := os.Getenv("POSTGRES_HOST")

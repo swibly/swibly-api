@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/controller"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/loader"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/controller/auth"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	loader.LoadEnv()
-	loader.LoadDB()
+	utils.LoadEnv()
+	utils.LoadDB()
 
 	gin.SetMode(gin.ReleaseMode)
 
@@ -31,8 +31,8 @@ func createRouter() *gin.Engine {
 	v1 := router.Group("/v1")
 	user := v1.Group("/user")
 	{
-		user.POST("/register", controller.RegisterHandler)
-		user.POST("/login", controller.LoginHandler)
+		user.POST("/register", auth.RegisterHandler)
+		user.POST("/login", auth.LoginHandler)
 	}
 
 	return router

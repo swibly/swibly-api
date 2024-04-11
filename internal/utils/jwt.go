@@ -35,21 +35,26 @@ func GenerateJWT(userID uint) (string, error) {
 
 func ValidateJWT(tokenString string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Ensure the token method used is HMAC, to match the server's signing method.
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 
+		// Use the server's JWT secret for signing
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 
+	// Error handling for token parsing issues
 	if err != nil {
 		return nil, err
 	}
 
+	// Type assert the token claims to MapClaims for use
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 		return claims, nil
 	}
 
-	return nil, err
-
+	// If the function reaches this point, it means the type assertion failed.
+	// Return nil for the claims and an error indicating the failure.
+	return nil, fmt.Errorf("failed to assert token claims")
 }

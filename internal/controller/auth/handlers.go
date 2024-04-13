@@ -33,11 +33,31 @@ func RegisterHandler(ctx *gin.Context) {
 		return
 	}
 
+	// Create a new User model with the provided and hashed information
+	user := model.User{
+		Fullname: body.Fullname,
+		Username: body.Username,
+		Email:    body.Email,
+		Password: body.Password,
+	}
+
+	buildErrs, err := user.Validate()
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Something wrong happened in our servers. Try again later."})
+		log.Println(err)
+		return
+	}
+
+	if buildErrs != nil {
+		ctx.JSON(http.StatusBadRequest, buildErrs)
+		return
+	}
+
 	// Hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), 10)
 
 	if err != nil {
-		// Check for a specific bcrypt error
 		if err == bcrypt.ErrPasswordTooLong {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "The password is too long"})
 		} else {
@@ -48,13 +68,7 @@ func RegisterHandler(ctx *gin.Context) {
 		return
 	}
 
-	// Create a new User model with the provided and hashed information
-	user := model.User{
-		Fullname: body.Fullname,
-		Username: body.Username,
-		Email:    body.Email,
-		Password: string(hashedPassword),
-	}
+	user.Password = string(hashedPassword)
 
 	// Attempt to create the user record in the database
 	if err := utils.DB.Create(&user).Error; err != nil {

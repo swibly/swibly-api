@@ -12,6 +12,7 @@ func initValidator() {
 	Validate = validator.New()
 
 	Validate.RegisterValidation("haveSpecial", func(fl validator.FieldLevel) bool {
+		// `\W` = `[^a-zA-Z0-9_]`
 		return regexp.MustCompile(`[\W_]`).MatchString(fl.Field().String())
 	})
 

@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -28,12 +27,5 @@ func LoadDB() {
 		log.Fatal("Error connecting to database:", err)
 	}
 
-	syncDatabase()
-}
-
-func syncDatabase() {
-	err := DB.AutoMigrate(&model.User{})
-	if err != nil {
-		log.Fatal("Error migrating", err)
-	}
+	initValidator()
 }

@@ -53,7 +53,6 @@ func (u *User) Validate() ([]userBuildError, error) {
 	// [ ]: Benchmark: Test if there is any impact upon creating a new validator every time it's called
 	var validate = validator.New()
 
-	// Register custom validation rules for password validation
 	validate.RegisterValidation("haveSpecial", func(fl validator.FieldLevel) bool {
 		return regexp.MustCompile(`[\W_]`).MatchString(fl.Field().String())
 	})
@@ -68,11 +67,10 @@ func (u *User) Validate() ([]userBuildError, error) {
 
 	// Type assertion to get only validation errors
 	if errors.As(err, &ve) {
-		// `make` will allocate memory with the size of `ve` for further implementation
+		// `make` allocates memory for further implementation
 		out := make([]userBuildError, len(ve))
 
 		for i, fe := range ve {
-			// Convert each error to custom format {Param, Message}
 			out[i] = userBuildError{fe.Field(), msgForTag(fe)}
 		}
 
@@ -80,6 +78,6 @@ func (u *User) Validate() ([]userBuildError, error) {
 	}
 
 	// If `err` is `nil`, it will return `nil` anyways
-	// No need to check if err != nil then return err
+	// no need to check if err != nil then return err
 	return nil, err
 }

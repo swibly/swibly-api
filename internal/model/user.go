@@ -2,9 +2,9 @@ package model
 
 import (
 	"errors"
-	"regexp"
 	"strings"
 
+	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/utils"
 	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 )
@@ -50,18 +50,9 @@ func msgForTag(fe validator.FieldError) string {
 }
 
 func (u *User) Validate() ([]userBuildError, error) {
-	// [ ]: Benchmark: Test if there is any impact upon creating a new validator every time it's called
-	var validate = validator.New()
-
-	validate.RegisterValidation("haveSpecial", func(fl validator.FieldLevel) bool {
-		return regexp.MustCompile(`[\W_]`).MatchString(fl.Field().String())
-	})
-
-	validate.RegisterValidation("haveNumeric", func(fl validator.FieldLevel) bool {
-		return regexp.MustCompile(`[0-9]`).MatchString(fl.Field().String())
-	})
-
-	err := validate.Struct(u)
+	// [x]: Benchmark: Test if there is any impact upon creating a new validator every time it's called
+	// 100~200ms: creating a new validator (? needs more benchmarking)
+	err := utils.Validate.Struct(u)
 
 	var ve validator.ValidationErrors
 
@@ -77,7 +68,5 @@ func (u *User) Validate() ([]userBuildError, error) {
 		return out, nil
 	}
 
-	// If `err` is `nil`, it will return `nil` anyways
-	// no need to check if err != nil then return err
-	return nil, err
+	return nil, err // `err` may or may not be nil
 }

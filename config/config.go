@@ -16,7 +16,7 @@ var (
 		Port    uint16 `yaml:"port"`
 	}
 
-	Postgre struct {
+	Postgres struct {
 		Host     string `yaml:"host"`
 		DB       string `yaml:"db"`
 		User     string `yaml:"user"`
@@ -37,7 +37,7 @@ func Parse() {
 		log.Fatalf("error: %v", err)
 	}
 
-	if err := yaml.Unmarshal(read("postgre.yaml"), &Postgre); err != nil {
+	if err := yaml.Unmarshal(read("postgres.yaml"), &Postgres); err != nil {
 		log.Fatalf("error: %v", err)
 	}
 

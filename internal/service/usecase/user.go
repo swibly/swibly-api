@@ -5,6 +5,7 @@ import (
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/repository"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type userUseCase struct {
@@ -28,12 +29,9 @@ func (uuc userUseCase) CreateUser(firstname, lastname, username, email, password
 		return utils.ValidateErrorMessage(errs[0])
 	}
 
-	// TODO: Implement GetByUsernameOrEmail
-	/*
-		if _, err := uuc.GetByUsernameOrEmail(username, email); err == nil {
-			return gorm.ErrDuplicatedKey
-		}
-	*/
+	if _, err := uuc.GetByUsernameOrEmail(username, email); err == nil {
+		return gorm.ErrDuplicatedKey
+	}
 
 	if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), 10); err != nil {
 		return err
@@ -49,17 +47,17 @@ func (uuc userUseCase) DeleteUser(id uint) error {
 }
 
 func (uuc userUseCase) GetByID(id uint) (*model.User, error) {
-	return nil, nil
+	return uuc.ur.Find(&model.User{ID: id})
 }
 
 func (uuc userUseCase) GetByUsername(username string) (*model.User, error) {
-	return nil, nil
+	return uuc.ur.Find(&model.User{Username: username})
 }
 
 func (uuc userUseCase) GetByEmail(email string) (*model.User, error) {
-	return nil, nil
+	return uuc.ur.Find(&model.User{Email: email})
 }
 
 func (uuc userUseCase) GetByUsernameOrEmail(username, email string) (*model.User, error) {
-	return nil, nil
+	return uuc.ur.Find(&model.User{Username: username, Email: email})
 }

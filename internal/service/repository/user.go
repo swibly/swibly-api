@@ -25,7 +25,7 @@ func (u userRepository) Update(id uint, updateModel *model.User) error {
 func (u userRepository) Find(searchModel *model.User) (*model.User, error) {
 	var user model.User
 
-	if err := u.db.First(&searchModel).Error; err != nil {
+	if err := u.db.First(&user, &searchModel).Error; err != nil {
 		return nil, err
 	}
 

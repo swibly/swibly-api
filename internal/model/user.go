@@ -1,27 +1,22 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type User struct {
-	gorm.Model
-	FirstName string
-	LastName  string
-	Username  string `gorm:"unique"`
-	Email     string `gorm:"unique"`
-	Password  string
-	// TODO: Implement rest of the fields
-}
+	// NOTE: Not using gorm.Model since it's properties cannot be accessed directly
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
 
-type UserQuery struct {
-	ID       string `default:""` // It is just for querying, we can set it to a string
-	Username string `default:""`
-	Email    string `default:""`
-}
-
-type UserRegisterForm struct {
 	FirstName string `validator:"required,min=3"`
 	LastName  string `validator:"required,min=3"`
-	Username  string `validator:"required,username,min=3,max=32"`
-	Email     string `validator:"required,email"`
+	Username  string `validator:"required,username,min=3,max=32" gorm:"unique"`
+	Email     string `validator:"required,email" gorm:"unique"`
 	Password  string `validator:"required,password,min=12,max=48"`
+	// TODO: Implement rest of the fields
 }

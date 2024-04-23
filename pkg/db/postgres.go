@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -19,4 +20,6 @@ func Load() {
 	}
 
 	Postgres = db
+
+  Postgres.AutoMigrate(&model.User{})
 }

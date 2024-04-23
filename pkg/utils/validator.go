@@ -66,8 +66,12 @@ func newValidator() *validator.Validate {
 }
 
 func ValidateStruct(s any) validator.ValidationErrors {
-	// We won't pass any invalid values so we can just skip that step
-	return Validate.Struct(s).(validator.ValidationErrors)
+	if err := Validate.Struct(s); err != nil {
+		// We won't pass any invalid values so we can just skip that step
+		return Validate.Struct(s).(validator.ValidationErrors)
+	}
+
+	return nil
 }
 
 func ValidateErrorMessage(fe validator.FieldError) ParamError {

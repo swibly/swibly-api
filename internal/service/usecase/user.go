@@ -3,6 +3,8 @@ package usecase
 import (
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/repository"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type userUseCase struct {
@@ -14,7 +16,32 @@ func NewUserUseCase() userUseCase {
 }
 
 func (uuc userUseCase) CreateUser(firstname, lastname, username, email, password string) error {
-	return nil
+	newUser := model.User{
+		FirstName: firstname,
+		LastName:  lastname,
+		Username:  username,
+		Email:     email,
+		Password:  password, // Hashing later
+	}
+
+	if errs := utils.ValidateStruct(&newUser); errs != nil {
+		return utils.ValidateErrorMessage(errs[0])
+	}
+
+	// TODO: Implement GetByUsernameOrEmail
+	/*
+		if _, err := uuc.GetByUsernameOrEmail(username, email); err == nil {
+			return gorm.ErrDuplicatedKey
+		}
+	*/
+
+	if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), 10); err != nil {
+		return err
+	} else {
+		newUser.Password = string(hashedPassword)
+	}
+
+	return uuc.ur.Store(&newUser)
 }
 
 func (uuc userUseCase) DeleteUser(id uint) error {

@@ -36,14 +36,18 @@ func (uuc userUseCase) CreateUser(firstname, lastname, username, email, password
 	if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), 10); err != nil {
 		return err
 	} else {
-		newUser.Password = string(hashedPassword)
+		newUser.Password = string(hashedPassword) // Set the hash
 	}
 
 	return uuc.ur.Store(&newUser)
 }
 
 func (uuc userUseCase) DeleteUser(id uint) error {
-	return nil
+	if _, err := uuc.GetByID(id); err != nil {
+		return gorm.ErrRecordNotFound
+	}
+
+	return uuc.ur.Delete(id)
 }
 
 func (uuc userUseCase) GetByID(id uint) (*model.User, error) {

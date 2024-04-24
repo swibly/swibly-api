@@ -16,7 +16,7 @@ type userRepository struct {
 }
 
 func NewUserRepository() Repository[model.User] {
-	return userRepository{db: db.Postgres.Model(&model.User{})}
+	return userRepository{db: db.Postgres}
 }
 
 func (u userRepository) Store(createModel *model.User) error {
@@ -35,8 +35,6 @@ func (u userRepository) Find(searchModel *model.User) (*model.User, error) {
 
 	var conditions []string
 	var queryValues []any
-
-	query := u.db.Model(&model.User{})
 
 	for i := 0; i < fields.NumField(); i++ {
 		go func(i int) {
@@ -63,13 +61,13 @@ func (u userRepository) Find(searchModel *model.User) (*model.User, error) {
 
 	var user model.User
 
-	if len(conditions) > 0 {
-		query = query.Where(strings.Join(conditions, " OR "), queryValues...)
-	}
-
-	if err := query.First(&user).Error; err != nil {
+	if err := u.db.Where(strings.Join(conditions, " OR "), queryValues...).First(&user).Error; err != nil {
 		return nil, err
 	}
 
 	return &user, nil
+}
+
+func (u userRepository) Delete(id uint) error {
+	return u.db.Where("id = ?", id).Unscoped().Delete(&model.User{}).Error
 }

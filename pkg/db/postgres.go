@@ -21,5 +21,5 @@ func Load() {
 
 	Postgres = db
 
-  Postgres.AutoMigrate(&model.User{})
+	Postgres.AutoMigrate(&model.User{})
 }

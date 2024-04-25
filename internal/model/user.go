@@ -1,72 +1,37 @@
 package model
 
 import (
-	"errors"
-	"strings"
+	"time"
 
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/utils"
-	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 )
 
-type userBuildError struct {
-	Param   string `json:"param"`
-	Message string `json:"message"`
-}
-
 type User struct {
-	gorm.Model
-	Fullname string `              validate:"required,min=2,max=100"`
-	Username string `gorm:"unique" validate:"required,lowercase,min=3,max=20,alphanum"`
-	Email    string `gorm:"unique" validate:"required,email"`
-	Password string `              validate:"required,haveSpecial,haveNumeric,min=8,max=48"`
+	// NOTE: Not using gorm.Model since it's properties cannot be accessed directly
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
+
+	FirstName string `validate:"required,min=3"`
+	LastName  string `validate:"required,min=3"`
+	Username  string `validate:"required,username,min=3,max=32" gorm:"unique"`
+	Email     string `validate:"required,email"                 gorm:"unique"`
+	Password  string `validate:"required,password,min=12,max=48"`
+
+	// TODO: Implement rest of the fields
 }
 
-func msgForTag(fe validator.FieldError) string {
-	if strings.Contains(fe.Tag(), "min") {
-		return fe.Field() + " is too short. It must be at least " + fe.Param() + " characters long."
-	}
-
-	if strings.Contains(fe.Tag(), "max") {
-		return fe.Field() + " is too long. It must be no more than " + fe.Param() + " characters long."
-	}
-
-	switch fe.Tag() {
-	case "required":
-		return "Please ensure that the " + strings.ToLower(fe.Field()) + " is filled out."
-	case "alphanum":
-		return fe.Field() + " must contain only alphanumeric characters."
-	case "lowercase":
-		return fe.Field() + " must be all lowercase."
-	case "email":
-		return "Please enter a valid email address."
-	case "haveSpecial":
-		return fe.Field() + " must include at least one symbol."
-	case "haveNumeric":
-		return fe.Field() + " must include at least one number."
-	default:
-		return fe.Error()
-	}
+type UserRegister struct {
+	FirstName string `validate:"required,min=3"                  json:"firstname"`
+	LastName  string `validate:"required,min=3"                  json:"lastname"`
+	Username  string `validate:"required,username,min=3,max=32"  json:"username"`
+	Email     string `validate:"required,email"                  json:"email"`
+	Password  string `validate:"required,password,min=12,max=48" json:"password"`
 }
 
-func (u *User) Validate() ([]userBuildError, error) {
-	// [x]: Benchmark: Test if there is any impact upon creating a new validator every time it's called
-	// 100~200ms: creating a new validator (? needs more benchmarking)
-	err := utils.Validate.Struct(u)
-
-	var ve validator.ValidationErrors
-
-	// Type assertion to get only validation errors
-	if errors.As(err, &ve) {
-		// `make` allocates memory for further implementation
-		out := make([]userBuildError, len(ve))
-
-		for i, fe := range ve {
-			out[i] = userBuildError{fe.Field(), msgForTag(fe)}
-		}
-
-		return out, nil
-	}
-
-	return nil, err // `err` may or may not be nil
+type UserLogin struct {
+	Username string `validate:"omitempty,username,min=3,max=32" json:"username"`
+	Email    string `validate:"omitempty,email"                 json:"email"`
+	Password string `validate:"required,password,min=12,max=48" json:"password"`
 }

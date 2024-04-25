@@ -15,7 +15,7 @@ build: cmd/api/main.go
 	$(GOBUILD) -race -o "$(BUILD_FOLDER)/$(BUILD_FILE)" -v $<
 
 run:
-	PORT=8080 "$(BUILD_FOLDER)/$(BUILD_FILE)"
+	"$(BUILD_FOLDER)/$(BUILD_FILE)"
 
 clean: down
 	@# Use "$(GOCLEAN)" so it removes any self-compiled bins (not using `make build`)

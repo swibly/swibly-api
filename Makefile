@@ -12,7 +12,7 @@ export
 all: build run
 
 build: cmd/api/main.go
-	$(GOBUILD) -o "$(BUILD_FOLDER)/$(BUILD_FILE)" -v $<
+	$(GOBUILD) -race -o "$(BUILD_FOLDER)/$(BUILD_FILE)" -v $<
 
 run:
 	"$(BUILD_FOLDER)/$(BUILD_FILE)"

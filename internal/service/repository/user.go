@@ -29,6 +29,7 @@ func (u userRepository) Update(id uint, updateModel *model.User) error {
 
 func (u userRepository) Find(searchModel *model.User) (*model.User, error) {
 	var wg sync.WaitGroup
+	var mu sync.Mutex
 
 	fields := reflect.TypeOf(*searchModel)
 	values := reflect.ValueOf(*searchModel)
@@ -38,24 +39,25 @@ func (u userRepository) Find(searchModel *model.User) (*model.User, error) {
 
 	for i := 0; i < fields.NumField(); i++ {
 		go func(i int) {
+			defer wg.Done()
+
 			value := values.Field(i)
 
 			if value.IsZero() {
-				wg.Done()
 				return
 			}
 
 			// FIXME: Hardcoded "users" table name, not ideal for when the name change in the future
 			fieldName := u.db.NamingStrategy.ColumnName("users", fields.Field(i).Name)
 
+			mu.Lock()
 			conditions = append(conditions, fmt.Sprintf("%s = ?", fieldName))
 			queryValues = append(queryValues, value.Interface())
-
-			wg.Done()
+			mu.Unlock()
 		}(i)
-	}
 
-	wg.Add(fields.NumField())
+		wg.Add(1)
+	}
 
 	wg.Wait()
 

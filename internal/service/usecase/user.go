@@ -8,15 +8,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type userUseCase struct {
+type UserUseCase struct {
 	ur repository.Repository[model.User]
 }
 
-func NewUserUseCase() userUseCase {
-	return userUseCase{ur: repository.NewUserRepository()}
+func NewUserUseCase() UserUseCase {
+	return UserUseCase{ur: repository.NewUserRepository()}
 }
 
-func (uuc userUseCase) CreateUser(firstname, lastname, username, email, password string) error {
+func (uuc UserUseCase) CreateUser(firstname, lastname, username, email, password string) error {
 	newUser := model.User{
 		FirstName: firstname,
 		LastName:  lastname,
@@ -42,7 +42,7 @@ func (uuc userUseCase) CreateUser(firstname, lastname, username, email, password
 	return uuc.ur.Store(&newUser)
 }
 
-func (uuc userUseCase) DeleteUser(id uint) error {
+func (uuc UserUseCase) DeleteUser(id uint) error {
 	if _, err := uuc.GetByID(id); err != nil {
 		return gorm.ErrRecordNotFound
 	}
@@ -50,18 +50,18 @@ func (uuc userUseCase) DeleteUser(id uint) error {
 	return uuc.ur.Delete(id)
 }
 
-func (uuc userUseCase) GetByID(id uint) (*model.User, error) {
+func (uuc UserUseCase) GetByID(id uint) (*model.User, error) {
 	return uuc.ur.Find(&model.User{ID: id})
 }
 
-func (uuc userUseCase) GetByUsername(username string) (*model.User, error) {
+func (uuc UserUseCase) GetByUsername(username string) (*model.User, error) {
 	return uuc.ur.Find(&model.User{Username: username})
 }
 
-func (uuc userUseCase) GetByEmail(email string) (*model.User, error) {
+func (uuc UserUseCase) GetByEmail(email string) (*model.User, error) {
 	return uuc.ur.Find(&model.User{Email: email})
 }
 
-func (uuc userUseCase) GetByUsernameOrEmail(username, email string) (*model.User, error) {
+func (uuc UserUseCase) GetByUsernameOrEmail(username, email string) (*model.User, error) {
 	return uuc.ur.Find(&model.User{Username: username, Email: email})
 }

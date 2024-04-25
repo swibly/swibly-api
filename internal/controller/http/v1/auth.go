@@ -32,11 +32,15 @@ func RegisterHandler(ctx *gin.Context, usecase usecase.UserUseCase) {
 		return
 	}
 
-	err := usecase.CreateUser(body.FirstName, body.LastName, body.Username, body.Email, body.Password)
+	user, err := usecase.CreateUser(body.FirstName, body.LastName, body.Username, body.Email, body.Password)
 
 	if err == nil {
-		// TODO: Implement JWT
-		ctx.JSON(http.StatusOK, gin.H{"message": "Created User"})
+		if token, err := utils.GenerateJWT(user.ID); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		} else {
+			ctx.JSON(http.StatusOK, gin.H{"message": "User created", "token": token})
+		}
+
 		return
 	}
 

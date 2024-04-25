@@ -13,10 +13,19 @@ type User struct {
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 
-	FirstName string `validator:"required,min=3"`
-	LastName  string `validator:"required,min=3"`
-	Username  string `validator:"required,username,min=3,max=32" gorm:"unique"`
-	Email     string `validator:"required,email" gorm:"unique"`
-	Password  string `validator:"required,password,min=12,max=48"`
+	FirstName string `validate:"required,min=3"`
+	LastName  string `validate:"required,min=3"`
+	Username  string `validate:"required,username,min=3,max=32" gorm:"unique"`
+	Email     string `validate:"required,email" gorm:"unique"`
+	Password  string `validate:"required,password,min=12,max=48"`
+
 	// TODO: Implement rest of the fields
+}
+
+type UserRegister struct {
+	FirstName string `validate:"required,min=3" json:"firstname"`
+	LastName  string `validate:"required,min=3" json:"lastname"`
+	Username  string `validate:"required,username,min=3,max=32" json:"username" gorm:"unique"`
+	Email     string `validate:"required,email" json:"email" gorm:"unique"`
+	Password  string `validate:"required,password,min=12,max=48" json:"password"`
 }

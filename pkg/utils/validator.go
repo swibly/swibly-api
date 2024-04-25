@@ -30,7 +30,7 @@ func newValidator() *validator.Validate {
 			return false
 		}
 
-		return regexp.MustCompile(`^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$`).Match(fl.Field().Bytes())
+		return regexp.MustCompile(`^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$`).Match([]byte(fl.Field().String()))
 	})
 
 	vv.RegisterValidation("password", func(fl validator.FieldLevel) bool {
@@ -77,42 +77,42 @@ func ValidateStruct(s any) validator.ValidationErrors {
 func ValidateErrorMessage(fe validator.FieldError) ParamError {
 	if fe.Tag() == "min" {
 		return ParamError{
-			Param:   fe.Tag(),
-			Message: fmt.Sprintf("%s must have at least %s characters", fe.Tag(), fe.Param()),
+			Param:   fe.Field(),
+			Message: fmt.Sprintf("%s must have at least %s characters", fe.Field(), fe.Param()),
 		}
 	}
 
 	if fe.Tag() == "max" {
 		return ParamError{
-			Param:   fe.Tag(),
-			Message: fmt.Sprintf("%s must have a maximum of %s characters", fe.Tag(), fe.Param()),
+			Param:   fe.Field(),
+			Message: fmt.Sprintf("%s must have a maximum of %s characters", fe.Field(), fe.Param()),
 		}
 	}
 
 	switch fe.Tag() {
 	case "required":
 		return ParamError{
-			Param:   fe.Tag(),
-			Message: fmt.Sprintf("%s is required", fe.Tag()),
+			Param:   fe.Field(),
+			Message: fmt.Sprintf("%s is required", fe.Field()),
 		}
 	case "username":
 		return ParamError{
-			Param:   fe.Tag(),
+			Param:   fe.Field(),
 			Message: "Usernames must consist only of lowercase alphanumeric (a-z & 0-9) characters",
 		}
 	case "email":
 		return ParamError{
-			Param:   fe.Tag(),
+			Param:   fe.Field(),
 			Message: "Email format is incorrect",
 		}
 	case "password":
 		return ParamError{
-			Param:   fe.Tag(),
+			Param:   fe.Field(),
 			Message: "The password should contain at least one uppercase letter, one lowercase letter, one special character, and one numeral",
 		}
 	default:
 		return ParamError{
-			Param:   fe.Tag(),
+			Param:   fe.Field(),
 			Message: fe.Error(),
 		}
 	}

@@ -48,7 +48,7 @@ func (u userRepository) Find(searchModel *model.User) (*model.User, error) {
 				return
 			}
 
-			// FIXME: Hardcoded "users" table name, not ideal for when the name change in the future
+			// FIXME: Hardcoded() "users" table name, not ideal for when the name change in the future
 			fieldName := u.db.NamingStrategy.ColumnName("users", fields.Field(i).Name)
 
 			mu.Lock()

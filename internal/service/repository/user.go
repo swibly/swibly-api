@@ -38,6 +38,7 @@ func (u userRepository) Find(searchModel *model.User) (*model.User, error) {
 	var queryValues []any
 
 	for i := 0; i < fields.NumField(); i++ {
+		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
 
@@ -55,8 +56,6 @@ func (u userRepository) Find(searchModel *model.User) (*model.User, error) {
 			queryValues = append(queryValues, value.Interface())
 			mu.Unlock()
 		}(i)
-
-		wg.Add(1)
 	}
 
 	wg.Wait()

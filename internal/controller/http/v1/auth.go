@@ -8,6 +8,7 @@ import (
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/usecase"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -20,6 +21,9 @@ func newAuthRoutes(handler *gin.RouterGroup) {
 	{
 		h.POST("/register", func(ctx *gin.Context) {
 			RegisterHandler(ctx, usecase)
+		})
+		h.POST("/login", func(ctx *gin.Context) {
+			LoginHandler(ctx, usecase)
 		})
 	}
 }
@@ -55,4 +59,47 @@ func RegisterHandler(ctx *gin.Context, usecase usecase.UserUseCase) {
 	}
 
 	ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+}
+
+func LoginHandler(ctx *gin.Context, usecase usecase.UserUseCase) {
+	var body model.UserLogin
+
+	if err := ctx.BindJSON(&body); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Bad body format"})
+		return
+	}
+
+	if errs := utils.ValidateStruct(&body); errs != nil {
+		err := utils.ValidateErrorMessage(errs[0])
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": gin.H{err.Param: err.Message}})
+		return
+	}
+
+	user, err := usecase.GetByUsernameOrEmail(body.Username, body.Email)
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "No user found with that username or email"})
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		return
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password)); err != nil {
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Password mismatch"})
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		return
+	}
+
+	if token, err := utils.GenerateJWT(user.ID); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+	} else {
+		ctx.JSON(http.StatusOK, gin.H{"message": "User created", "token": token})
+	}
 }

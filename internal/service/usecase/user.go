@@ -16,7 +16,7 @@ func NewUserUseCase() UserUseCase {
 	return UserUseCase{ur: repository.NewUserRepository()}
 }
 
-func (uuc UserUseCase) CreateUser(firstname, lastname, username, email, password string) error {
+func (uuc UserUseCase) CreateUser(firstname, lastname, username, email, password string) (*model.User, error) {
 	newUser := model.User{
 		FirstName: firstname,
 		LastName:  lastname,
@@ -26,20 +26,24 @@ func (uuc UserUseCase) CreateUser(firstname, lastname, username, email, password
 	}
 
 	if errs := utils.ValidateStruct(&newUser); errs != nil {
-		return utils.ValidateErrorMessage(errs[0])
+		return nil, utils.ValidateErrorMessage(errs[0])
 	}
 
 	if _, err := uuc.GetByUsernameOrEmail(username, email); err == nil {
-		return gorm.ErrDuplicatedKey
+		return nil, gorm.ErrDuplicatedKey
 	}
 
 	if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), 10); err != nil {
-		return err
+		return nil, err
 	} else {
 		newUser.Password = string(hashedPassword) // Set the hash
 	}
 
-	return uuc.ur.Store(&newUser)
+	if err := uuc.ur.Store(&newUser); err != nil {
+		return nil, err
+	}
+
+	return &newUser, nil
 }
 
 func (uuc UserUseCase) DeleteUser(id uint) error {

@@ -7,6 +7,6 @@ import (
 func NewRouter(handler *gin.Engine) {
 	g := handler.Group("/v1")
 	{
-		newWorldRoutes(g)
+		newAuthRoutes(g)
 	}
 }

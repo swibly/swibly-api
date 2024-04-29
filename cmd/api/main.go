@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
 	v1 "github.com/devkcud/arkhon-foundation/arkhon-api/internal/controller/http/v1"
@@ -26,8 +29,22 @@ func main() {
 	port := os.Getenv("PORT")
 
 	if port == "" {
+		log.Printf("PORT env variable not found, using default: %d", config.Router.Port)
 		port = fmt.Sprint(config.Router.Port)
 	}
 
-	router.Run(fmt.Sprintf("%s:%s", config.Router.Address, port))
+	go func() {
+		log.Print("Starting API")
+
+		if err := router.Run(fmt.Sprintf("%s:%s", config.Router.Address, port)); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	// Graceful Shutdown
+	exit := make(chan os.Signal, 1)
+	signal.Notify(exit, os.Interrupt, syscall.SIGTERM)
+	<-exit // Keep process alive
+
+	log.Print("Server stopped. Graceful Shutdown (CTRL+C)")
 }

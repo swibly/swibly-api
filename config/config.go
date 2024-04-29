@@ -44,6 +44,8 @@ func Parse() {
 	if err := yaml.Unmarshal(read("jwt.yaml"), &JWT); err != nil {
 		log.Fatalf("error: %v", err)
 	}
+
+	log.Print("Loaded config files")
 }
 
 func read(file string) []byte {

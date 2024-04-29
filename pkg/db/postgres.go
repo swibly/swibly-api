@@ -25,5 +25,11 @@ func Load() {
 
 	Postgres = db
 
-	Postgres.AutoMigrate(&model.User{})
+	log.Print("Loaded Database")
+
+	if err := Postgres.AutoMigrate(&model.User{}); err != nil {
+		log.Fatal(err)
+	}
+
+	log.Print("Loaded migrations")
 }

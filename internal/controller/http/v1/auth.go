@@ -2,6 +2,7 @@ package v1
 
 import (
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
@@ -11,8 +12,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
-
-// TODO: Add logger
 
 func newAuthRoutes(handler *gin.RouterGroup) {
 	usecase := usecase.NewUserUseCase()
@@ -32,6 +31,7 @@ func RegisterHandler(ctx *gin.Context, usecase usecase.UserUseCase) {
 	var body model.UserRegister
 
 	if err := ctx.BindJSON(&body); err != nil {
+		log.Print(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Bad body format"})
 		return
 	}
@@ -40,6 +40,7 @@ func RegisterHandler(ctx *gin.Context, usecase usecase.UserUseCase) {
 
 	if err == nil {
 		if token, err := utils.GenerateJWT(user.ID); err != nil {
+			log.Print(err)
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
 		} else {
 			ctx.JSON(http.StatusOK, gin.H{"message": "User created", "token": token})
@@ -47,6 +48,9 @@ func RegisterHandler(ctx *gin.Context, usecase usecase.UserUseCase) {
 
 		return
 	}
+
+	// Just print every time there is an error, no need to check what is the "context"
+	log.Print(err)
 
 	if validationErr, ok := err.(utils.ParamError); ok {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": gin.H{validationErr.Param: validationErr.Message}})
@@ -65,12 +69,15 @@ func LoginHandler(ctx *gin.Context, usecase usecase.UserUseCase) {
 	var body model.UserLogin
 
 	if err := ctx.BindJSON(&body); err != nil {
+		log.Print(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Bad body format"})
 		return
 	}
 
 	if errs := utils.ValidateStruct(&body); errs != nil {
 		err := utils.ValidateErrorMessage(errs[0])
+
+		log.Print(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": gin.H{err.Param: err.Message}})
 		return
 	}
@@ -78,6 +85,8 @@ func LoginHandler(ctx *gin.Context, usecase usecase.UserUseCase) {
 	user, err := usecase.GetByUsernameOrEmail(body.Username, body.Email)
 
 	if err != nil {
+		log.Print(err)
+
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "No user found with that username or email"})
 			return
@@ -88,6 +97,8 @@ func LoginHandler(ctx *gin.Context, usecase usecase.UserUseCase) {
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password)); err != nil {
+		log.Print(err)
+
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Password mismatch"})
 			return
@@ -98,6 +109,8 @@ func LoginHandler(ctx *gin.Context, usecase usecase.UserUseCase) {
 	}
 
 	if token, err := utils.GenerateJWT(user.ID); err != nil {
+		log.Print(err)
+
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
 	} else {
 		ctx.JSON(http.StatusOK, gin.H{"message": "User created", "token": token})

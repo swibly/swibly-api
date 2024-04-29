@@ -58,7 +58,7 @@ func RegisterHandler(ctx *gin.Context, usecase usecase.UserUseCase) {
 	}
 
 	if errors.Is(err, gorm.ErrDuplicatedKey) {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "An user with that username or email already exists."})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "An user with that username or email already exists."})
 		return
 	}
 
@@ -88,7 +88,7 @@ func LoginHandler(ctx *gin.Context, usecase usecase.UserUseCase) {
 		log.Print(err)
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": "No user found with that username or email"})
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "No user found with that username or email"})
 			return
 		}
 
@@ -100,7 +100,7 @@ func LoginHandler(ctx *gin.Context, usecase usecase.UserUseCase) {
 		log.Print(err)
 
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Password mismatch"})
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Password mismatch"})
 			return
 		}
 
@@ -113,6 +113,6 @@ func LoginHandler(ctx *gin.Context, usecase usecase.UserUseCase) {
 
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
 	} else {
-		ctx.JSON(http.StatusOK, gin.H{"message": "User created", "token": token})
+		ctx.JSON(http.StatusOK, gin.H{"message": "User logged in", "token": token})
 	}
 }

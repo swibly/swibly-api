@@ -24,7 +24,7 @@ func GenerateJWT(id uint) (string, error) {
 	return tokenString, nil
 }
 
-func GetSubjectJWT(tokenString string) (string, error) {
+func GetClaimsJWT(tokenString string) (*jwt.StandardClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &jwt.StandardClaims{}, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
@@ -36,21 +36,20 @@ func GetSubjectJWT(tokenString string) (string, error) {
 	if err != nil {
 		if ve, ok := err.(*jwt.ValidationError); ok {
 			if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-				return "", fmt.Errorf("malformed token: %v", err)
+				return nil, fmt.Errorf("malformed token: %v", err)
 			} else if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
-				return "", fmt.Errorf("token is expired or not active yet: %v", err)
+				return nil, fmt.Errorf("token is expired or not active yet: %v", err)
 			} else {
-				return "", fmt.Errorf("couldn't handle this token: %v", err)
+				return nil, fmt.Errorf("couldn't handle this token: %v", err)
 			}
 		} else {
-			return "", fmt.Errorf("couldn't handle this token: %v", err)
+			return nil, fmt.Errorf("couldn't handle this token: %v", err)
 		}
 	}
 
 	if claims, ok := token.Claims.(*jwt.StandardClaims); ok && token.Valid {
-		fmt.Printf("Token is valid, subject: %v\n", claims.Subject)
-		return claims.Subject, nil
+		return claims, nil
 	}
 
-	return "", fmt.Errorf("token is invalid")
+	return nil, fmt.Errorf("token is invalid")
 }

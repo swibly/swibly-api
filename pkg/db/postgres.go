@@ -8,6 +8,7 @@ import (
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var Postgres *gorm.DB
@@ -19,7 +20,16 @@ func Load() {
 		log.Fatalf("error: %v", err)
 	}
 
+	// NOTE: Currently, we are handling every error case when doing DB operations. There is no need for an extra logger
+	db.Logger = logger.Discard
+
 	Postgres = db
 
-	Postgres.AutoMigrate(&model.User{})
+	log.Print("Loaded Database")
+
+	if err := Postgres.AutoMigrate(&model.User{}); err != nil {
+		log.Fatal(err)
+	}
+
+	log.Print("Loaded migrations")
 }

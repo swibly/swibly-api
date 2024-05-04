@@ -69,17 +69,3 @@ func (uuc UserUseCase) GetByEmail(email string) (*model.User, error) {
 func (uuc UserUseCase) GetByUsernameOrEmail(username, email string) (*model.User, error) {
 	return uuc.ur.Find(&model.User{Username: username, Email: email})
 }
-
-// COMMENTS
-
-func (uuc UserUseCase) GetComments(userID uint) ([]model.Comment, error) {
-	return uuc.ur.GetComments(userID)
-}
-
-func (uuc UserUseCase) AddComment(userID uint, comment string) error {
-	return uuc.ur.AddComment(userID, model.Comment{
-		Message:  comment,
-		Likes:    0,
-		Dislikes: 0,
-	})
-}

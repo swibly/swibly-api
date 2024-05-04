@@ -26,8 +26,7 @@ type User struct {
 	Arkhoin uint64 `gorm:"default:1000"`
 
 	// TODO: Add followers and following
-
-	Comments []Comment `gorm:"foreignKey:OwnerID"`
+  // TODO: Add comments, the last implementation was wacky to say the least.
 
 	Notification struct {
 		InApp bool `gorm:"default:true"`

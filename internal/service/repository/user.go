@@ -19,8 +19,6 @@ type userRepository struct {
 // Now, we should continue this pattern. Create a repository for every model :) (models that overlap, e.g. user and comments, can be merged together)
 type UserRepository interface {
 	Repository[model.User]
-	GetComments(uint) ([]model.Comment, error)
-	AddComment(uint, model.Comment) error
 }
 
 func NewUserRepository() UserRepository {
@@ -79,28 +77,4 @@ func (u userRepository) Find(searchModel *model.User) (*model.User, error) {
 
 func (u userRepository) Delete(id uint) error {
 	return u.db.Where("id = ?", id).Unscoped().Delete(&model.User{}).Error
-}
-
-// COMMENTS
-
-func (u userRepository) GetComments(userID uint) ([]model.Comment, error) {
-	var user model.User
-
-	if err := u.db.Preload("Comments").First(&user, userID).Error; err != nil {
-		return nil, err
-	}
-
-	return user.Comments, nil
-}
-
-func (u userRepository) AddComment(userID uint, comment model.Comment) error {
-	var user model.User
-
-	if err := u.db.First(&user, userID).Error; err != nil {
-		return err
-	}
-
-	comment.OwnerID = userID // Ensure the comment is associated with the correct user
-
-	return u.db.Create(&comment).Error
 }

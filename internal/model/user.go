@@ -25,20 +25,9 @@ type User struct {
 	XP      uint64 `gorm:"default:500"`
 	Arkhoin uint64 `gorm:"default:1000"`
 
-	// FIXME: Make the followers/following be a queryable table
-	// WARN: NOT TESTED
+	// TODO: Add followers and following
 
-	// e.g.: UserFollow that includes the followerId and the followingId
-	// Not very optimal
-	Followers []*User
-	Following []*User
-
-	Comments []struct {
-		OwnerID  uint
-		Message  string
-		Likes    uint
-		Dislikes uint
-	} `gorm:"type:json"`
+	Comments []Comment `gorm:"foreignKey:OwnerID"`
 
 	Notification struct {
 		InApp bool `gorm:"default:true"`
@@ -60,12 +49,6 @@ type User struct {
 	} `gorm:"type:json"`
 
 	// TODO: Implement enums Language, Theme and Country (country shouldnt be an enum)
-}
-
-type follow struct {
-	gorm.Model
-	UserID     uint
-	FollowedID uint
 }
 
 type UserRegister struct {

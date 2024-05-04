@@ -33,6 +33,8 @@ func main() {
 		port = fmt.Sprint(config.Router.Port)
 	}
 
+  log.Printf("Using port %s", port)
+
 	go func() {
 		log.Print("Starting API")
 

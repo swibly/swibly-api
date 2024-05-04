@@ -1,14 +1,16 @@
-BUILD_FOLDER=build
-BUILD_FILE=api
+BUILD_FOLDER := build
+BUILD_FILE := api
 
-GO=go
-GOBUILD=$(GO) build
-GOCLEAN=$(GO) clean
-GOTEST=$(GO) test
+GO := go
+GOBUILD := $(GO) build
+GOCLEAN := $(GO) clean
+GOTEST := $(GO) test
 
 # .env should exist by the moment we start running make scripts
 include .env
 export
+
+.PHONY: all build run clean tidy up down psql
 
 all: build run
 
@@ -28,16 +30,16 @@ clean: down
 tidy:
 	go mod tidy -e
 
+psql:
+	docker exec -it arkhon-db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
+
 up:
 	docker compose up -d
 
 down:
 	docker compose down
 
-psql:
-	docker exec -it arkhon-db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
-
-.PHONY: build run all
+# Generating mocks
 
 SRC_FILES := $(wildcard internal/service/repository/*.go)
 MOCK_FILES := $(patsubst internal/service/repository/%.go,internal/service/repository/mock_%.go,$(filter-out internal/service/repository/mock_%.go,$(SRC_FILES)))

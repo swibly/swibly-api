@@ -33,20 +33,20 @@ type User struct {
 		InApp bool `gorm:"default:true"`
 		Email bool `gorm:"default:false"`
 		// SMS bool `gorm:"default:false"` // NOTE: Not sure if we want to send SMS, it can get expensive
-	} `gorm:"type:json"`
+	} `gorm:"embedded;embeddedPrefix:notify_"`
 
-	Privacy struct {
-		Profile    map[string]any `gorm:"type:json"`
-		Image      map[string]any `gorm:"type:json"`
-		Comments   map[string]any `gorm:"type:json"`
-		Favorites  map[string]any `gorm:"type:json"`
-		Projects   map[string]any `gorm:"type:json"`
-		Components map[string]any `gorm:"type:json"`
-		Followers  map[string]any `gorm:"type:json"`
-		Following  map[string]any `gorm:"type:json"`
-		Inventory  map[string]any `gorm:"type:json"`
-		Formations map[string]any `gorm:"type:json"`
-	} `gorm:"type:json"`
+	Show struct {
+		Profile    bool `gorm:"default:true"`
+		Image      bool `gorm:"default:true"`
+		Comments   bool `gorm:"default:true"`
+		Favorites  bool `gorm:"default:true"`
+		Projects   bool `gorm:"default:true"`
+		Components bool `gorm:"default:true"`
+		Followers  bool `gorm:"default:true"`
+		Following  bool `gorm:"default:true"`
+		Inventory  bool `gorm:"default:false"`
+		Formations bool `gorm:"default:true"`
+	} `gorm:"embedded;embeddedPrefix:show_"`
 
 	// TODO: Implement enums Language, Theme and Country (country shouldnt be an enum)
 }

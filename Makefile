@@ -38,3 +38,13 @@ psql:
 	docker exec -it arkhon-db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
 
 .PHONY: build run all
+
+SRC_FILES := $(wildcard internal/service/repository/*.go)
+MOCK_FILES := $(patsubst internal/service/repository/%.go,internal/service/repository/mock_%.go,$(filter-out internal/service/repository/mock_%.go,$(SRC_FILES)))
+
+mock: $(MOCK_FILES)
+
+internal/service/repository/mock_%.go: internal/service/repository/%.go
+	@if [ "$(@F)" != "mock_$(*F)" ]; then \
+		mockgen -source="$<" -destination="$@" -package=repository; \
+	fi

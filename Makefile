@@ -21,6 +21,8 @@ clean: down
 	@# Use "$(GOCLEAN)" so it removes any self-compiled bins (not using `make build`)
 	$(GOCLEAN)
 	-rm -r $(BUILD_FOLDER)
+	@# The rm should be ran by a superuser. The pgdata is created by docker using sudo
+	-sudo rm -rf pgdata/
 
 tidy:
 	go mod tidy -e

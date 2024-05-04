@@ -6,23 +6,24 @@ GOBUILD=$(GO) build
 GOCLEAN=$(GO) clean
 GOTEST=$(GO) test
 
+# .env should exist by the moment we start running make scripts
 include .env
 export
 
 all: build run
 
-build: cmd/api/main.go
-	$(GOBUILD) -race -o "$(BUILD_FOLDER)/$(BUILD_FILE)" -v $<
+build:
+	$(GOBUILD) -race -o "$(BUILD_FOLDER)/$(BUILD_FILE)" -v ./cmd/api/main.go
 
 run:
 	"$(BUILD_FOLDER)/$(BUILD_FILE)"
 
+# Executing `go clean` removes any non-make-related builds, generated using `go build`, such as the api.exe binary produced by the api package.
+# `sudo rm -rf pgdata` will not return errors (related to rm at least)
 clean: down
-	@# Use "$(GOCLEAN)" so it removes any self-compiled bins (not using `make build`)
 	$(GOCLEAN)
 	-rm -r $(BUILD_FOLDER)
-	@# The rm should be ran by a superuser. The pgdata is created by docker using sudo
-	-sudo rm -rf pgdata/
+	sudo rm -rf pgdata/
 
 tidy:
 	go mod tidy -e

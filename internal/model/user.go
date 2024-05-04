@@ -25,12 +25,20 @@ type User struct {
 	XP      uint64 `gorm:"default:500"`
 	Arkhoin uint64 `gorm:"default:1000"`
 
+	// FIXME: Make the followers/following be a queryable table
+	// WARN: NOT TESTED
+
+	// e.g.: UserFollow that includes the followerId and the followingId
+	// Not very optimal
+	Followers []*User
+	Following []*User
+
 	Comments []struct {
 		OwnerID  uint
 		Message  string
 		Likes    uint
 		Dislikes uint
-  } `gorm:"type:json"`
+	} `gorm:"type:json"`
 
 	Notification struct {
 		InApp bool `gorm:"default:true"`

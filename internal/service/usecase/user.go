@@ -9,7 +9,7 @@ import (
 )
 
 type UserUseCase struct {
-	ur repository.Repository[model.User]
+	ur repository.UserRepository
 }
 
 func NewUserUseCase() UserUseCase {

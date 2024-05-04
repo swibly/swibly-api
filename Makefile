@@ -2,6 +2,7 @@ BUILD_FOLDER := build
 BUILD_FILE := api
 
 GO := go
+GOMOD := $(GO) mod
 GOBUILD := $(GO) build
 GOCLEAN := $(GO) clean
 GOTEST := $(GO) test
@@ -10,7 +11,7 @@ GOTEST := $(GO) test
 include .env
 export
 
-.PHONY: all build run clean tidy up down psql
+.PHONY: all build run clean tidy test up down psql
 
 all: build run
 
@@ -28,7 +29,10 @@ clean: down
 	sudo rm -rf pgdata/
 
 tidy:
-	go mod tidy -e
+	$(GOMOD) tidy -e
+
+test:
+	$(GOTEST) ./tests -v
 
 psql:
 	docker exec -it arkhon-db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)

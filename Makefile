@@ -1,14 +1,17 @@
-BUILD_FOLDER=build
-BUILD_FILE=api
+BUILD_FOLDER := build
+BUILD_FILE := api
 
-GO=go
-GOBUILD=$(GO) build
-GOCLEAN=$(GO) clean
-GOTEST=$(GO) test
+GO := go
+GOMOD := $(GO) mod
+GOBUILD := $(GO) build
+GOCLEAN := $(GO) clean
+GOTEST := $(GO) test
 
 # .env should exist by the moment we start running make scripts
 include .env
 export
+
+.PHONY: all build run clean tidy test up down psql
 
 all: build run
 
@@ -26,7 +29,13 @@ clean: down
 	sudo rm -rf pgdata/
 
 tidy:
-	go mod tidy -e
+	$(GOMOD) tidy -e
+
+test:
+	$(GOTEST) ./tests -v
+
+psql:
+	docker exec -it arkhon-db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
 
 up:
 	docker compose up -d
@@ -34,7 +43,14 @@ up:
 down:
 	docker compose down
 
-psql:
-	docker exec -it arkhon-db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
+# Generating mocks
 
-.PHONY: build run all
+SRC_FILES := $(wildcard internal/service/repository/*.go)
+MOCK_FILES := $(patsubst internal/service/repository/%.go,internal/service/repository/mock_%.go,$(filter-out internal/service/repository/mock_%.go,$(SRC_FILES)))
+
+mock: $(MOCK_FILES)
+
+internal/service/repository/mock_%.go: internal/service/repository/%.go
+	@if [ "$(@F)" != "mock_$(*F)" ]; then \
+		mockgen -source="$<" -destination="$@" -package=repository; \
+	fi

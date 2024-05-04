@@ -9,25 +9,30 @@ import (
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/usecase"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgconn"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
 func newAuthRoutes(handler *gin.RouterGroup) {
-	usecase := usecase.NewUserUseCase()
-
 	h := handler.Group("/auth")
 	{
-		h.POST("/register", func(ctx *gin.Context) {
-			RegisterHandler(ctx, usecase)
+		h.Use(func(ctx *gin.Context) {
+			ctx.Set("uc", usecase.NewUserUseCase())
+			ctx.Next()
 		})
-		h.POST("/login", func(ctx *gin.Context) {
-			LoginHandler(ctx, usecase)
-		})
+
+		h.POST("/register", RegisterHandler)
+		h.POST("/login", LoginHandler)
 	}
 }
 
-func RegisterHandler(ctx *gin.Context, usecase usecase.UserUseCase) {
+func RegisterHandler(ctx *gin.Context) {
+	// We know it exists, no need to pass in exists variable
+	usecaseInterface, _ := ctx.Get("uc")
+	// We know it will always be a UserUseCase
+	usecase, _ := usecaseInterface.(usecase.UserUseCase)
+
 	var body model.UserRegister
 
 	if err := ctx.BindJSON(&body); err != nil {
@@ -57,7 +62,9 @@ func RegisterHandler(ctx *gin.Context, usecase usecase.UserUseCase) {
 		return
 	}
 
-	if errors.Is(err, gorm.ErrDuplicatedKey) {
+	var pgErr *pgconn.PgError
+	// 23505 => duplicated key value violates unique constraint
+	if errors.Is(err, gorm.ErrDuplicatedKey) || (errors.As(err, &pgErr) && pgErr.Code == "23505") {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "An user with that username or email already exists."})
 		return
 	}
@@ -65,7 +72,12 @@ func RegisterHandler(ctx *gin.Context, usecase usecase.UserUseCase) {
 	ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
 }
 
-func LoginHandler(ctx *gin.Context, usecase usecase.UserUseCase) {
+func LoginHandler(ctx *gin.Context) {
+	// We know it exists, no need to pass in exists variable
+	usecaseInterface, _ := ctx.Get("uc")
+	// We know it will always be a UserUseCase
+	usecase, _ := usecaseInterface.(usecase.UserUseCase)
+
 	var body model.UserLogin
 
 	if err := ctx.BindJSON(&body); err != nil {

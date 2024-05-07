@@ -21,6 +21,7 @@ var (
 		DB       string `yaml:"db"`
 		User     string `yaml:"user"`
 		Password string `yaml:"password"`
+		SSLMode  string `yaml:"sslmode"`
 	}
 
 	JWT struct {

@@ -12,11 +12,6 @@ import (
 func newProfileRoutes(handler *gin.RouterGroup) {
 	h := handler.Group("/profile")
 	{
-		h.Use(func(ctx *gin.Context) {
-			ctx.Set("uc", usecase.NewUserUseCase())
-			ctx.Next()
-		})
-
 		h.GET("/:username", GetUserRoute)
 	}
 }

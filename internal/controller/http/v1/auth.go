@@ -17,11 +17,6 @@ import (
 func newAuthRoutes(handler *gin.RouterGroup) {
 	h := handler.Group("/auth")
 	{
-		h.Use(func(ctx *gin.Context) {
-			ctx.Set("uc", usecase.NewUserUseCase())
-			ctx.Next()
-		})
-
 		h.POST("/register", RegisterHandler)
 		h.POST("/login", LoginHandler)
 	}

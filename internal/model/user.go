@@ -13,6 +13,8 @@ type User struct {
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 
+	Roles []Role `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;many2many:user_roles;"`
+
 	FirstName string
 	LastName  string
 	Bio       string
@@ -26,7 +28,7 @@ type User struct {
 	Arkhoin uint64 `gorm:"default:1000"`
 
 	// TODO: Add followers and following
-  // TODO: Add comments, the last implementation was wacky to say the least.
+	// TODO: Add comments, the last implementation was wacky to say the least.
 
 	Notification struct {
 		InApp bool `gorm:"default:true"`

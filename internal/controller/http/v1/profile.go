@@ -32,6 +32,8 @@ func GetProfileHandler(ctx *gin.Context) {
 			"createdat": user.CreatedAt,
 			"updatedat": user.UpdatedAt,
 
+			"roles": user.Roles,
+
 			"firstname": user.FirstName,
 			"lastname":  user.LastName,
 			"bio":       user.Bio,

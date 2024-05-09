@@ -23,6 +23,10 @@ func main() {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
+	router.GET("/healthz", func(ctx *gin.Context) {
+		ctx.Writer.WriteString("Hello, world!")
+	})
+
 	v1.NewRouter(router)
 
 	// NOTE: Prioritize the PORT env variable, as some web services may set it
@@ -33,7 +37,7 @@ func main() {
 		port = fmt.Sprint(config.Router.Port)
 	}
 
-  log.Printf("Using port %s", port)
+	log.Printf("Using port %s", port)
 
 	go func() {
 		log.Print("Starting API")

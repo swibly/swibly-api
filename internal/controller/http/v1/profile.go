@@ -12,11 +12,11 @@ import (
 func newProfileRoutes(handler *gin.RouterGroup) {
 	h := handler.Group("/profile")
 	{
-		h.GET("/:username", GetUserRoute)
+		h.GET("/:username", GetProfileHandler)
 	}
 }
 
-func GetUserRoute(ctx *gin.Context) {
+func GetProfileHandler(ctx *gin.Context) {
 	// We know it exists, no need to pass in exists variable
 	usecaseInterface, _ := ctx.Get("uc")
 	// We know it will always be a UserUseCase
@@ -42,7 +42,11 @@ func GetUserRoute(ctx *gin.Context) {
 
 			"xp":      user.XP,
 			"arkhoin": user.Arkhoin,
+
+			"show":         user.Show,
+			"notification": user.Notification,
 		})
+
 		return
 	}
 

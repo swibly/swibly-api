@@ -19,7 +19,7 @@ func AuthMiddleware(ctx *gin.Context) {
 		return
 	}
 
-	_, err := utils.GetClaimsJWT(tokenString)
+	claims, err := utils.GetClaimsJWT(tokenString)
 
 	if err != nil {
 		log.Print(err)
@@ -28,5 +28,6 @@ func AuthMiddleware(ctx *gin.Context) {
 		return
 	}
 
+	ctx.Set("userid", claims.Id)
 	ctx.Next()
 }

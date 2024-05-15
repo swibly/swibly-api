@@ -9,6 +9,7 @@ import (
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
 	v1 "github.com/devkcud/arkhon-foundation/arkhon-api/internal/controller/http/v1"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/db"
 	"github.com/gin-gonic/gin"
 )
@@ -16,6 +17,8 @@ import (
 func main() {
 	config.Parse()
 	db.Load()
+
+	service.Init()
 
 	gin.SetMode(config.Router.GinMode)
 

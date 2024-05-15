@@ -92,5 +92,5 @@ type ProfileUpdate struct {
 	Notification struct {
 		InApp int `json:"inapp"`
 		Email int `json:"email"`
-  } `json:"notification"`
+	} `json:"notification"`
 }

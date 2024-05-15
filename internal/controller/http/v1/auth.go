@@ -23,11 +23,6 @@ func newAuthRoutes(handler *gin.RouterGroup) {
 }
 
 func RegisterHandler(ctx *gin.Context) {
-	// We know it exists, no need to pass in exists variable
-	usecaseInterface, _ := ctx.Get("uc")
-	// We know it will always be a UserUseCase
-	usecase, _ := usecaseInterface.(usecase.UserUseCase)
-
 	var body model.UserRegister
 
 	if err := ctx.BindJSON(&body); err != nil {
@@ -36,7 +31,7 @@ func RegisterHandler(ctx *gin.Context) {
 		return
 	}
 
-	user, err := usecase.CreateUser(body.FirstName, body.LastName, body.Username, body.Email, body.Password)
+	user, err := usecase.UserInstance.CreateUser(body.FirstName, body.LastName, body.Username, body.Email, body.Password)
 
 	if err == nil {
 		if token, err := utils.GenerateJWT(user.ID); err != nil {
@@ -68,11 +63,6 @@ func RegisterHandler(ctx *gin.Context) {
 }
 
 func LoginHandler(ctx *gin.Context) {
-	// We know it exists, no need to pass in exists variable
-	usecaseInterface, _ := ctx.Get("uc")
-	// We know it will always be a UserUseCase
-	usecase, _ := usecaseInterface.(usecase.UserUseCase)
-
 	var body model.UserLogin
 
 	if err := ctx.BindJSON(&body); err != nil {
@@ -89,7 +79,7 @@ func LoginHandler(ctx *gin.Context) {
 		return
 	}
 
-	user, err := usecase.GetByUsernameOrEmail(body.Username, body.Email)
+	user, err := usecase.UserInstance.GetByUsernameOrEmail(body.Username, body.Email)
 
 	if err != nil {
 		log.Print(err)

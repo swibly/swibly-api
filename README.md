@@ -1,6 +1,6 @@
 <h1 align="center">👷 ARKHON API 👨‍💻</h1>
 
-> [!WARNING]
+> [!CAUTION]
 > O uso ou desenvolvimento **NÃO** oficial é desaconselhado devido às frequentes alterações de código, o que pode resultar em comportamentos imprevistos ou falhas críticas, tanto quanto mudança dos nomes, licenças e identificadores.
 
 ## ❓️ Sobre

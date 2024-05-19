@@ -12,7 +12,7 @@ import (
 func newProfileRoutes(handler *gin.RouterGroup) {
 	h := handler.Group("/profile")
 	{
-		h.GET("/:username", GetProfileHandler)
+		h.GET("/view/:username", GetProfileHandler)
 	}
 }
 

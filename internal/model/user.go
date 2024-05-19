@@ -6,11 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-var (
-	ROLE_ADMIN = "admin"
-	ROLE_USER  = "user"
-)
-
 type User struct {
 	// NOTE: Not using gorm.Model since it's properties cannot be accessed directly
 	ID        uint `gorm:"primarykey"`
@@ -18,7 +13,7 @@ type User struct {
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 
-	Role string `gorm:"default:user"`
+  // TODO: Add Role
 
 	FirstName string
 	LastName  string

@@ -28,6 +28,6 @@ func AuthMiddleware(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Set("userid", claims.Id)
+	ctx.Set("id_from_jwt", claims.Id)
 	ctx.Next()
 }

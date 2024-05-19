@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/usecase"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
 	"github.com/gin-gonic/gin"
@@ -23,7 +23,7 @@ func newAuthRoutes(handler *gin.RouterGroup) {
 }
 
 func RegisterHandler(ctx *gin.Context) {
-	var body model.UserRegister
+	var body dto.UserRegister
 
 	if err := ctx.BindJSON(&body); err != nil {
 		log.Print(err)
@@ -63,7 +63,7 @@ func RegisterHandler(ctx *gin.Context) {
 }
 
 func LoginHandler(ctx *gin.Context) {
-	var body model.UserLogin
+	var body dto.UserLogin
 
 	if err := ctx.BindJSON(&body); err != nil {
 		log.Print(err)

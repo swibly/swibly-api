@@ -29,6 +29,7 @@ func Load() {
 
 	if err := Postgres.AutoMigrate(
 		&model.User{},
+		&model.Follower{},
 	); err != nil {
 		log.Fatal(err)
 	}

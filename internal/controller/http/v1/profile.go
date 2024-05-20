@@ -16,18 +16,37 @@ import (
 func newProfileRoutes(handler *gin.RouterGroup) {
 	h := handler.Group("/profile")
 	{
-		h.GET("/view/:username", GetProfileHandler)
+		h.GET("/view/:username", middleware.OptionalAuthMiddleware, GetProfileHandler)
 		h.GET("/view/:username/followers", middleware.OptionalAuthMiddleware, GetFollowersHandler)
 		h.GET("/view/:username/following", middleware.OptionalAuthMiddleware, GetFollowingHandler)
 	}
 }
 
 func GetProfileHandler(ctx *gin.Context) {
+	var issuer *model.User
+
+	idFromJWT, exists := ctx.Get("id_from_jwt")
+	if exists {
+		log.Print(idFromJWT)
+		id, err := strconv.Atoi(fmt.Sprintf("%v", idFromJWT))
+		if err != nil {
+			log.Print(err)
+		} else {
+			issuer, err = usecase.UserInstance.GetByID(uint(id))
+			if err != nil {
+				log.Print(err)
+			}
+		}
+	}
+
 	username := ctx.Param("username")
-
 	user, err := usecase.UserInstance.GetByUsername(username)
-
 	if err == nil {
+		if user.Show.Profile == -1 && (issuer == nil || issuer.ID != user.ID) {
+			ctx.JSON(http.StatusForbidden, gin.H{"message": "User disabled viewing their profile"})
+			return
+		}
+
 		ctx.JSON(http.StatusOK, gin.H{
 			"id":        user.ID,
 			"createdat": user.CreatedAt,
@@ -87,7 +106,7 @@ func GetFollowersHandler(ctx *gin.Context) {
 	}
 
 	if user.Show.Followers == -1 && (issuer == nil || issuer.ID != user.ID) {
-		ctx.JSON(http.StatusForbidden, gin.H{"message": "User disabled viewing whom they are following"})
+		ctx.JSON(http.StatusForbidden, gin.H{"message": "User disabled viewing whom are following them"})
 		return
 	}
 

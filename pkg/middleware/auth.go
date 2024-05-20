@@ -28,6 +28,26 @@ func AuthMiddleware(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Set("id_from_jwt", claims.Id)
+	ctx.Set("id_from_jwt", claims.Subject)
+	ctx.Next()
+}
+
+func OptionalAuthMiddleware(ctx *gin.Context) {
+	tokenString := strings.TrimPrefix(ctx.GetHeader("Authorization"), "Bearer ")
+
+	if tokenString == "" {
+		ctx.Next()
+		return
+	}
+
+	claims, err := utils.GetClaimsJWT(tokenString)
+
+	if err != nil {
+		log.Print(err)
+		ctx.Next()
+		return
+	}
+
+	ctx.Set("id_from_jwt", claims.Subject)
 	ctx.Next()
 }

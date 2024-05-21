@@ -13,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func newFollowRoutes(handler *gin.RouterGroup) {
+func newUserRoutes(handler *gin.RouterGroup) {
 	h := handler.Group("/user")
 	{
 		h.GET("/:username/profile", middleware.OptionalAuthMiddleware, GetProfileHandler)

@@ -13,12 +13,16 @@ import (
 	"gorm.io/gorm"
 )
 
-func newProfileRoutes(handler *gin.RouterGroup) {
-	h := handler.Group("/profile")
+func newFollowRoutes(handler *gin.RouterGroup) {
+	h := handler.Group("/user")
 	{
-		h.GET("/view/:username", middleware.OptionalAuthMiddleware, GetProfileHandler)
-		h.GET("/view/:username/followers", middleware.OptionalAuthMiddleware, GetFollowersHandler)
-		h.GET("/view/:username/following", middleware.OptionalAuthMiddleware, GetFollowingHandler)
+		h.GET("/:username/profile", middleware.OptionalAuthMiddleware, GetProfileHandler)
+		h.GET("/:username/followers", middleware.OptionalAuthMiddleware, GetFollowersHandler)
+		h.GET("/:username/following", middleware.OptionalAuthMiddleware, GetFollowingHandler)
+
+		// TODO: Implement
+		h.POST("/:username/follow", middleware.AuthMiddleware)
+		h.POST("/:username/unfollow", middleware.AuthMiddleware)
 	}
 }
 

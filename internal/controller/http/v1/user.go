@@ -109,6 +109,11 @@ func GetFollowersHandler(ctx *gin.Context) {
 		return
 	}
 
+	if user.Show.Profile == -1 && (issuer == nil || issuer.ID != user.ID) {
+		ctx.JSON(http.StatusForbidden, gin.H{"message": "User disabled viewing their profile"})
+		return
+	}
+
 	if user.Show.Followers == -1 && (issuer == nil || issuer.ID != user.ID) {
 		ctx.JSON(http.StatusForbidden, gin.H{"message": "User disabled viewing whom are following them"})
 		return
@@ -146,6 +151,11 @@ func GetFollowingHandler(ctx *gin.Context) {
 	if err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		return
+	}
+
+	if user.Show.Profile == -1 && (issuer == nil || issuer.ID != user.ID) {
+		ctx.JSON(http.StatusForbidden, gin.H{"message": "User disabled viewing their profile"})
 		return
 	}
 

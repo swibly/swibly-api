@@ -3,7 +3,6 @@ package usecase
 import (
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/repository"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
 )
 
 type FollowUseCase struct {
@@ -17,15 +16,6 @@ func NewFollowUseCase() FollowUseCase {
 var FollowInstance FollowUseCase
 
 func (f FollowUseCase) FollowUser(followingID, followerID uint) error {
-	newFollow := dto.NewFollower{
-		FollowerID:  followerID,
-		FollowingID: followingID,
-	}
-
-	if errs := utils.ValidateStruct(&newFollow); errs != nil {
-		return utils.ValidateErrorMessage(errs[0])
-	}
-
 	if err := f.fr.Follow(followingID, followerID); err != nil {
 		return err
 	}
@@ -34,15 +24,6 @@ func (f FollowUseCase) FollowUser(followingID, followerID uint) error {
 }
 
 func (f FollowUseCase) UnfollowUser(followingID, followerID uint) error {
-	newFollow := dto.NewFollower{
-		FollowerID:  followerID,
-		FollowingID: followingID,
-	}
-
-	if errs := utils.ValidateStruct(&newFollow); errs != nil {
-		return utils.ValidateErrorMessage(errs[0])
-	}
-
 	if err := f.fr.Unfollow(followingID, followerID); err != nil {
 		return err
 	}
@@ -51,12 +32,12 @@ func (f FollowUseCase) UnfollowUser(followingID, followerID uint) error {
 }
 
 func (f FollowUseCase) GetFollowers(userID uint) ([]*dto.Follower, error) {
-	following, err := f.fr.GetFollowing(userID)
+	following, err := f.fr.GetFollowers(userID)
 	return following, err
 }
 
 func (f FollowUseCase) GetFollowing(userID uint) ([]*dto.Follower, error) {
-	followers, err := f.fr.GetFollowers(userID)
+	followers, err := f.fr.GetFollowing(userID)
 	return followers, err
 }
 

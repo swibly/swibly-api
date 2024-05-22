@@ -32,7 +32,7 @@ func (f followRepository) Follow(followingID, followerID uint) error {
 
 func (f followRepository) Exists(followingID, followerID uint) (bool, error) {
 	var count int64
-	err := f.db.Model(&model.Follower{}).Where("followingID = ? AND followerID = ?", followingID, followerID).Count(&count).Error
+	err := f.db.Model(&model.Follower{}).Where("following_id = ? AND follower_id = ?", followingID, followerID).Count(&count).Error
 	return count > 0, err
 }
 

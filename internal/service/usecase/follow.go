@@ -16,7 +16,7 @@ func NewFollowUseCase() FollowUseCase {
 
 var FollowInstance FollowUseCase
 
-func (fr FollowUseCase) FollowUser(followerID, followingID uint) error {
+func (f FollowUseCase) FollowUser(followingID, followerID uint) error {
 	newFollow := dto.NewFollower{
 		FollowerID:  followerID,
 		FollowingID: followingID,
@@ -26,7 +26,7 @@ func (fr FollowUseCase) FollowUser(followerID, followingID uint) error {
 		return utils.ValidateErrorMessage(errs[0])
 	}
 
-	if err := fr.FollowUser(followerID, followingID); err != nil {
+	if err := f.fr.Follow(followingID, followerID); err != nil {
 		return err
 	}
 
@@ -41,4 +41,8 @@ func (f FollowUseCase) GetFollowers(userID uint) ([]*dto.Follower, error) {
 func (f FollowUseCase) GetFollowing(userID uint) ([]*dto.Follower, error) {
 	followers, err := f.fr.GetFollowers(userID)
 	return followers, err
+}
+
+func (f FollowUseCase) Exists(followingID, followerID uint) (bool, error) {
+	return f.fr.Exists(followingID, followerID)
 }

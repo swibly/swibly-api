@@ -33,6 +33,23 @@ func (f FollowUseCase) FollowUser(followingID, followerID uint) error {
 	return nil
 }
 
+func (f FollowUseCase) UnfollowUser(followingID, followerID uint) error {
+	newFollow := dto.NewFollower{
+		FollowerID:  followerID,
+		FollowingID: followingID,
+	}
+
+	if errs := utils.ValidateStruct(&newFollow); errs != nil {
+		return utils.ValidateErrorMessage(errs[0])
+	}
+
+	if err := f.fr.Unfollow(followingID, followerID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (f FollowUseCase) GetFollowers(userID uint) ([]*dto.Follower, error) {
 	following, err := f.fr.GetFollowing(userID)
 	return following, err

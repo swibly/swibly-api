@@ -13,6 +13,7 @@ type followRepository struct {
 
 type FollowRepository interface {
 	Follow(followingID, followerID uint) error
+	Unfollow(followingID, followerID uint) error
 	Exists(followingID, followerID uint) (bool, error)
 	GetFollowers(userID uint) ([]*dto.Follower, error)
 	GetFollowing(userID uint) ([]*dto.Follower, error)
@@ -28,6 +29,14 @@ func (f followRepository) Follow(followingID, followerID uint) error {
 		return gorm.ErrInvalidField
 	}
 	return f.db.Create(&model.Follower{FollowingID: followingID, FollowerID: followerID}).Error
+}
+
+func (f followRepository) Unfollow(followingID, followerID uint) error {
+	if followingID == followerID {
+		// Using this so it's easier to debug afterwards
+		return gorm.ErrInvalidField
+	}
+	return f.db.Where("following_id = ? AND follower_ID = ?", followingID, followerID).Delete(&model.Follower{}).Error
 }
 
 func (f followRepository) Exists(followingID, followerID uint) (bool, error) {

@@ -20,9 +20,8 @@ func newUserRoutes(handler *gin.RouterGroup) {
 		h.GET("/:username/followers", middleware.OptionalAuthMiddleware, GetFollowersHandler)
 		h.GET("/:username/following", middleware.OptionalAuthMiddleware, GetFollowingHandler)
 
-		// TODO: Implement
-		h.POST("/:username/follow", middleware.AuthMiddleware)
-		h.POST("/:username/unfollow", middleware.AuthMiddleware)
+		h.POST("/:username/follow", middleware.AuthMiddleware, FollowUserHandler)
+		h.POST("/:username/unfollow", middleware.AuthMiddleware, UnfollowUserHandler)
 	}
 }
 
@@ -31,7 +30,6 @@ func GetProfileHandler(ctx *gin.Context) {
 
 	idFromJWT, exists := ctx.Get("id_from_jwt")
 	if exists {
-		log.Print(idFromJWT)
 		id, err := strconv.Atoi(fmt.Sprintf("%v", idFromJWT))
 		if err != nil {
 			log.Print(err)
@@ -47,7 +45,7 @@ func GetProfileHandler(ctx *gin.Context) {
 	user, err := usecase.UserInstance.GetByUsername(username)
 	if err == nil {
 		if user.Show.Profile == -1 && (issuer == nil || issuer.ID != user.ID) {
-			ctx.JSON(http.StatusForbidden, gin.H{"message": "User disabled viewing their profile"})
+			ctx.JSON(http.StatusForbidden, gin.H{"error": "User disabled viewing their profile"})
 			return
 		}
 
@@ -89,7 +87,6 @@ func GetFollowersHandler(ctx *gin.Context) {
 
 	idFromJWT, exists := ctx.Get("id_from_jwt")
 	if exists {
-		log.Print(idFromJWT)
 		id, err := strconv.Atoi(fmt.Sprintf("%v", idFromJWT))
 		if err != nil {
 			log.Print(err)
@@ -110,12 +107,12 @@ func GetFollowersHandler(ctx *gin.Context) {
 	}
 
 	if user.Show.Profile == -1 && (issuer == nil || issuer.ID != user.ID) {
-		ctx.JSON(http.StatusForbidden, gin.H{"message": "User disabled viewing their profile"})
+		ctx.JSON(http.StatusForbidden, gin.H{"error": "User disabled viewing their profile"})
 		return
 	}
 
 	if user.Show.Followers == -1 && (issuer == nil || issuer.ID != user.ID) {
-		ctx.JSON(http.StatusForbidden, gin.H{"message": "User disabled viewing whom are following them"})
+		ctx.JSON(http.StatusForbidden, gin.H{"error": "User disabled viewing whom are following them"})
 		return
 	}
 
@@ -134,7 +131,6 @@ func GetFollowingHandler(ctx *gin.Context) {
 
 	idFromJWT, exists := ctx.Get("id_from_jwt")
 	if exists {
-		log.Print(idFromJWT)
 		id, err := strconv.Atoi(fmt.Sprintf("%v", idFromJWT))
 		if err != nil {
 			log.Print(err)
@@ -155,12 +151,12 @@ func GetFollowingHandler(ctx *gin.Context) {
 	}
 
 	if user.Show.Profile == -1 && (issuer == nil || issuer.ID != user.ID) {
-		ctx.JSON(http.StatusForbidden, gin.H{"message": "User disabled viewing their profile"})
+		ctx.JSON(http.StatusForbidden, gin.H{"error": "User disabled viewing their profile"})
 		return
 	}
 
 	if user.Show.Following == -1 && (issuer == nil || issuer.ID != user.ID) {
-		ctx.JSON(http.StatusForbidden, gin.H{"message": "User disabled viewing whom they are following"})
+		ctx.JSON(http.StatusForbidden, gin.H{"error": "User disabled viewing whom they are following"})
 		return
 	}
 
@@ -172,4 +168,74 @@ func GetFollowingHandler(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, following)
+}
+
+func FollowUserHandler(ctx *gin.Context) {
+	idFromJWT, _ := ctx.Get("id_from_jwt")
+	id, _ := strconv.Atoi(fmt.Sprintf("%v", idFromJWT))
+	issuer, _ := usecase.UserInstance.GetByID(uint(id))
+
+	receiver, err := usecase.UserInstance.GetByUsername(ctx.Param("username"))
+	if err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user"})
+		return
+	}
+
+	if issuer.ID == receiver.ID {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Users cannot follow or unfollow themselves"})
+		return
+	}
+
+	if exists, err := usecase.FollowInstance.Exists(issuer.ID, receiver.ID); err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		return
+	} else if exists {
+		ctx.JSON(http.StatusConflict, gin.H{"error": fmt.Sprintf("Already following %s", receiver.Username)})
+		return
+	}
+
+	if err := usecase.FollowInstance.FollowUser(issuer.ID, receiver.ID); err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Started following %s", receiver.Username)})
+}
+
+func UnfollowUserHandler(ctx *gin.Context) {
+	idFromJWT, _ := ctx.Get("id_from_jwt")
+	id, _ := strconv.Atoi(fmt.Sprintf("%v", idFromJWT))
+	issuer, _ := usecase.UserInstance.GetByID(uint(id))
+
+	receiver, err := usecase.UserInstance.GetByUsername(ctx.Param("username"))
+	if err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user"})
+		return
+	}
+
+	if issuer.ID == receiver.ID {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Users cannot follow or unfollow themselves"})
+		return
+	}
+
+	if exists, err := usecase.FollowInstance.Exists(issuer.ID, receiver.ID); err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		return
+	} else if !exists {
+		ctx.JSON(http.StatusConflict, gin.H{"error": fmt.Sprintf("Not following %s", receiver.Username)})
+		return
+	}
+
+	if err := usecase.FollowInstance.UnfollowUser(issuer.ID, receiver.ID); err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Stopped following %s", receiver.Username)})
 }

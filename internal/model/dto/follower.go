@@ -3,15 +3,15 @@ package dto
 import "time"
 
 type NewFollower struct {
-	FollowerID  uint
-	FollowingID uint
+	FollowerID  uint `json:"follower_id"`
+	FollowingID uint `json:"following_id"`
 }
 
 type Follower struct {
-	ID             uint
-	FirstName      string
-	LastName       string
-	Verified       bool
-	Username       string
-	FollowingSince time.Time
+	ID             uint      `json:"id"`
+	FirstName      string    `json:"firstname"`
+	LastName       string    `json:"lastname"`
+	Verified       bool      `json:"verified"`
+	Username       string    `json:"username"`
+	FollowingSince time.Time `json:"following_since"`
 }

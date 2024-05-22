@@ -13,6 +13,7 @@ type followRepository struct {
 
 type FollowRepository interface {
 	Follow(followingID, followerID uint) error
+	Exists(followingID, followerID uint) (bool, error)
 	GetFollowers(userID uint) ([]*dto.Follower, error)
 	GetFollowing(userID uint) ([]*dto.Follower, error)
 }
@@ -27,6 +28,12 @@ func (f followRepository) Follow(followingID, followerID uint) error {
 		return gorm.ErrInvalidField
 	}
 	return f.db.Create(&model.Follower{FollowingID: followingID, FollowerID: followerID}).Error
+}
+
+func (f followRepository) Exists(followingID, followerID uint) (bool, error) {
+	var count int64
+	err := f.db.Model(&model.Follower{}).Where("followingID = ? AND followerID = ?", followingID, followerID).Count(&count).Error
+	return count > 0, err
 }
 
 // TODO: Make sure show_profile is enabled

@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -83,6 +84,11 @@ func GetFollowersHandler(ctx *gin.Context) {
 	username := ctx.Param("username")
 	user, err := usecase.UserInstance.GetByUsername(username)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "No user found with that username."})
+			return
+		}
+
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
 		return
@@ -127,6 +133,11 @@ func GetFollowingHandler(ctx *gin.Context) {
 	username := ctx.Param("username")
 	user, err := usecase.UserInstance.GetByUsername(username)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "No user found with that username."})
+			return
+		}
+
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
 		return

@@ -44,7 +44,7 @@ func (f followRepository) GetFollowers(userID uint) ([]*dto.Follower, error) {
 	err := f.db.Table("users").
 		Select("users.*, followers.since").
 		Joins("JOIN followers ON followers.follower_id = users.id").
-		Where("followers.following_id = ?", userID).
+		Where("users.id = ?", userID).
 		Scan(&followers).Error
 	return followers, err
 }
@@ -53,8 +53,8 @@ func (f followRepository) GetFollowing(userID uint) ([]*dto.Follower, error) {
 	var following []*dto.Follower
 	err := f.db.Table("users").
 		Select("users.*, followers.since").
-		Joins("JOIN followers ON followers.following_id = users.id").
-		Where("followers.follower_id = ?", userID).
+		Joins("JOIN followers ON followers.follower_id = users.id").
+		Where("users.id = ?", userID).
 		Scan(&following).Error
 	return following, err
 }

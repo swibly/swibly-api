@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/usecase"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/middleware"
@@ -22,6 +23,7 @@ func newAuthRoutes(handler *gin.RouterGroup) {
 	{
 		h.POST("/register", RegisterHandler)
 		h.POST("/login", LoginHandler)
+		h.PATCH("/update", middleware.AuthMiddleware, UpdateUserHandler)
 		h.DELETE("/delete", middleware.AuthMiddleware, DeleteUserHandler)
 	}
 }
@@ -116,6 +118,63 @@ func LoginHandler(ctx *gin.Context) {
 	} else {
 		ctx.JSON(http.StatusOK, gin.H{"message": "User logged in", "token": token})
 	}
+}
+
+func UpdateUserHandler(ctx *gin.Context) {
+	idFromJWT, _ := ctx.Get("id_from_jwt")
+	id, _ := strconv.Atoi(fmt.Sprintf("%v", idFromJWT))
+	if _, err := usecase.UserInstance.GetByID(uint(id)); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			ctx.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+	}
+
+	var body dto.UserUpdate
+
+	if err := ctx.BindJSON(&body); err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Bad body format"})
+		return
+	}
+
+	if errs := utils.ValidateStruct(&body); errs != nil {
+		err := utils.ValidateErrorMessage(errs[0])
+
+		log.Print(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": gin.H{err.Param: err.Message}})
+		return
+	}
+
+	if body.Username != "" {
+		if profile, err := usecase.UserInstance.GetByUsername(body.Username); profile != nil && err == nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "An user with that username already exists"})
+			return
+		}
+	}
+
+	if body.Email != "" {
+		if profile, err := usecase.UserInstance.GetByEmail(body.Email); profile != nil && err == nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "An user with that email already exists"})
+			return
+		}
+	}
+
+	if body.Password != "" {
+		if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), config.Security.BcryptCost); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		} else {
+			body.Password = string(hashedPassword)
+		}
+	}
+
+	if err := usecase.UserInstance.Update(uint(id), &body); err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "User updated"})
 }
 
 func DeleteUserHandler(ctx *gin.Context) {

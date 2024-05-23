@@ -8,10 +8,10 @@ type NewFollower struct {
 }
 
 type Follower struct {
-	ID             uint      `json:"id"`
-	FirstName      string    `json:"firstname"`
-	LastName       string    `json:"lastname"`
-	Verified       bool      `json:"verified"`
-	Username       string    `json:"username"`
-	FollowingSince time.Time `json:"following_since"`
+	ID        uint      `json:"id"`
+	FirstName string    `json:"firstname"`
+	LastName  string    `json:"lastname"`
+	Verified  bool      `json:"verified"`
+	Username  string    `json:"username"`
+	Since     time.Time `json:"following_since"`
 }

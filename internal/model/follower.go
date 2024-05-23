@@ -1,8 +1,10 @@
 package model
 
+import "time"
+
 type Follower struct {
 	FollowingID uint `gorm:"index"`
 	FollowerID  uint `gorm:"index"`
 
-	Since int64 `gorm:"autoCreateTime"`
+	Since time.Time `gorm:"autoCreateTime"`
 }

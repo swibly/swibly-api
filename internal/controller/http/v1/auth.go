@@ -2,11 +2,14 @@ package v1
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/usecase"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/middleware"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -19,6 +22,7 @@ func newAuthRoutes(handler *gin.RouterGroup) {
 	{
 		h.POST("/register", RegisterHandler)
 		h.POST("/login", LoginHandler)
+		h.DELETE("/delete", middleware.AuthMiddleware, DeleteUserHandler)
 	}
 }
 
@@ -112,4 +116,21 @@ func LoginHandler(ctx *gin.Context) {
 	} else {
 		ctx.JSON(http.StatusOK, gin.H{"message": "User logged in", "token": token})
 	}
+}
+
+func DeleteUserHandler(ctx *gin.Context) {
+	idFromJWT, _ := ctx.Get("id_from_jwt")
+	id, _ := strconv.Atoi(fmt.Sprintf("%v", idFromJWT))
+	if err := usecase.UserInstance.DeleteUser(uint(id)); err != nil {
+		log.Print(err)
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "User not found."})
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "User deleted"})
 }

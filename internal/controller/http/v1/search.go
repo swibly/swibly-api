@@ -18,7 +18,7 @@ func newSearchRoutes(handler *gin.RouterGroup) {
 }
 
 func SearchByUsernameHandler(ctx *gin.Context) {
-	users, err := usecase.UserInstance.GetBySimilarUsername(ctx.Param("name"))
+	users, err := usecase.UserInstance.GetBySimilarName(ctx.Param("name"))
 	if err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})

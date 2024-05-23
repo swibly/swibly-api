@@ -73,8 +73,8 @@ func (uuc UserUseCase) GetByUsernameOrEmail(username, email string) (*model.User
 	return uuc.ur.Find(&model.User{Username: username, Email: email})
 }
 
-func (uuc UserUseCase) GetBySimilarUsername(username string) ([]*dto.ProfileSearch, error) {
-	return uuc.ur.SearchLikeName(username)
+func (uuc UserUseCase) GetBySimilarName(name string) ([]*dto.ProfileSearch, error) {
+	return uuc.ur.SearchLikeName(name)
 }
 
 func (uuc UserUseCase) Update(id uint, newModel *model.User) error {

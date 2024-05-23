@@ -13,7 +13,7 @@ type User struct {
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 
-  // TODO: Add Role
+	// TODO: Add Role
 
 	FirstName string
 	LastName  string
@@ -27,7 +27,6 @@ type User struct {
 	XP      uint64 `gorm:"default:500"`
 	Arkhoin uint64 `gorm:"default:1000"`
 
-	// TODO: Add followers and following
 	// TODO: Add comments, the last implementation was wacky to say the least.
 
 	Notification struct {
@@ -37,16 +36,16 @@ type User struct {
 	} `gorm:"embedded;embeddedPrefix:notify_"`
 
 	Show struct {
-		Profile    int `gorm:"default:1" json:"profile"`
-		Image      int `gorm:"default:1" json:"image"`
-		Comments   int `gorm:"default:1" json:"comments"`
-		Favorites  int `gorm:"default:1" json:"favorites"`
-		Projects   int `gorm:"default:1" json:"projects"`
-		Components int `gorm:"default:1" json:"components"`
-		Followers  int `gorm:"default:1" json:"followers"`
-		Following  int `gorm:"default:1" json:"following"`
+		Profile    int `gorm:"default:1"  json:"profile"`
+		Image      int `gorm:"default:1"  json:"image"`
+		Comments   int `gorm:"default:1"  json:"comments"`
+		Favorites  int `gorm:"default:1"  json:"favorites"`
+		Projects   int `gorm:"default:1"  json:"projects"`
+		Components int `gorm:"default:1"  json:"components"`
+		Followers  int `gorm:"default:1"  json:"followers"`
+		Following  int `gorm:"default:1"  json:"following"`
 		Inventory  int `gorm:"default:-1" json:"inventory"`
-		Formations int `gorm:"default:1" json:"formations"`
+		Formations int `gorm:"default:1"  json:"formations"`
 	} `gorm:"embedded;embeddedPrefix:show_"`
 
 	// TODO: Implement enums Language, Theme and Country (country shouldnt be an enum)

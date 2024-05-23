@@ -59,7 +59,7 @@ func (u userRepository) SearchLikeName(username string) ([]*dto.ProfileSearch, e
 	alike := fmt.Sprintf("%%%s%%", username)
 	err := u.db.
 		Model(&model.User{}).
-		Where("(username LIKE ? OR first_name LIKE ? OR last_name LIKE ?) AND show_profile <> -1", alike, alike, alike).
+		Where("(LOWER(username) LIKE LOWER(?) OR LOWER(first_name) LIKE LOWER(?) OR LOWER(last_name) LIKE LOWER(?)) AND show_profile <> -1", alike, alike, alike).
 		Find(&users).Error
 
 	if err != nil {

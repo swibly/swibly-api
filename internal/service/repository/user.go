@@ -16,7 +16,8 @@ type userRepository struct {
 type UserRepository interface {
 	Store(*model.User) error
 	Update(uint, *model.User) error
-	Find(*model.User) (*model.User, error)
+	UnsafeFind(*model.User) (*model.User, error)
+	Find(*model.User) (*dto.ProfileSearch, error)
 	SearchLikeName(string) ([]*dto.ProfileSearch, error)
 	Delete(uint) error
 }
@@ -33,14 +34,24 @@ func (u userRepository) Update(id uint, updateModel *model.User) error {
 	return u.db.Where("id = ?", id).Updates(&updateModel).Error
 }
 
-func (u userRepository) Find(searchModel *model.User) (*model.User, error) {
-	var user model.User
+func (u userRepository) UnsafeFind(searchModel *model.User) (*model.User, error) {
+	var user *model.User
 
 	if err := u.db.First(&user, searchModel).Error; err != nil {
 		return nil, err
 	}
 
-	return &user, nil
+	return user, nil
+}
+
+func (u userRepository) Find(searchModel *model.User) (*dto.ProfileSearch, error) {
+	var user *dto.ProfileSearch
+
+	if err := u.db.Model(&model.User{}).First(&user, searchModel).Error; err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
 
 func (u userRepository) SearchLikeName(username string) ([]*dto.ProfileSearch, error) {

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/usecase"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/middleware"
 	"github.com/gin-gonic/gin"
@@ -26,7 +26,7 @@ func newUserRoutes(handler *gin.RouterGroup) {
 }
 
 func GetProfileHandler(ctx *gin.Context) {
-	var issuer *model.User
+	var issuer *dto.ProfileSearch
 
 	idFromJWT, exists := ctx.Get("id_from_jwt")
 	if exists {
@@ -49,25 +49,7 @@ func GetProfileHandler(ctx *gin.Context) {
 			return
 		}
 
-		ctx.JSON(http.StatusOK, gin.H{
-			"id":        user.ID,
-			"createdat": user.CreatedAt,
-			"updatedat": user.UpdatedAt,
-
-			"firstname": user.FirstName,
-			"lastname":  user.LastName,
-			"bio":       user.Bio,
-			"verified":  user.Verified,
-
-			"username": user.Username,
-			"email":    user.Email,
-
-			"xp":      user.XP,
-			"arkhoin": user.Arkhoin,
-
-			"show":         user.Show,
-			"notification": user.Notification,
-		})
+		ctx.JSON(http.StatusOK, user)
 
 		return
 	}
@@ -83,7 +65,7 @@ func GetProfileHandler(ctx *gin.Context) {
 }
 
 func GetFollowersHandler(ctx *gin.Context) {
-	var issuer *model.User
+	var issuer *dto.ProfileSearch
 
 	idFromJWT, exists := ctx.Get("id_from_jwt")
 	if exists {
@@ -127,7 +109,7 @@ func GetFollowersHandler(ctx *gin.Context) {
 }
 
 func GetFollowingHandler(ctx *gin.Context) {
-	var issuer *model.User
+	var issuer *dto.ProfileSearch
 
 	idFromJWT, exists := ctx.Get("id_from_jwt")
 	if exists {

@@ -79,7 +79,7 @@ func LoginHandler(ctx *gin.Context) {
 		return
 	}
 
-	user, err := usecase.UserInstance.GetByUsernameOrEmail(body.Username, body.Email)
+	user, err := usecase.UserInstance.UnsafeGetByUsernameOrEmail(body.Username, body.Email)
 
 	if err != nil {
 		log.Print(err)

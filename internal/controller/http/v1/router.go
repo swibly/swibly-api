@@ -9,5 +9,6 @@ func NewRouter(handler *gin.Engine) {
 	{
 		newAuthRoutes(g)
 		newUserRoutes(g)
+		newSearchRoutes(g)
 	}
 }

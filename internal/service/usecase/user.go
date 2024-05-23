@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/repository"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
 	"golang.org/x/crypto/bcrypt"
@@ -70,6 +71,10 @@ func (uuc UserUseCase) GetByEmail(email string) (*model.User, error) {
 
 func (uuc UserUseCase) GetByUsernameOrEmail(username, email string) (*model.User, error) {
 	return uuc.ur.Find(&model.User{Username: username, Email: email})
+}
+
+func (uuc UserUseCase) GetBySimilarUsername(username string) ([]*dto.ProfileSearch, error) {
+	return uuc.ur.SearchLikeName(username)
 }
 
 func (uuc UserUseCase) Update(id uint, newModel *model.User) error {

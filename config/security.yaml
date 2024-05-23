@@ -1,0 +1,2 @@
+bcrypt_cost: 10 # min: 4 | max: 31
+jwt_secret: $JWT_SECRET

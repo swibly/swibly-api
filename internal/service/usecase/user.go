@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/repository"
@@ -36,7 +37,7 @@ func (uuc UserUseCase) CreateUser(firstname, lastname, username, email, password
 		return nil, gorm.ErrDuplicatedKey
 	}
 
-	if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), 10); err != nil {
+	if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), config.Security.BcryptCost); err != nil {
 		return nil, err
 	} else {
 		newUser.Password = string(hashedPassword) // Set the hash

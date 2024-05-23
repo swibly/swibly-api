@@ -187,7 +187,7 @@ func FollowUserHandler(ctx *gin.Context) {
 		return
 	}
 
-	if exists, err := usecase.FollowInstance.Exists(issuer.ID, receiver.ID); err != nil {
+	if exists, err := usecase.FollowInstance.Exists(receiver.ID, issuer.ID); err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
 		return
@@ -196,7 +196,7 @@ func FollowUserHandler(ctx *gin.Context) {
 		return
 	}
 
-	if err := usecase.FollowInstance.FollowUser(issuer.ID, receiver.ID); err != nil {
+	if err := usecase.FollowInstance.FollowUser(receiver.ID, issuer.ID); err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
 		return
@@ -222,7 +222,7 @@ func UnfollowUserHandler(ctx *gin.Context) {
 		return
 	}
 
-	if exists, err := usecase.FollowInstance.Exists(issuer.ID, receiver.ID); err != nil {
+	if exists, err := usecase.FollowInstance.Exists(receiver.ID, issuer.ID); err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
 		return
@@ -231,7 +231,7 @@ func UnfollowUserHandler(ctx *gin.Context) {
 		return
 	}
 
-	if err := usecase.FollowInstance.UnfollowUser(issuer.ID, receiver.ID); err != nil {
+	if err := usecase.FollowInstance.UnfollowUser(receiver.ID, issuer.ID); err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
 		return

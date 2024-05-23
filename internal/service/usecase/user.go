@@ -94,6 +94,6 @@ func (uuc UserUseCase) UnsafeGetByUsernameOrEmail(username, email string) (*mode
 	return uuc.ur.UnsafeFind(&model.User{Username: username, Email: email})
 }
 
-func (uuc UserUseCase) Update(id uint, newModel *model.User) error {
+func (uuc UserUseCase) Update(id uint, newModel *dto.UserUpdate) error {
 	return uuc.ur.Update(id, newModel)
 }

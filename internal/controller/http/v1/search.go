@@ -13,14 +13,19 @@ import (
 func newSearchRoutes(handler *gin.RouterGroup) {
 	h := handler.Group("/search")
 
-	u := h.Group("/user")
-	{
-		u.GET("/name/:name", SearchByUsernameHandler)
-	}
+	h.GET("/user", SearchByNameHandler)
 }
 
-func SearchByUsernameHandler(ctx *gin.Context) {
-	users, err := usecase.UserInstance.GetBySimilarName(ctx.Param("name"))
+func SearchByNameHandler(ctx *gin.Context) {
+	name := ctx.Query("name")
+  log.Println(name)
+
+	if name == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Cannot find by empty name"})
+		return
+	}
+
+	users, err := usecase.UserInstance.GetBySimilarName(name)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "No user found with that name."})

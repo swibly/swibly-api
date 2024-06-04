@@ -9,6 +9,7 @@ import (
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
 	v1 "github.com/devkcud/arkhon-foundation/arkhon-api/internal/controller/http/v1"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/db"
 	"github.com/gin-gonic/gin"
 )
@@ -17,11 +18,17 @@ func main() {
 	config.Parse()
 	db.Load()
 
+	service.Init()
+
 	gin.SetMode(config.Router.GinMode)
 
 	router := gin.New()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
+
+	router.GET("/healthz", func(ctx *gin.Context) {
+		ctx.Writer.WriteString("Hello, world!")
+	})
 
 	v1.NewRouter(router)
 
@@ -32,6 +39,8 @@ func main() {
 		log.Printf("PORT env variable not found, using default: %d", config.Router.Port)
 		port = fmt.Sprint(config.Router.Port)
 	}
+
+	log.Printf("Using port %s", port)
 
 	go func() {
 		log.Print("Starting API")

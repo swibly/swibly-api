@@ -8,5 +8,7 @@ func NewRouter(handler *gin.Engine) {
 	g := handler.Group("/v1")
 	{
 		newAuthRoutes(g)
+		newUserRoutes(g)
+		newSearchRoutes(g)
 	}
 }

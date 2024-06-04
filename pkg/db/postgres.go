@@ -14,7 +14,7 @@ import (
 var Postgres *gorm.DB
 
 func Load() {
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=5432 sslmode=disable", config.Postgres.Host, config.Postgres.User, config.Postgres.Password, config.Postgres.DB)
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=5432 sslmode=%s", config.Postgres.Host, config.Postgres.User, config.Postgres.Password, config.Postgres.DB, config.Postgres.SSLMode)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("error: %v", err)
@@ -27,7 +27,10 @@ func Load() {
 
 	log.Print("Loaded Database")
 
-	if err := Postgres.AutoMigrate(&model.User{}); err != nil {
+	if err := Postgres.AutoMigrate(
+		&model.User{},
+		&model.Follower{},
+	); err != nil {
 		log.Fatal(err)
 	}
 

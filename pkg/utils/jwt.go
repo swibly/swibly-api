@@ -16,7 +16,7 @@ func GenerateJWT(id uint) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	tokenString, err := token.SignedString([]byte(config.JWT.Secret))
+	tokenString, err := token.SignedString([]byte(config.Security.JWTSecret))
 	if err != nil {
 		return "", err
 	}
@@ -30,7 +30,7 @@ func GetClaimsJWT(tokenString string) (*jwt.StandardClaims, error) {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
 
-		return []byte(config.JWT.Secret), nil
+		return []byte(config.Security.JWTSecret), nil
 	})
 
 	if err != nil {

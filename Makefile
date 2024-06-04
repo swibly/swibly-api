@@ -54,3 +54,21 @@ internal/service/repository/mock_%.go: internal/service/repository/%.go
 	@if [ "$(@F)" != "mock_$(*F)" ]; then \
 		mockgen -source="$<" -destination="$@" -package=repository; \
 	fi
+
+# Generating users
+
+USERS := \
+	'{"firstname": "John", "lastname": "Doe", "username": "johndoe", "email": "johndoe@example.com", "password": "T3st1ngP4$$w0rd"}', \
+	'{"firstname": "Jane", "lastname": "Smith", "username": "janesmith", "email": "janesmith@example.com", "password": "P@ssw0rd123"}', \
+	'{"firstname": "Alice", "lastname": "Johnson", "username": "alicejohnson", "email": "alicejohnson@example.com", "password": "qwerty"}', \
+	'{"firstname": "Bob", "lastname": "Brown", "username": "bobbrown", "email": "bobbrown@example.com", "password": "password123"}'
+ENDPOINT=http://localhost:8080/v1/auth/register
+
+create_users:
+	@echo "Creating users..."
+	@for user_data in $(USERS); do \
+		curl --silent --request POST \
+			--url $(ENDPOINT) \
+			--header 'Content-Type: application/json' \
+			--data "$$user_data"; \
+	done

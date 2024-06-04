@@ -1,7 +1,9 @@
 package usecase
 
 import (
+	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/repository"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
 	"golang.org/x/crypto/bcrypt"
@@ -15,6 +17,8 @@ type UserUseCase struct {
 func NewUserUseCase() UserUseCase {
 	return UserUseCase{ur: repository.NewUserRepository()}
 }
+
+var UserInstance UserUseCase
 
 func (uuc UserUseCase) CreateUser(firstname, lastname, username, email, password string) (*model.User, error) {
 	newUser := model.User{
@@ -33,7 +37,7 @@ func (uuc UserUseCase) CreateUser(firstname, lastname, username, email, password
 		return nil, gorm.ErrDuplicatedKey
 	}
 
-	if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), 10); err != nil {
+	if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), config.Security.BcryptCost); err != nil {
 		return nil, err
 	} else {
 		newUser.Password = string(hashedPassword) // Set the hash
@@ -54,18 +58,42 @@ func (uuc UserUseCase) DeleteUser(id uint) error {
 	return uuc.ur.Delete(id)
 }
 
-func (uuc UserUseCase) GetByID(id uint) (*model.User, error) {
+func (uuc UserUseCase) GetByID(id uint) (*dto.ProfileSearch, error) {
 	return uuc.ur.Find(&model.User{ID: id})
 }
 
-func (uuc UserUseCase) GetByUsername(username string) (*model.User, error) {
+func (uuc UserUseCase) GetByUsername(username string) (*dto.ProfileSearch, error) {
 	return uuc.ur.Find(&model.User{Username: username})
 }
 
-func (uuc UserUseCase) GetByEmail(email string) (*model.User, error) {
+func (uuc UserUseCase) GetByEmail(email string) (*dto.ProfileSearch, error) {
 	return uuc.ur.Find(&model.User{Email: email})
 }
 
-func (uuc UserUseCase) GetByUsernameOrEmail(username, email string) (*model.User, error) {
+func (uuc UserUseCase) GetByUsernameOrEmail(username, email string) (*dto.ProfileSearch, error) {
 	return uuc.ur.Find(&model.User{Username: username, Email: email})
+}
+
+func (uuc UserUseCase) GetBySimilarName(name string) ([]*dto.ProfileSearch, error) {
+	return uuc.ur.SearchLikeName(name)
+}
+
+func (uuc UserUseCase) UnsafeGetByID(id uint) (*model.User, error) {
+	return uuc.ur.UnsafeFind(&model.User{ID: id})
+}
+
+func (uuc UserUseCase) UnsafeGetByUsername(username string) (*model.User, error) {
+	return uuc.ur.UnsafeFind(&model.User{Username: username})
+}
+
+func (uuc UserUseCase) UnsafeGetByEmail(email string) (*model.User, error) {
+	return uuc.ur.UnsafeFind(&model.User{Email: email})
+}
+
+func (uuc UserUseCase) UnsafeGetByUsernameOrEmail(username, email string) (*model.User, error) {
+	return uuc.ur.UnsafeFind(&model.User{Username: username, Email: email})
+}
+
+func (uuc UserUseCase) Update(id uint, newModel *dto.UserUpdate) error {
+	return uuc.ur.Update(id, newModel)
 }

@@ -21,10 +21,12 @@ var (
 		DB       string `yaml:"db"`
 		User     string `yaml:"user"`
 		Password string `yaml:"password"`
+		SSLMode  string `yaml:"sslmode"`
 	}
 
-	JWT struct {
-		Secret string `yaml:"secret"`
+	Security struct {
+		BcryptCost int    `yaml:"bcrypt_cost"`
+		JWTSecret  string `yaml:"jwt_secret"`
 	}
 )
 
@@ -41,7 +43,7 @@ func Parse() {
 		log.Fatalf("error: %v", err)
 	}
 
-	if err := yaml.Unmarshal(read("jwt.yaml"), &JWT); err != nil {
+	if err := yaml.Unmarshal(read("security.yaml"), &Security); err != nil {
 		log.Fatalf("error: %v", err)
 	}
 

@@ -2,10 +2,8 @@ package v1
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
@@ -50,7 +48,6 @@ func RegisterHandler(ctx *gin.Context) {
 		return
 	}
 
-	// Just print every time there is an error, no need to check what is the "context"
 	log.Print(err)
 
 	if validationErr, ok := err.(utils.ParamError); ok {
@@ -121,14 +118,7 @@ func LoginHandler(ctx *gin.Context) {
 }
 
 func UpdateUserHandler(ctx *gin.Context) {
-	idFromJWT, _ := ctx.Get("id_from_jwt")
-	id, _ := strconv.Atoi(fmt.Sprintf("%v", idFromJWT))
-	if _, err := usecase.UserInstance.GetByID(uint(id)); err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-	}
+	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
 
 	var body dto.UserUpdate
 
@@ -168,7 +158,7 @@ func UpdateUserHandler(ctx *gin.Context) {
 		}
 	}
 
-	if err := usecase.UserInstance.Update(uint(id), &body); err != nil {
+	if err := usecase.UserInstance.Update(issuer.ID, &body); err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
 		return
@@ -178,9 +168,9 @@ func UpdateUserHandler(ctx *gin.Context) {
 }
 
 func DeleteUserHandler(ctx *gin.Context) {
-	idFromJWT, _ := ctx.Get("id_from_jwt")
-	id, _ := strconv.Atoi(fmt.Sprintf("%v", idFromJWT))
-	if err := usecase.UserInstance.DeleteUser(uint(id)); err != nil {
+	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
+
+	if err := usecase.UserInstance.DeleteUser(issuer.ID); err != nil {
 		log.Print(err)
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "User not found."})

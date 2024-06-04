@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/usecase"
@@ -27,19 +26,9 @@ func newUserRoutes(handler *gin.RouterGroup) {
 }
 
 func GetProfileHandler(ctx *gin.Context) {
-	var issuer *dto.ProfileSearch
-
-	idFromJWT, exists := ctx.Get("id_from_jwt")
-	if exists {
-		id, err := strconv.Atoi(fmt.Sprintf("%v", idFromJWT))
-		if err != nil {
-			log.Print(err)
-		} else {
-			issuer, err = usecase.UserInstance.GetByID(uint(id))
-			if err != nil {
-				log.Print(err)
-			}
-		}
+	var issuer *dto.ProfileSearch = nil
+	if p, exists := ctx.Get("auth_user"); exists {
+		issuer = p.(*dto.ProfileSearch)
 	}
 
 	username := ctx.Param("username")
@@ -66,19 +55,9 @@ func GetProfileHandler(ctx *gin.Context) {
 }
 
 func GetFollowersHandler(ctx *gin.Context) {
-	var issuer *dto.ProfileSearch
-
-	idFromJWT, exists := ctx.Get("id_from_jwt")
-	if exists {
-		id, err := strconv.Atoi(fmt.Sprintf("%v", idFromJWT))
-		if err != nil {
-			log.Print(err)
-		} else {
-			issuer, err = usecase.UserInstance.GetByID(uint(id))
-			if err != nil {
-				log.Print(err)
-			}
-		}
+	var issuer *dto.ProfileSearch = nil
+	if p, exists := ctx.Get("auth_user"); exists {
+		issuer = p.(*dto.ProfileSearch)
 	}
 
 	username := ctx.Param("username")
@@ -115,19 +94,9 @@ func GetFollowersHandler(ctx *gin.Context) {
 }
 
 func GetFollowingHandler(ctx *gin.Context) {
-	var issuer *dto.ProfileSearch
-
-	idFromJWT, exists := ctx.Get("id_from_jwt")
-	if exists {
-		id, err := strconv.Atoi(fmt.Sprintf("%v", idFromJWT))
-		if err != nil {
-			log.Print(err)
-		} else {
-			issuer, err = usecase.UserInstance.GetByID(uint(id))
-			if err != nil {
-				log.Print(err)
-			}
-		}
+	var issuer *dto.ProfileSearch = nil
+	if p, exists := ctx.Get("auth_user"); exists {
+		issuer = p.(*dto.ProfileSearch)
 	}
 
 	username := ctx.Param("username")
@@ -164,9 +133,7 @@ func GetFollowingHandler(ctx *gin.Context) {
 }
 
 func FollowUserHandler(ctx *gin.Context) {
-	idFromJWT, _ := ctx.Get("id_from_jwt")
-	id, _ := strconv.Atoi(fmt.Sprintf("%v", idFromJWT))
-	issuer, _ := usecase.UserInstance.GetByID(uint(id))
+	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
 
 	receiver, err := usecase.UserInstance.GetByUsername(ctx.Param("username"))
 	if err != nil {
@@ -199,9 +166,7 @@ func FollowUserHandler(ctx *gin.Context) {
 }
 
 func UnfollowUserHandler(ctx *gin.Context) {
-	idFromJWT, _ := ctx.Get("id_from_jwt")
-	id, _ := strconv.Atoi(fmt.Sprintf("%v", idFromJWT))
-	issuer, _ := usecase.UserInstance.GetByID(uint(id))
+	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
 
 	receiver, err := usecase.UserInstance.GetByUsername(ctx.Param("username"))
 	if err != nil {

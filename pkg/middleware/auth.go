@@ -3,8 +3,10 @@ package middleware
 import (
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
+	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/usecase"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -20,7 +22,6 @@ func AuthMiddleware(ctx *gin.Context) {
 	}
 
 	claims, err := utils.GetClaimsJWT(tokenString)
-
 	if err != nil {
 		log.Print(err)
 
@@ -28,7 +29,23 @@ func AuthMiddleware(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Set("id_from_jwt", claims.Subject)
+	id, err := strconv.Atoi(claims.Subject)
+	if err != nil || id < 0 {
+		log.Print(err)
+
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	pf, err := usecase.UserInstance.GetByID(uint(id))
+	if pf == nil && err != nil {
+		log.Print(err)
+
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	ctx.Set("auth_user", pf)
 	ctx.Next()
 }
 
@@ -48,6 +65,22 @@ func OptionalAuthMiddleware(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Set("id_from_jwt", claims.Subject)
+	id, err := strconv.Atoi(claims.Subject)
+	if err != nil || id < 0 {
+		log.Print(err)
+
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	pf, err := usecase.UserInstance.GetByID(uint(id))
+	if pf == nil && err != nil {
+		log.Print(err)
+
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	ctx.Set("auth_user", pf)
 	ctx.Next()
 }

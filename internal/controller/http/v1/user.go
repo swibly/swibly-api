@@ -39,7 +39,7 @@ func GetProfileHandler(ctx *gin.Context) {
 	username := ctx.Param("username")
 	user, err := service.User.GetByUsername(username)
 	if err == nil {
-		if !utils.HasPermissions(ctx.Keys["permissions"].([]string), config.Permissions.ManageUser) {
+		if !utils.HasPermissionsByContext(ctx, config.Permissions.ManageUser) {
 			if user.Show.Profile == -1 && (issuer == nil || issuer.ID != user.ID) {
 				ctx.JSON(http.StatusForbidden, gin.H{"error": "User disabled viewing their profile"})
 				return
@@ -80,7 +80,7 @@ func GetFollowersHandler(ctx *gin.Context) {
 		return
 	}
 
-	if !utils.HasPermissions(ctx.Keys["permissions"].([]string), config.Permissions.ManageUser) {
+	if !utils.HasPermissionsByContext(ctx, config.Permissions.ManageUser) {
 		if user.Show.Profile == -1 && (issuer == nil || issuer.ID != user.ID) {
 			ctx.JSON(http.StatusForbidden, gin.H{"error": "User disabled viewing their profile"})
 			return
@@ -121,7 +121,7 @@ func GetFollowingHandler(ctx *gin.Context) {
 		return
 	}
 
-	if !utils.HasPermissions(ctx.Keys["permissions"].([]string), config.Permissions.ManageUser) {
+	if !utils.HasPermissionsByContext(ctx, config.Permissions.ManageUser) {
 		if user.Show.Profile == -1 && (issuer == nil || issuer.ID != user.ID) {
 			ctx.JSON(http.StatusForbidden, gin.H{"error": "User disabled viewing their profile"})
 			return

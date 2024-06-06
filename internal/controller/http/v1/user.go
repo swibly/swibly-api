@@ -17,8 +17,11 @@ func newUserRoutes(handler *gin.RouterGroup) {
 	h := handler.Group("/user")
 	{
 		h.GET("/:username/profile", middleware.OptionalAuthMiddleware, GetProfileHandler)
+
 		h.GET("/:username/followers", middleware.OptionalAuthMiddleware, GetFollowersHandler)
 		h.GET("/:username/following", middleware.OptionalAuthMiddleware, GetFollowingHandler)
+
+		h.GET("/:username/permissions", GetUserPermissions)
 
 		h.POST("/:username/follow", middleware.AuthMiddleware, FollowUserHandler)
 		h.POST("/:username/unfollow", middleware.AuthMiddleware, UnfollowUserHandler)
@@ -130,6 +133,36 @@ func GetFollowingHandler(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, following)
+}
+
+func GetUserPermissions(ctx *gin.Context) {
+	username := ctx.Param("username")
+	user, err := usecase.UserInstance.GetByUsername(username)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "No user found with that username."})
+			return
+		}
+
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		return
+	}
+
+	permissions, err := usecase.PermissionInstance.GetPermissions(user.ID)
+	if err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		return
+	}
+
+	var list []string
+
+	for _, permission := range permissions {
+		list = append(list, permission.Name)
+	}
+
+	ctx.JSON(http.StatusOK, list)
 }
 
 func FollowUserHandler(ctx *gin.Context) {

@@ -18,7 +18,6 @@ func newSearchRoutes(handler *gin.RouterGroup) {
 
 func SearchByNameHandler(ctx *gin.Context) {
 	name := ctx.Query("name")
-  log.Println(name)
 
 	if name == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Cannot find by empty name"})

@@ -30,9 +30,19 @@ func Load() {
 	if err := Postgres.AutoMigrate(
 		&model.User{},
 		&model.Follower{},
+		&model.Permission{},
+		&model.UserPermission{},
 	); err != nil {
 		log.Fatal(err)
 	}
+
+	Postgres.Create([]model.Permission{
+		{Name: "admin"},
+		{Name: "manage_user"},
+		{Name: "manage_permissions"},
+		{Name: "manage_projects"},
+		{Name: "manage_store"},
+	})
 
 	log.Print("Loaded migrations")
 }

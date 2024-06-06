@@ -13,8 +13,6 @@ type User struct {
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 
-	// TODO: Add Role
-
 	FirstName string
 	LastName  string
 	Bio       string

@@ -22,8 +22,9 @@ func (pr permissionRepository) GetPermissions(userID uint) ([]*model.Permission,
 	var permissions []*model.Permission
 
 	err := pr.db.Table("users").
-		Select("users.id, permissions.id, permissions.name").
-		Joins("JOIN permissions ON permissions.id = users.id").
+		Select("permissions.id, permissions.name").
+		Joins("JOIN user_permissions ON user_permissions.user_id = users.id").
+		Joins("JOIN permissions ON permissions.id = user_permissions.permission_id").
 		Where("users.id = ?", userID).
 		Scan(&permissions).Error
 

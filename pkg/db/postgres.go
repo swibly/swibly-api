@@ -37,11 +37,11 @@ func Load() {
 	}
 
 	Postgres.Create([]model.Permission{
-		{Name: "admin"},
-		{Name: "manage_user"},
-		{Name: "manage_permissions"},
-		{Name: "manage_projects"},
-		{Name: "manage_store"},
+		{Name: config.Permissions.Admin},
+		{Name: config.Permissions.ManageUser},
+		{Name: config.Permissions.ManagePermissions},
+		{Name: config.Permissions.ManageProjects},
+		{Name: config.Permissions.ManageStore},
 	})
 
 	log.Print("Loaded migrations")

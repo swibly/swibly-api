@@ -13,8 +13,6 @@ func NewPermissionUseCase() PermissionUseCase {
 	return PermissionUseCase{ur: repository.NewPermissionRepository()}
 }
 
-var PermissionInstance PermissionUseCase
-
 func (p PermissionUseCase) GetPermissions(userID uint) ([]*model.Permission, error) {
 	following, err := p.ur.GetPermissions(userID)
 	return following, err

@@ -7,7 +7,7 @@ import (
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/usecase"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/middleware"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
 	"github.com/gin-gonic/gin"
@@ -35,7 +35,7 @@ func RegisterHandler(ctx *gin.Context) {
 		return
 	}
 
-	user, err := usecase.UserInstance.CreateUser(body.FirstName, body.LastName, body.Username, body.Email, body.Password)
+	user, err := service.User.CreateUser(body.FirstName, body.LastName, body.Username, body.Email, body.Password)
 
 	if err == nil {
 		if token, err := utils.GenerateJWT(user.ID); err != nil {
@@ -82,7 +82,7 @@ func LoginHandler(ctx *gin.Context) {
 		return
 	}
 
-	user, err := usecase.UserInstance.UnsafeGetByUsernameOrEmail(body.Username, body.Email)
+	user, err := service.User.UnsafeGetByUsernameOrEmail(body.Username, body.Email)
 
 	if err != nil {
 		log.Print(err)
@@ -137,14 +137,14 @@ func UpdateUserHandler(ctx *gin.Context) {
 	}
 
 	if body.Username != "" {
-		if profile, err := usecase.UserInstance.GetByUsername(body.Username); profile != nil && err == nil {
+		if profile, err := service.User.GetByUsername(body.Username); profile != nil && err == nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "An user with that username already exists"})
 			return
 		}
 	}
 
 	if body.Email != "" {
-		if profile, err := usecase.UserInstance.GetByEmail(body.Email); profile != nil && err == nil {
+		if profile, err := service.User.GetByEmail(body.Email); profile != nil && err == nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "An user with that email already exists"})
 			return
 		}
@@ -158,7 +158,7 @@ func UpdateUserHandler(ctx *gin.Context) {
 		}
 	}
 
-	if err := usecase.UserInstance.Update(issuer.ID, &body); err != nil {
+	if err := service.User.Update(issuer.ID, &body); err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
 		return
@@ -170,7 +170,7 @@ func UpdateUserHandler(ctx *gin.Context) {
 func DeleteUserHandler(ctx *gin.Context) {
 	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
 
-	if err := usecase.UserInstance.DeleteUser(issuer.ID); err != nil {
+	if err := service.User.DeleteUser(issuer.ID); err != nil {
 		log.Print(err)
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "User not found."})

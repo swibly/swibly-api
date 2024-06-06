@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/usecase"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -24,7 +24,7 @@ func SearchByNameHandler(ctx *gin.Context) {
 		return
 	}
 
-	users, err := usecase.UserInstance.GetBySimilarName(name)
+	users, err := service.User.GetBySimilarName(name)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "No user found with that name."})

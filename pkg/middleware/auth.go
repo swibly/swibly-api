@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/usecase"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -37,7 +37,7 @@ func AuthMiddleware(ctx *gin.Context) {
 		return
 	}
 
-	pf, err := usecase.UserInstance.GetByID(uint(id))
+	pf, err := service.User.GetByID(uint(id))
 	if pf == nil && err != nil {
 		log.Print(err)
 
@@ -73,7 +73,7 @@ func OptionalAuthMiddleware(ctx *gin.Context) {
 		return
 	}
 
-	pf, err := usecase.UserInstance.GetByID(uint(id))
+	pf, err := service.User.GetByID(uint(id))
 	if pf == nil && err != nil {
 		log.Print(err)
 

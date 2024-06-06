@@ -18,8 +18,6 @@ func NewUserUseCase() UserUseCase {
 	return UserUseCase{ur: repository.NewUserRepository()}
 }
 
-var UserInstance UserUseCase
-
 func (uuc UserUseCase) CreateUser(firstname, lastname, username, email, password string) (*model.User, error) {
 	newUser := model.User{
 		FirstName: firstname,

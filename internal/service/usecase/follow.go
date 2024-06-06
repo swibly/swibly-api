@@ -13,8 +13,6 @@ func NewFollowUseCase() FollowUseCase {
 	return FollowUseCase{fr: repository.NewFollowRepository()}
 }
 
-var FollowInstance FollowUseCase
-
 func (f FollowUseCase) FollowUser(followingID, followerID uint) error {
 	if err := f.fr.Follow(followingID, followerID); err != nil {
 		return err

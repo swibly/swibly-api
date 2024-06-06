@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/usecase"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/middleware"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -35,7 +35,7 @@ func GetProfileHandler(ctx *gin.Context) {
 	}
 
 	username := ctx.Param("username")
-	user, err := usecase.UserInstance.GetByUsername(username)
+	user, err := service.User.GetByUsername(username)
 	if err == nil {
 		if user.Show.Profile == -1 && (issuer == nil || issuer.ID != user.ID) {
 			ctx.JSON(http.StatusForbidden, gin.H{"error": "User disabled viewing their profile"})
@@ -64,7 +64,7 @@ func GetFollowersHandler(ctx *gin.Context) {
 	}
 
 	username := ctx.Param("username")
-	user, err := usecase.UserInstance.GetByUsername(username)
+	user, err := service.User.GetByUsername(username)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "No user found with that username."})
@@ -86,7 +86,7 @@ func GetFollowersHandler(ctx *gin.Context) {
 		return
 	}
 
-	followers, err := usecase.FollowInstance.GetFollowers(user.ID)
+	followers, err := service.Follow.GetFollowers(user.ID)
 	if err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
@@ -103,7 +103,7 @@ func GetFollowingHandler(ctx *gin.Context) {
 	}
 
 	username := ctx.Param("username")
-	user, err := usecase.UserInstance.GetByUsername(username)
+	user, err := service.User.GetByUsername(username)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "No user found with that username."})
@@ -125,7 +125,7 @@ func GetFollowingHandler(ctx *gin.Context) {
 		return
 	}
 
-	following, err := usecase.FollowInstance.GetFollowing(user.ID)
+	following, err := service.Follow.GetFollowing(user.ID)
 	if err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
@@ -137,7 +137,7 @@ func GetFollowingHandler(ctx *gin.Context) {
 
 func GetUserPermissions(ctx *gin.Context) {
 	username := ctx.Param("username")
-	user, err := usecase.UserInstance.GetByUsername(username)
+	user, err := service.User.GetByUsername(username)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "No user found with that username."})
@@ -149,7 +149,7 @@ func GetUserPermissions(ctx *gin.Context) {
 		return
 	}
 
-	permissions, err := usecase.PermissionInstance.GetPermissions(user.ID)
+	permissions, err := service.Permission.GetPermissions(user.ID)
 	if err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
@@ -168,7 +168,7 @@ func GetUserPermissions(ctx *gin.Context) {
 func FollowUserHandler(ctx *gin.Context) {
 	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
 
-	receiver, err := usecase.UserInstance.GetByUsername(ctx.Param("username"))
+	receiver, err := service.User.GetByUsername(ctx.Param("username"))
 	if err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user"})
@@ -180,7 +180,7 @@ func FollowUserHandler(ctx *gin.Context) {
 		return
 	}
 
-	if exists, err := usecase.FollowInstance.Exists(receiver.ID, issuer.ID); err != nil {
+	if exists, err := service.Follow.Exists(receiver.ID, issuer.ID); err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
 		return
@@ -189,7 +189,7 @@ func FollowUserHandler(ctx *gin.Context) {
 		return
 	}
 
-	if err := usecase.FollowInstance.FollowUser(receiver.ID, issuer.ID); err != nil {
+	if err := service.Follow.FollowUser(receiver.ID, issuer.ID); err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
 		return
@@ -201,7 +201,7 @@ func FollowUserHandler(ctx *gin.Context) {
 func UnfollowUserHandler(ctx *gin.Context) {
 	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
 
-	receiver, err := usecase.UserInstance.GetByUsername(ctx.Param("username"))
+	receiver, err := service.User.GetByUsername(ctx.Param("username"))
 	if err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user"})
@@ -213,7 +213,7 @@ func UnfollowUserHandler(ctx *gin.Context) {
 		return
 	}
 
-	if exists, err := usecase.FollowInstance.Exists(receiver.ID, issuer.ID); err != nil {
+	if exists, err := service.Follow.Exists(receiver.ID, issuer.ID); err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
 		return
@@ -222,7 +222,7 @@ func UnfollowUserHandler(ctx *gin.Context) {
 		return
 	}
 
-	if err := usecase.FollowInstance.UnfollowUser(receiver.ID, issuer.ID); err != nil {
+	if err := service.Follow.UnfollowUser(receiver.ID, issuer.ID); err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
 		return

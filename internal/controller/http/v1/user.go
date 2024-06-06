@@ -6,9 +6,11 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/middleware"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -16,10 +18,10 @@ import (
 func newUserRoutes(handler *gin.RouterGroup) {
 	h := handler.Group("/user")
 	{
-		h.GET("/:username/profile", middleware.OptionalAuthMiddleware, GetProfileHandler)
+		h.GET("/:username/profile", middleware.OptionalAuthMiddleware, middleware.GetPermissionsMiddleware, GetProfileHandler)
 
-		h.GET("/:username/followers", middleware.OptionalAuthMiddleware, GetFollowersHandler)
-		h.GET("/:username/following", middleware.OptionalAuthMiddleware, GetFollowingHandler)
+		h.GET("/:username/followers", middleware.OptionalAuthMiddleware, middleware.GetPermissionsMiddleware, GetFollowersHandler)
+		h.GET("/:username/following", middleware.OptionalAuthMiddleware, middleware.GetPermissionsMiddleware, GetFollowingHandler)
 
 		h.GET("/:username/permissions", GetUserPermissions)
 
@@ -37,9 +39,11 @@ func GetProfileHandler(ctx *gin.Context) {
 	username := ctx.Param("username")
 	user, err := service.User.GetByUsername(username)
 	if err == nil {
-		if user.Show.Profile == -1 && (issuer == nil || issuer.ID != user.ID) {
-			ctx.JSON(http.StatusForbidden, gin.H{"error": "User disabled viewing their profile"})
-			return
+		if !utils.HasPermissions(ctx.Keys["permissions"].([]string), config.Permissions.ManageUser) {
+			if user.Show.Profile == -1 && (issuer == nil || issuer.ID != user.ID) {
+				ctx.JSON(http.StatusForbidden, gin.H{"error": "User disabled viewing their profile"})
+				return
+			}
 		}
 
 		ctx.JSON(http.StatusOK, user)
@@ -76,14 +80,16 @@ func GetFollowersHandler(ctx *gin.Context) {
 		return
 	}
 
-	if user.Show.Profile == -1 && (issuer == nil || issuer.ID != user.ID) {
-		ctx.JSON(http.StatusForbidden, gin.H{"error": "User disabled viewing their profile"})
-		return
-	}
+	if !utils.HasPermissions(ctx.Keys["permissions"].([]string), config.Permissions.ManageUser) {
+		if user.Show.Profile == -1 && (issuer == nil || issuer.ID != user.ID) {
+			ctx.JSON(http.StatusForbidden, gin.H{"error": "User disabled viewing their profile"})
+			return
+		}
 
-	if user.Show.Followers == -1 && (issuer == nil || issuer.ID != user.ID) {
-		ctx.JSON(http.StatusForbidden, gin.H{"error": "User disabled viewing whom are following them"})
-		return
+		if user.Show.Followers == -1 && (issuer == nil || issuer.ID != user.ID) {
+			ctx.JSON(http.StatusForbidden, gin.H{"error": "User disabled viewing whom are following them"})
+			return
+		}
 	}
 
 	followers, err := service.Follow.GetFollowers(user.ID)
@@ -115,14 +121,16 @@ func GetFollowingHandler(ctx *gin.Context) {
 		return
 	}
 
-	if user.Show.Profile == -1 && (issuer == nil || issuer.ID != user.ID) {
-		ctx.JSON(http.StatusForbidden, gin.H{"error": "User disabled viewing their profile"})
-		return
-	}
+	if !utils.HasPermissions(ctx.Keys["permissions"].([]string), config.Permissions.ManageUser) {
+		if user.Show.Profile == -1 && (issuer == nil || issuer.ID != user.ID) {
+			ctx.JSON(http.StatusForbidden, gin.H{"error": "User disabled viewing their profile"})
+			return
+		}
 
-	if user.Show.Following == -1 && (issuer == nil || issuer.ID != user.ID) {
-		ctx.JSON(http.StatusForbidden, gin.H{"error": "User disabled viewing whom they are following"})
-		return
+		if user.Show.Following == -1 && (issuer == nil || issuer.ID != user.ID) {
+			ctx.JSON(http.StatusForbidden, gin.H{"error": "User disabled viewing whom they are following"})
+			return
+		}
 	}
 
 	following, err := service.Follow.GetFollowing(user.ID)

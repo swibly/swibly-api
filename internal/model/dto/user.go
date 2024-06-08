@@ -1,5 +1,7 @@
 package dto
 
+import "github.com/devkcud/arkhon-foundation/arkhon-api/pkg/language"
+
 type UserRegister struct {
 	FirstName string `validate:"required,min=3"                  json:"firstname"`
 	LastName  string `validate:"required,min=3"                  json:"lastname"`
@@ -29,4 +31,6 @@ type UserUpdate struct {
 
 	// NOTE: Notification and Show structs will be in another method/route to update
 	//       due to the nature of structs being a pain in the ass to work with :/
+
+  Language language.Language `validate:"mustbesupportedlanguage" json:"language"`
 }

@@ -3,7 +3,9 @@ package utils
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
+	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/language"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -20,6 +22,16 @@ func (pe ParamError) Error() string {
 
 func newValidator() *validator.Validate {
 	vv := validator.New()
+
+	vv.RegisterValidation("mustbesupportedlanguage", func(fl validator.FieldLevel) bool {
+		lang := fl.Field().String()
+
+		if lang != string(language.EN) && lang != string(language.PT) && lang != string(language.RU) {
+			return false
+		}
+
+		return true
+	})
 
 	vv.RegisterValidation("username", func(fl validator.FieldLevel) bool {
 		if fl.Field().Len() > 32 {
@@ -94,6 +106,11 @@ func ValidateErrorMessage(fe validator.FieldError) ParamError {
 		return ParamError{
 			Param:   fe.Field(),
 			Message: fmt.Sprintf("%s is required", fe.Field()),
+		}
+	case "mustbesupportedlanguage":
+		return ParamError{
+			Param:   fe.Field(),
+			Message: fmt.Sprintf("%s must be %s", fe.Field(), strings.Join(language.ArrayString, ",")),
 		}
 	case "username":
 		return ParamError{

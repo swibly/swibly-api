@@ -47,7 +47,7 @@ type User struct {
 		Formations int `gorm:"default:1"`
 	} `gorm:"embedded;embeddedPrefix:show_"`
 
-	// TODO: Implement Country (country shouldnt be an enum)
+	Country string // Country can be anything really
 
 	Language language.Language `gorm:"type:enum_language;default:pt"`
 }

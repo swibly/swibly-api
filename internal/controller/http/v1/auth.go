@@ -35,6 +35,14 @@ func RegisterHandler(ctx *gin.Context) {
 		return
 	}
 
+	if errs := utils.ValidateStruct(&body); errs != nil {
+		err := utils.ValidateErrorMessage(errs[0])
+
+		log.Print(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": gin.H{err.Param: err.Message}})
+		return
+	}
+
 	user, err := service.User.CreateUser(body.FirstName, body.LastName, body.Username, body.Email, body.Password)
 
 	if err == nil {

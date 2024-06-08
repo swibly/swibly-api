@@ -32,5 +32,5 @@ type UserUpdate struct {
 	// NOTE: Notification and Show structs will be in another method/route to update
 	//       due to the nature of structs being a pain in the ass to work with :/
 
-  Language language.Language `validate:"mustbesupportedlanguage" json:"language"`
+  Language language.Language `validate:"omitempty,mustbesupportedlanguage" json:"language"`
 }

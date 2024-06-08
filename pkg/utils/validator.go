@@ -110,7 +110,7 @@ func ValidateErrorMessage(fe validator.FieldError) ParamError {
 	case "mustbesupportedlanguage":
 		return ParamError{
 			Param:   fe.Field(),
-			Message: fmt.Sprintf("%s must be %s", fe.Field(), strings.Join(language.ArrayString, ",")),
+			Message: fmt.Sprintf("%s must be %s", fe.Field(), strings.Join(language.ArrayString, ", ")),
 		}
 	case "username":
 		return ParamError{

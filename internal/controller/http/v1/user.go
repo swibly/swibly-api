@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
@@ -92,14 +93,27 @@ func GetFollowersHandler(ctx *gin.Context) {
 		}
 	}
 
-	followers, err := service.Follow.GetFollowers(user.ID)
+	var (
+		page     int = 1
+		pageSize int = 10
+	)
+
+	if i, e := strconv.Atoi(ctx.Query("page")); e == nil && ctx.Query("page") != "" {
+		page = i
+	}
+
+	if i, e := strconv.Atoi(ctx.Query("pageSize")); e == nil && ctx.Query("pageSize") != "" {
+		pageSize = i
+	}
+
+	pagination, err := service.Follow.GetFollowers(user.ID, page, pageSize)
 	if err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, followers)
+	ctx.JSON(http.StatusOK, pagination)
 }
 
 func GetFollowingHandler(ctx *gin.Context) {
@@ -133,14 +147,27 @@ func GetFollowingHandler(ctx *gin.Context) {
 		}
 	}
 
-	following, err := service.Follow.GetFollowing(user.ID)
+	var (
+		page     int = 1
+		pageSize int = 10
+	)
+
+	if i, e := strconv.Atoi(ctx.Query("page")); e == nil && ctx.Query("page") != "" {
+		page = i
+	}
+
+	if i, e := strconv.Atoi(ctx.Query("pageSize")); e == nil && ctx.Query("pageSize") != "" {
+		pageSize = i
+	}
+
+	pagination, err := service.Follow.GetFollowing(user.ID, page, pageSize)
 	if err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, following)
+	ctx.JSON(http.StatusOK, pagination)
 }
 
 func GetUserPermissions(ctx *gin.Context) {

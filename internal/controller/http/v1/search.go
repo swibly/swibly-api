@@ -27,18 +27,18 @@ func SearchByNameHandler(ctx *gin.Context) {
 
 	var (
 		page     int = 1
-		pageSize int = 10
+		perpage int = 10
 	)
 
 	if i, e := strconv.Atoi(ctx.Query("page")); e == nil && ctx.Query("page") != "" {
 		page = i
 	}
 
-	if i, e := strconv.Atoi(ctx.Query("pageSize")); e == nil && ctx.Query("pageSize") != "" {
-		pageSize = i
+	if i, e := strconv.Atoi(ctx.Query("perpage")); e == nil && ctx.Query("perpage") != "" {
+		perpage = i
 	}
 
-	users, err := service.User.GetBySimilarName(name, page, pageSize)
+	users, err := service.User.GetBySimilarName(name, page, perpage)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "No user found with that name."})

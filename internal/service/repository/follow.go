@@ -17,8 +17,8 @@ type FollowRepository interface {
 	Follow(followingID, followerID uint) error
 	Unfollow(followingID, followerID uint) error
 	Exists(followingID, followerID uint) (bool, error)
-	GetFollowers(userID uint, page int, pageSize int) (*dto.Pagination[dto.Follower], error)
-	GetFollowing(userID uint, page int, pageSize int) (*dto.Pagination[dto.Follower], error)
+	GetFollowers(userID uint, page, perpage int) (*dto.Pagination[dto.Follower], error)
+	GetFollowing(userID uint, page, perpage int) (*dto.Pagination[dto.Follower], error)
 	GetFollowersCount(userID uint) (int64, error)
 	GetFollowingCount(userID uint) (int64, error)
 }
@@ -43,7 +43,7 @@ func (f followRepository) Exists(followingID, followerID uint) (bool, error) {
 
 // TODO: Make sure show_profile is enabled
 
-func (f followRepository) GetFollowers(userID uint, page int, pageSize int) (*dto.Pagination[dto.Follower], error) {
+func (f followRepository) GetFollowers(userID uint, page int, perpage int) (*dto.Pagination[dto.Follower], error) {
 	var followers []*dto.Follower
 
 	var totalRecords int64
@@ -56,7 +56,7 @@ func (f followRepository) GetFollowers(userID uint, page int, pageSize int) (*dt
 		return nil, err
 	}
 
-	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(perpage)))
 
 	if page < 1 {
 		page = 1
@@ -64,14 +64,14 @@ func (f followRepository) GetFollowers(userID uint, page int, pageSize int) (*dt
 		page = totalPages
 	}
 
-	offset := (page - 1) * pageSize
+	offset := (page - 1) * perpage
 
 	err = f.db.Table("users").
 		Select("users.*, followers.since").
 		Joins("JOIN followers ON followers.follower_id = users.id").
 		Where("users.id = ?", userID).
 		Offset(offset).
-		Limit(pageSize).
+		Limit(perpage).
 		Scan(&followers).Error
 
 	if err != nil {
@@ -105,7 +105,7 @@ func (f followRepository) GetFollowers(userID uint, page int, pageSize int) (*dt
 	return pagination, nil
 }
 
-func (f followRepository) GetFollowing(userID uint, page int, pageSize int) (*dto.Pagination[dto.Follower], error) {
+func (f followRepository) GetFollowing(userID uint, page int, perpage int) (*dto.Pagination[dto.Follower], error) {
 	var followers []*dto.Follower
 
 	var totalRecords int64
@@ -118,7 +118,7 @@ func (f followRepository) GetFollowing(userID uint, page int, pageSize int) (*dt
 		return nil, err
 	}
 
-	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(perpage)))
 
 	if page < 1 {
 		page = 1
@@ -126,14 +126,14 @@ func (f followRepository) GetFollowing(userID uint, page int, pageSize int) (*dt
 		page = totalPages
 	}
 
-	offset := (page - 1) * pageSize
+	offset := (page - 1) * perpage
 
 	err = f.db.Table("users").
 		Select("users.*, followers.since").
 		Joins("JOIN followers ON followers.following_id = users.id").
 		Where("users.id = ?", userID).
 		Offset(offset).
-		Limit(pageSize).
+		Limit(perpage).
 		Scan(&followers).Error
 
 	if err != nil {

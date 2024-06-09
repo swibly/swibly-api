@@ -95,18 +95,18 @@ func GetFollowersHandler(ctx *gin.Context) {
 
 	var (
 		page     int = 1
-		pageSize int = 10
+		perpage int = 10
 	)
 
 	if i, e := strconv.Atoi(ctx.Query("page")); e == nil && ctx.Query("page") != "" {
 		page = i
 	}
 
-	if i, e := strconv.Atoi(ctx.Query("pageSize")); e == nil && ctx.Query("pageSize") != "" {
-		pageSize = i
+	if i, e := strconv.Atoi(ctx.Query("perpage")); e == nil && ctx.Query("perpage") != "" {
+		perpage = i
 	}
 
-	pagination, err := service.Follow.GetFollowers(user.ID, page, pageSize)
+	pagination, err := service.Follow.GetFollowers(user.ID, page, perpage)
 	if err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
@@ -149,18 +149,18 @@ func GetFollowingHandler(ctx *gin.Context) {
 
 	var (
 		page     int = 1
-		pageSize int = 10
+		perpage int = 10
 	)
 
 	if i, e := strconv.Atoi(ctx.Query("page")); e == nil && ctx.Query("page") != "" {
 		page = i
 	}
 
-	if i, e := strconv.Atoi(ctx.Query("pageSize")); e == nil && ctx.Query("pageSize") != "" {
-		pageSize = i
+	if i, e := strconv.Atoi(ctx.Query("perpage")); e == nil && ctx.Query("perpage") != "" {
+		perpage = i
 	}
 
-	pagination, err := service.Follow.GetFollowing(user.ID, page, pageSize)
+	pagination, err := service.Follow.GetFollowing(user.ID, page, perpage)
 	if err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})

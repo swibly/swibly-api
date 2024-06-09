@@ -21,7 +21,7 @@ type UserRepository interface {
 	Update(uint, *dto.UserUpdate) error
 	UnsafeFind(*model.User) (*model.User, error)
 	Find(*model.User) (*dto.ProfileSearch, error)
-	SearchLikeName(name string, page, pageSize int) (*dto.Pagination[dto.ProfileSearch], error)
+	SearchLikeName(name string, page, perpage int) (*dto.Pagination[dto.ProfileSearch], error)
 	Delete(uint) error
 }
 
@@ -74,7 +74,7 @@ func (u userRepository) Find(searchModel *model.User) (*dto.ProfileSearch, error
 	return user, nil
 }
 
-func (u userRepository) SearchLikeName(name string, page, pageSize int) (*dto.Pagination[dto.ProfileSearch], error) {
+func (u userRepository) SearchLikeName(name string, page, perpage int) (*dto.Pagination[dto.ProfileSearch], error) {
 	var users []*dto.ProfileSearch
 
 	// Overcomplicated query to search users in all the params (separated by spaces)
@@ -103,14 +103,14 @@ func (u userRepository) SearchLikeName(name string, page, pageSize int) (*dto.Pa
 		return nil, err
 	}
 
-	offset := (page - 1) * pageSize
-	limit := pageSize
+	offset := (page - 1) * perpage
+	limit := perpage
 
 	if err := query.Limit(limit).Offset(offset).Find(&users).Error; err != nil {
 		return nil, err
 	}
 
-	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(perpage)))
 
 	if page < 1 {
 		page = 1

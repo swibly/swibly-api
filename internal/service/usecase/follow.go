@@ -29,16 +29,16 @@ func (f FollowUseCase) UnfollowUser(followingID, followerID uint) error {
 	return nil
 }
 
-func (f FollowUseCase) GetFollowers(userID uint, page int, pageSize int) (*dto.Pagination[dto.Follower], error) {
-	return f.fr.GetFollowers(userID, page, pageSize)
+func (f FollowUseCase) GetFollowers(userID uint, page, perpage int) (*dto.Pagination[dto.Follower], error) {
+	return f.fr.GetFollowers(userID, page, perpage)
 }
 
-func (f FollowUseCase) GetFollowing(userID uint, page int, pageSize int) (*dto.Pagination[dto.Follower], error) {
-	return f.fr.GetFollowing(userID, page, pageSize)
+func (f FollowUseCase) GetFollowing(userID uint, page, perpage int) (*dto.Pagination[dto.Follower], error) {
+	return f.fr.GetFollowing(userID, page, perpage)
 }
 
-func (f FollowUseCase) GetFollowersCount(userID uint, page int, pageSize int) (*dto.Pagination[dto.Follower], error) {
-	return f.fr.GetFollowers(userID, page, pageSize)
+func (f FollowUseCase) GetFollowersCount(userID uint, page int, perpage int) (*dto.Pagination[dto.Follower], error) {
+	return f.fr.GetFollowers(userID, page, perpage)
 }
 
 func (f FollowUseCase) GetFollowingCount(userID uint) (int64, error) {

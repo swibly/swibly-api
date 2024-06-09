@@ -23,7 +23,7 @@ func typeCheckAndCreate(db *gorm.DB, typeName string, values []string) error {
 	}
 
 	if !typeExists {
-		err := db.Exec("CREATE TYPE %s AS ENUM (%s)", typeName, strings.Join(values, ", ")).Error
+		err := db.Exec(fmt.Sprintf("CREATE TYPE %s AS ENUM ('%s')", typeName, strings.Join(values, "', '"))).Error
 		if err != nil {
 			return fmt.Errorf("error creating type: %w", err)
 		}

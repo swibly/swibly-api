@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
 	"github.com/gin-gonic/gin"
@@ -24,7 +25,20 @@ func SearchByNameHandler(ctx *gin.Context) {
 		return
 	}
 
-	users, err := service.User.GetBySimilarName(name)
+	var (
+		page     int = 1
+		pageSize int = 10
+	)
+
+	if i, e := strconv.Atoi(ctx.Query("page")); e == nil && ctx.Query("page") != "" {
+		page = i
+	}
+
+	if i, e := strconv.Atoi(ctx.Query("pageSize")); e == nil && ctx.Query("pageSize") != "" {
+		pageSize = i
+	}
+
+	users, err := service.User.GetBySimilarName(name, page, pageSize)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "No user found with that name."})

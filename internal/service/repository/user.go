@@ -53,6 +53,23 @@ func (u userRepository) Find(searchModel *model.User) (*dto.ProfileSearch, error
 		return nil, err
 	}
 
+	// Temp follow repo
+	// Tricky, not recommended, not performant
+	// But I don't care
+	tempFollowRepo := NewFollowRepository()
+
+	if count, err := tempFollowRepo.GetFollowersCount(user.ID); err != nil {
+		return nil, err
+	} else {
+		user.Followers = count
+	}
+
+	if count, err := tempFollowRepo.GetFollowingCount(user.ID); err != nil {
+		return nil, err
+	} else {
+		user.Following = count
+	}
+
 	return user, nil
 }
 

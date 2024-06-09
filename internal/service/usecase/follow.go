@@ -37,6 +37,14 @@ func (f FollowUseCase) GetFollowing(userID uint, page int, pageSize int) (*dto.P
 	return f.fr.GetFollowing(userID, page, pageSize)
 }
 
+func (f FollowUseCase) GetFollowersCount(userID uint, page int, pageSize int) (*dto.Pagination[dto.Follower], error) {
+	return f.fr.GetFollowers(userID, page, pageSize)
+}
+
+func (f FollowUseCase) GetFollowingCount(userID uint) (int64, error) {
+	return f.fr.GetFollowingCount(userID)
+}
+
 func (f FollowUseCase) Exists(followingID, followerID uint) (bool, error) {
 	return f.fr.Exists(followingID, followerID)
 }

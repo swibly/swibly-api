@@ -19,6 +19,8 @@ type FollowRepository interface {
 	Exists(followingID, followerID uint) (bool, error)
 	GetFollowers(userID uint, page int, pageSize int) (*dto.Pagination[dto.Follower], error)
 	GetFollowing(userID uint, page int, pageSize int) (*dto.Pagination[dto.Follower], error)
+	GetFollowersCount(userID uint) (int64, error)
+	GetFollowingCount(userID uint) (int64, error)
 }
 
 func NewFollowRepository() FollowRepository {
@@ -163,4 +165,32 @@ func (f followRepository) GetFollowing(userID uint, page int, pageSize int) (*dt
 	}
 
 	return pagination, nil
+}
+
+func (f followRepository) GetFollowersCount(userID uint) (int64, error) {
+	var totalRecords int64
+
+	err := f.db.Model(&dto.Follower{}).
+		Joins("JOIN users ON users.id = followers.follower_id").
+		Where("users.id = ?", userID).
+		Count(&totalRecords).Error
+	if err != nil {
+		return 0, err
+	}
+
+	return totalRecords, nil
+}
+
+func (f followRepository) GetFollowingCount(userID uint) (int64, error) {
+	var totalRecords int64
+
+	err := f.db.Model(&dto.Follower{}).
+		Joins("JOIN users ON users.id = followers.following_id").
+		Where("users.id = ?", userID).
+		Count(&totalRecords).Error
+	if err != nil {
+		return 0, err
+	}
+
+	return totalRecords, nil
 }

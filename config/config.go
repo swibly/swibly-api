@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v3"
@@ -39,18 +40,19 @@ var (
 )
 
 func Parse() {
-	if checkEnvVars(
+	if missingVars := checkEnvVars(
 		"POSTGRES_HOST",
 		"POSTGRES_DB",
 		"POSTGRES_USER",
 		"POSTGRES_PASSWORD",
 		"POSTGRES_SSLMODE",
 		"JWT_SECRET",
-	) {
+	); len(missingVars) > 0 {
+		log.Println("You can override the following env variables to get rid of this error:")
+		log.Println(strings.Join(missingVars, ", "))
+		log.Println("Loading .env file...")
 		if err := godotenv.Load(); err != nil {
-			log.Println("You can override the following env variables to get rid of this error:")
-			log.Println("POSTGRES_HOST, POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_SSLMODE, JWT_SECRET")
-			log.Fatalf("error: %v", err)
+			log.Printf("Error loading .env file: %v", err)
 		}
 	}
 
@@ -82,12 +84,16 @@ func read(file string) []byte {
 	return []byte(os.ExpandEnv(string(data)))
 }
 
-func checkEnvVars(vars ...string) bool {
+func checkEnvVars(vars ...string) []string {
+	missingVars := []string{}
 	for _, v := range vars {
 		if _, exists := os.LookupEnv(v); !exists {
-			return false
+			missingVars = append(missingVars, v)
 		}
 	}
-
-	return true
+	if len(missingVars) > 0 {
+		log.Printf("Missing environment variables: %s", strings.Join(missingVars, ", "))
+		return missingVars
+	}
+	return nil
 }

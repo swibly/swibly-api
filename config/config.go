@@ -48,6 +48,8 @@ func Parse() {
 		"JWT_SECRET",
 	) {
 		if err := godotenv.Load(); err != nil {
+			log.Println("You can override the following env variables to get rid of this error:")
+			log.Println("POSTGRES_HOST, POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_SSLMODE, JWT_SECRET")
 			log.Fatalf("error: %v", err)
 		}
 	}

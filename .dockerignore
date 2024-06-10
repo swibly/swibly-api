@@ -1,0 +1,4 @@
+/build/
+/pgdata/
+/Makefile
+/docker-compose.yml

@@ -103,19 +103,19 @@ func (u userRepository) SearchLikeName(name string, page, perpage int) (*dto.Pag
 		return nil, err
 	}
 
-	offset := (page - 1) * perpage
-	limit := perpage
-
-	if err := query.Limit(limit).Offset(offset).Find(&users).Error; err != nil {
-		return nil, err
-	}
-
 	totalPages := int(math.Ceil(float64(totalRecords) / float64(perpage)))
 
 	if page < 1 {
 		page = 1
 	} else if page > totalPages {
 		page = totalPages
+	}
+
+	offset := (page - 1) * perpage
+	limit := perpage
+
+	if err := query.Limit(limit).Offset(offset).Find(&users).Error; err != nil {
+		return nil, err
 	}
 
 	pagination := &dto.Pagination[dto.ProfileSearch]{
@@ -127,19 +127,12 @@ func (u userRepository) SearchLikeName(name string, page, perpage int) (*dto.Pag
 		PreviousPage: page - 1,
 	}
 
-	if totalRecords == 0 {
+	if pagination.NextPage > totalPages {
 		pagination.NextPage = -1
-		pagination.PreviousPage = -1
-	} else {
-		pagination.NextPage = page + 1
-		if pagination.NextPage > totalPages {
-			pagination.NextPage = -1
-		}
+	}
 
-		pagination.PreviousPage = page - 1
-		if pagination.PreviousPage < 1 {
-			pagination.PreviousPage = -1
-		}
+	if pagination.PreviousPage < 1 {
+		pagination.PreviousPage = -1
 	}
 
 	return pagination, nil

@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
 	"github.com/gin-gonic/gin"
@@ -20,13 +21,13 @@ func newSearchRoutes(handler *gin.RouterGroup) {
 func SearchByNameHandler(ctx *gin.Context) {
 	name := ctx.Query("name")
 
-	if name == "" {
+	if strings.TrimSpace(name) == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Cannot find by empty name"})
 		return
 	}
 
 	var (
-		page     int = 1
+		page    int = 1
 		perpage int = 10
 	)
 

@@ -21,6 +21,7 @@ ENV JWT_SECRET=jwtsecret
 WORKDIR /root/
 
 COPY --from=builder /app/cmd/api/main .
+COPY config /root/config
 
 EXPOSE 8080
 

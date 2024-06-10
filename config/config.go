@@ -39,8 +39,17 @@ var (
 )
 
 func Parse() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatalf("error: %v", err)
+	if checkEnvVars(
+		"POSTGRES_HOST",
+		"POSTGRES_DB",
+		"POSTGRES_USER",
+		"POSTGRES_PASSWORD",
+		"POSTGRES_SSLMODE",
+		"JWT_SECRET",
+	) {
+		if err := godotenv.Load(); err != nil {
+			log.Fatalf("error: %v", err)
+		}
 	}
 
 	if err := yaml.Unmarshal(read("router.yaml"), &Router); err != nil {
@@ -69,4 +78,14 @@ func read(file string) []byte {
 	}
 
 	return []byte(os.ExpandEnv(string(data)))
+}
+
+func checkEnvVars(vars ...string) bool {
+	for _, v := range vars {
+		if _, exists := os.LookupEnv(v); !exists {
+			return false
+		}
+	}
+
+	return true
 }

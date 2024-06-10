@@ -2,6 +2,7 @@ package repository
 
 import (
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
@@ -20,7 +21,7 @@ type UserRepository interface {
 	Update(uint, *dto.UserUpdate) error
 	UnsafeFind(*model.User) (*model.User, error)
 	Find(*model.User) (*dto.ProfileSearch, error)
-	SearchLikeName(string) ([]*dto.ProfileSearch, error)
+	SearchLikeName(name string, page, perpage int) (*dto.Pagination[dto.ProfileSearch], error)
 	Delete(uint) error
 }
 
@@ -53,26 +54,40 @@ func (u userRepository) Find(searchModel *model.User) (*dto.ProfileSearch, error
 		return nil, err
 	}
 
+	// Temp follow repo
+	// Tricky, not recommended, not performant
+	// But I don't care
+	tempFollowRepo := NewFollowRepository()
+
+	if count, err := tempFollowRepo.GetFollowersCount(user.ID); err != nil {
+		return nil, err
+	} else {
+		user.Followers = count
+	}
+
+	if count, err := tempFollowRepo.GetFollowingCount(user.ID); err != nil {
+		return nil, err
+	} else {
+		user.Following = count
+	}
+
 	return user, nil
 }
 
-func (u userRepository) SearchLikeName(name string) ([]*dto.ProfileSearch, error) {
+func (u userRepository) SearchLikeName(name string, page, perpage int) (*dto.Pagination[dto.ProfileSearch], error) {
 	var users []*dto.ProfileSearch
 
 	// Overcomplicated query to search users in all the params (separated by spaces)
-	// wasted 4 hrs in this 💀
-
 	var whereConditions []string
 	var whereArgs []any
 
 	for _, term := range strings.Fields(name) {
 		alike := fmt.Sprintf("%%%s%%", strings.ToLower(term))
-		whereConditions = append(whereConditions, "LOWER(username) LIKE ? OR LOWER(first_name) LIKE ? OR LOWER(last_name) LIKE ?")
+		whereConditions = append(whereConditions, "LOWER(username) LIKE? OR LOWER(first_name) LIKE? OR LOWER(last_name) LIKE?")
 		whereArgs = append(whereArgs, alike, alike, alike)
 	}
 
-	query := u.db.
-		Model(&model.User{}).
+	query := u.db.Model(&model.User{}).
 		Where(strings.Join(whereConditions, " OR "), whereArgs...).
 		Order(clause.OrderBy{
 			Expression: clause.Expr{
@@ -80,14 +95,47 @@ func (u userRepository) SearchLikeName(name string) ([]*dto.ProfileSearch, error
 				Vars:               []any{name},
 				WithoutParentheses: true,
 			},
-		}).
-		Find(&users)
+		})
 
-	if query.Error != nil {
-		return nil, query.Error
+	var totalRecords int64
+
+	if err := query.Count(&totalRecords).Error; err != nil {
+		return nil, err
 	}
 
-	return users, nil
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(perpage)))
+
+	if page < 1 {
+		page = 1
+	} else if page > totalPages {
+		page = totalPages
+	}
+
+	offset := (page - 1) * perpage
+	limit := perpage
+
+	if err := query.Limit(limit).Offset(offset).Find(&users).Error; err != nil {
+		return nil, err
+	}
+
+	pagination := &dto.Pagination[dto.ProfileSearch]{
+		Data:         users,
+		TotalRecords: int(totalRecords),
+		CurrentPage:  page,
+		TotalPages:   totalPages,
+		NextPage:     page + 1,
+		PreviousPage: page - 1,
+	}
+
+	if pagination.NextPage > totalPages {
+		pagination.NextPage = -1
+	}
+
+	if pagination.PreviousPage < 1 {
+		pagination.PreviousPage = -1
+	}
+
+	return pagination, nil
 }
 
 func (u userRepository) Delete(id uint) error {

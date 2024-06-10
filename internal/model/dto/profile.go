@@ -5,9 +5,9 @@ import (
 )
 
 type ProfileSearch struct {
-	ID        uint `json:"id"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        uint      `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 
 	FirstName string `json:"firstname"`
 	LastName  string `json:"lastname"`
@@ -16,8 +16,11 @@ type ProfileSearch struct {
 	Bio      string `json:"bio"`
 	Verified bool   `json:"verified"`
 
-	XP      uint64 `gorm:"default:500"`
-	Arkhoin uint64 `gorm:"default:1000"`
+	XP      uint64 `json:"xp"`
+	Arkhoin uint64 `json:"arkhoins"`
+
+	Followers int64 `gorm:"-" json:"followers"`
+	Following int64 `gorm:"-" json:"following"`
 
 	Notification struct {
 		InApp int `json:"inapp"`

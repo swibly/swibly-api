@@ -94,7 +94,7 @@ func GetFollowersHandler(ctx *gin.Context) {
 	}
 
 	var (
-		page     int = 1
+		page    int = 1
 		perpage int = 10
 	)
 
@@ -148,7 +148,7 @@ func GetFollowingHandler(ctx *gin.Context) {
 	}
 
 	var (
-		page     int = 1
+		page    int = 1
 		perpage int = 10
 	)
 

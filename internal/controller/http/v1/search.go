@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -21,8 +22,8 @@ func newSearchRoutes(handler *gin.RouterGroup) {
 func SearchByNameHandler(ctx *gin.Context) {
 	name := ctx.Query("name")
 
-	if strings.TrimSpace(name) == "" {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Cannot find by empty name"})
+	if !regexp.MustCompile(`[a-zA-Z ]`).MatchString(name) || strings.TrimSpace(name) == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Bad search"})
 		return
 	}
 

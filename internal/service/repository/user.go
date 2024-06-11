@@ -74,48 +74,43 @@ func (u userRepository) Find(searchModel *model.User) (*dto.ProfileSearch, error
 	return user, nil
 }
 
-func (u userRepository) SearchLikeName(name string, page, perpage int) (*dto.Pagination[dto.ProfileSearch], error) {
+func (u userRepository) SearchLikeName(name string, page, perPage int) (*dto.Pagination[dto.ProfileSearch], error) {
 	var users []*dto.ProfileSearch
 
-	// Overcomplicated query to search users in all the params (separated by spaces)
-	var whereConditions []string
-	var whereArgs []any
+	terms := strings.Fields(name)
 
-	for _, term := range strings.Fields(name) {
+	var query = u.db.Model(&model.User{})
+
+	for _, term := range terms {
 		alike := fmt.Sprintf("%%%s%%", strings.ToLower(term))
-		whereConditions = append(whereConditions, "LOWER(username) LIKE? OR LOWER(first_name) LIKE? OR LOWER(last_name) LIKE?")
-		whereArgs = append(whereArgs, alike, alike, alike)
+		query = query.Or("LOWER(username) LIKE ? OR LOWER(first_name) LIKE ? OR LOWER(last_name) LIKE ?", alike, alike, alike)
 	}
 
-	query := u.db.Model(&model.User{}).
-		Where(strings.Join(whereConditions, " OR "), whereArgs...).
-		Order(clause.OrderBy{
-			Expression: clause.Expr{
-				SQL:                "CASE WHEN LOWER(username) = LOWER(?) THEN 1 ELSE 2 END",
-				Vars:               []any{name},
-				WithoutParentheses: true,
-			},
-		})
+	query = query.Order(clause.OrderBy{
+		Expression: clause.Expr{
+			SQL:                "CASE WHEN LOWER(username) = LOWER(?) THEN 1 ELSE 2 END",
+			Vars:               []any{name},
+			WithoutParentheses: true,
+		},
+	})
 
 	var totalRecords int64
-
 	if err := query.Count(&totalRecords).Error; err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to count total records: %w", err)
 	}
 
-	totalPages := int(math.Ceil(float64(totalRecords) / float64(perpage)))
-
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(perPage)))
 	if page < 1 {
 		page = 1
 	} else if page > totalPages {
 		page = totalPages
 	}
 
-	offset := (page - 1) * perpage
-	limit := perpage
+	offset := (page - 1) * perPage
+	limit := perPage
 
 	if err := query.Limit(limit).Offset(offset).Find(&users).Error; err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to fetch users: %w", err)
 	}
 
 	pagination := &dto.Pagination[dto.ProfileSearch]{

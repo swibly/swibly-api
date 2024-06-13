@@ -23,7 +23,7 @@ func SearchByNameHandler(ctx *gin.Context) {
 	name := ctx.Query("name")
 
 	if !regexp.MustCompile(`[a-zA-Z ]`).MatchString(name) || strings.TrimSpace(name) == "" {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Bad search"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Searches cannot be composed of spaces only or special characters"})
 		return
 	}
 

@@ -4,7 +4,7 @@
 
 A **Swibly** é uma empresa dedicada a criar soluções inovadoras por meio da tecnologia. Fundada com o propósito de transformar desafios complexos em oportunidades, a **Swibly** se destaca no mercado por sua abordagem centrada no cliente e foco constante em inovação.
 
-Para saber como utilizar, [veja a wiki](https://github.com/swibly/arkhon-api/wiki).
+Para saber como utilizar, [veja a wiki](https://github.com/swibly/swibly-api/wiki).
 
 ## 📝 Contribuição
 

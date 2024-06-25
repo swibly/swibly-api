@@ -12,9 +12,9 @@ FROM alpine:latest
 RUN apk add --no-cache ca-certificates
 
 ENV POSTGRES_HOST=localhost
-ENV POSTGRES_DB=arkhon-db
-ENV POSTGRES_USER=arkhon-db_owner
-ENV POSTGRES_PASSWORD=arkhon
+ENV POSTGRES_DB=swibly-db
+ENV POSTGRES_USER=swibly-db_owner
+ENV POSTGRES_PASSWORD=swibly
 ENV POSTGRES_SSLMODE=disable
 ENV JWT_SECRET=jwtsecret
 

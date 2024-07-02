@@ -191,7 +191,7 @@ func GetUserPermissions(ctx *gin.Context) {
 		return
 	}
 
-	var list []string
+	list := []string{}
 
 	for _, permission := range permissions {
 		list = append(list, permission.Name)
@@ -206,7 +206,7 @@ func FollowUserHandler(ctx *gin.Context) {
 	receiver, err := service.User.GetByUsername(ctx.Param("username"))
 	if err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user"})
 		return
 	}
 
@@ -239,7 +239,7 @@ func UnfollowUserHandler(ctx *gin.Context) {
 	receiver, err := service.User.GetByUsername(ctx.Param("username"))
 	if err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user"})
 		return
 	}
 

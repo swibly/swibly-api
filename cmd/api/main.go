@@ -3,12 +3,15 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
 	v1 "github.com/devkcud/arkhon-foundation/arkhon-api/internal/controller/http/v1"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/db"
 	"github.com/gin-gonic/gin"
@@ -23,8 +26,28 @@ func main() {
 	gin.SetMode(config.Router.GinMode)
 
 	router := gin.New()
-	router.Use(gin.Logger())
-	router.Use(gin.Recovery())
+	router.Use(
+		gin.Logger(),
+		gin.Recovery(),
+		func(ctx *gin.Context) {
+			apiKey := ctx.GetHeader("X-API-KEY")
+
+			if strings.TrimSpace(apiKey) == "" {
+				ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": fmt.Sprint("No API KEY was provided")})
+				return
+			}
+
+			var key model.APIKey
+			if err := db.Postgres.Raw("SELECT * FROM api_keys WHERE key = ?", apiKey).First(&key).Error; err != nil {
+				log.Printf("No API KEY with the name `%s`", apiKey)
+				ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": fmt.Sprintf("No API KEY with the name `%s`", apiKey)})
+				return
+			}
+
+			ctx.Set("api_key", key)
+			ctx.Next()
+		},
+	)
 
 	router.GET("/healthz", func(ctx *gin.Context) {
 		ctx.Writer.WriteString("Hello, world!")

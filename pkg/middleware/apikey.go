@@ -18,26 +18,26 @@ func apiKeyHas(ctx *gin.Context, b bool, field string) {
 }
 
 func APIKeyHasEnabledKeyManage(ctx *gin.Context) {
-	key := ctx.Keys["api_key"].(model.APIKey)
+	key := ctx.Keys["api_key"].(*model.APIKey)
 	apiKeyHas(ctx, key.EnabledKeyManage, "api key manipulation")
 }
 
 func APIKeyHasEnabledAuth(ctx *gin.Context) {
-	key := ctx.Keys["api_key"].(model.APIKey)
+	key := ctx.Keys["api_key"].(*model.APIKey)
 	apiKeyHas(ctx, key.EnabledAuth, "auth")
 }
 
 func APIKeyHasEnabledSearch(ctx *gin.Context) {
-	key := ctx.Keys["api_key"].(model.APIKey)
+	key := ctx.Keys["api_key"].(*model.APIKey)
 	apiKeyHas(ctx, key.EnabledSearch, "searches")
 }
 
 func APIKeyHasEnabledUserFetch(ctx *gin.Context) {
-	key := ctx.Keys["api_key"].(model.APIKey)
+	key := ctx.Keys["api_key"].(*model.APIKey)
 	apiKeyHas(ctx, key.EnabledUserFetch, "user fetch")
 }
 
 func APIKeyHasEnabledUserActions(ctx *gin.Context) {
-	key := ctx.Keys["api_key"].(model.APIKey)
+	key := ctx.Keys["api_key"].(*model.APIKey)
 	apiKeyHas(ctx, key.EnabledUserActions, "user actions")
 }

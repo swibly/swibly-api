@@ -23,6 +23,12 @@ func (pe ParamError) Error() string {
 func newValidator() *validator.Validate {
 	vv := validator.New()
 
+	vv.RegisterValidation("mustbenumericalboolean", func(fl validator.FieldLevel) bool {
+		nn := fl.Field().String()
+
+		return nn == "1" || nn == "0" || nn == "-1"
+	})
+
 	vv.RegisterValidation("mustbesupportedlanguage", func(fl validator.FieldLevel) bool {
 		lang := fl.Field().String()
 

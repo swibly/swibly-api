@@ -21,12 +21,12 @@ func NewAPIKeyRepository() APIKeyRepository {
 	return apiKeyRepository{db: db.Postgres}
 }
 
-func (a apiKeyRepository) Store(*model.APIKey) error {
-	return nil
+func (a apiKeyRepository) Store(createModel *model.APIKey) error {
+	return a.db.Create(&createModel).Error
 }
 
-func (a apiKeyRepository) Update(string, *model.APIKey) error {
-	return nil
+func (a apiKeyRepository) Update(key string, updateModel *model.APIKey) error {
+	return a.db.Where("key = ?", key).Updates(&updateModel).Error
 }
 
 func (a apiKeyRepository) Find(key string) (*model.APIKey, error) {
@@ -39,6 +39,6 @@ func (a apiKeyRepository) Find(key string) (*model.APIKey, error) {
 	return apikey, nil
 }
 
-func (a apiKeyRepository) Delete(string) error {
-	return nil
+func (a apiKeyRepository) Delete(key string) error {
+	return a.db.Delete("key = ?", key).Error
 }

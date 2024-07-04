@@ -20,8 +20,8 @@ func GetAPIKey(ctx *gin.Context) {
 	ctx.Next()
 }
 
-func apiKeyHas(ctx *gin.Context, b bool, field string) {
-	if !b {
+func apiKeyHas(ctx *gin.Context, b int, field string) {
+	if b == -1 {
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": fmt.Sprintf("This API key doesn't have the permission to handle %s", field)})
 		return
 	}

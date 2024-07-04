@@ -6,12 +6,10 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
 	v1 "github.com/devkcud/arkhon-foundation/arkhon-api/internal/controller/http/v1"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/db"
 	"github.com/gin-gonic/gin"
@@ -30,15 +28,8 @@ func main() {
 		gin.Logger(),
 		gin.Recovery(),
 		func(ctx *gin.Context) {
-			apiKey := ctx.GetHeader("X-API-KEY")
-
-			if strings.TrimSpace(apiKey) == "" {
-				ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "No API key provided"})
-				return
-			}
-
-			var key model.APIKey
-			if err := db.Postgres.Raw("SELECT * FROM api_keys WHERE key = ?", apiKey).First(&key).Error; err != nil {
+			key, err := service.APIKey.Find(ctx.GetHeader("X-API-KEY"))
+			if err != nil {
 				ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid API key"})
 				return
 			}

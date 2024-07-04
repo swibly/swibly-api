@@ -33,14 +33,13 @@ func main() {
 			apiKey := ctx.GetHeader("X-API-KEY")
 
 			if strings.TrimSpace(apiKey) == "" {
-				ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": fmt.Sprint("No API KEY was provided")})
+				ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "No API key provided"})
 				return
 			}
 
 			var key model.APIKey
 			if err := db.Postgres.Raw("SELECT * FROM api_keys WHERE key = ?", apiKey).First(&key).Error; err != nil {
-				log.Printf("No API KEY with the name `%s`", apiKey)
-				ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": fmt.Sprintf("No API KEY with the name `%s`", apiKey)})
+				ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid API key"})
 				return
 			}
 

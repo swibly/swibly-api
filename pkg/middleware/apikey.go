@@ -5,8 +5,20 @@ import (
 	"net/http"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
 	"github.com/gin-gonic/gin"
 )
+
+func GetAPIKey(ctx *gin.Context) {
+	key, err := service.APIKey.Find(ctx.GetHeader("X-API-KEY"))
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid API key"})
+		return
+	}
+
+	ctx.Set("api_key", key)
+	ctx.Next()
+}
 
 func apiKeyHas(ctx *gin.Context, b bool, field string) {
 	if !b {

@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,6 +11,7 @@ import (
 	v1 "github.com/devkcud/arkhon-foundation/arkhon-api/internal/controller/http/v1"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/db"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,20 +24,7 @@ func main() {
 	gin.SetMode(config.Router.GinMode)
 
 	router := gin.New()
-	router.Use(
-		gin.Logger(),
-		gin.Recovery(),
-		func(ctx *gin.Context) {
-			key, err := service.APIKey.Find(ctx.GetHeader("X-API-KEY"))
-			if err != nil {
-				ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid API key"})
-				return
-			}
-
-			ctx.Set("api_key", key)
-			ctx.Next()
-		},
-	)
+	router.Use(gin.Logger(), gin.Recovery(), middleware.GetAPIKey)
 
 	router.GET("/healthz", func(ctx *gin.Context) {
 		ctx.Writer.WriteString("Hello, world!")

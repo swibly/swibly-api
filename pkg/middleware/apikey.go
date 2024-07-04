@@ -17,9 +17,9 @@ func apiKeyHas(ctx *gin.Context, b bool, field string) {
 	ctx.Next()
 }
 
-func APIKeyHasEnabledKeyGen(ctx *gin.Context) {
+func APIKeyHasEnabledKeyManage(ctx *gin.Context) {
 	key := ctx.Keys["api_key"].(model.APIKey)
-	apiKeyHas(ctx, key.EnabledKeyGen, "key generation")
+	apiKeyHas(ctx, key.EnabledKeyManage, "api key manipulation")
 }
 
 func APIKeyHasEnabledAuth(ctx *gin.Context) {

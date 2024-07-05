@@ -15,11 +15,11 @@ func NewAPIKeyUseCase() APIKeyUseCase {
 	return APIKeyUseCase{ar: repository.NewAPIKeyRepository()}
 }
 
-func (auc *APIKeyUseCase) Create() error {
+func (auc *APIKeyUseCase) Create() (*model.APIKey, error) {
 	key := new(model.APIKey)
 	key.Key = uuid.New().String()
 
-	return auc.ar.Store(key)
+	return key, auc.ar.Store(key)
 }
 
 func (auc *APIKeyUseCase) Update(key string, updateModel *model.APIKey) error {

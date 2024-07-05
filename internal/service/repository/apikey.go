@@ -40,5 +40,5 @@ func (a apiKeyRepository) Find(key string) (*model.APIKey, error) {
 }
 
 func (a apiKeyRepository) Delete(key string) error {
-	return a.db.Delete("key = ?", key).Error
+	return a.db.Exec("DELETE FROM api_keys WHERE key = ?", key).Error
 }

@@ -24,9 +24,9 @@ func newValidator() *validator.Validate {
 	vv := validator.New()
 
 	vv.RegisterValidation("mustbenumericalboolean", func(fl validator.FieldLevel) bool {
-		nn := fl.Field().String()
+		nn := fl.Field().Int()
 
-		return nn == "1" || nn == "0" || nn == "-1"
+		return nn == 1 || nn == 0 || nn == -1
 	})
 
 	vv.RegisterValidation("mustbesupportedlanguage", func(fl validator.FieldLevel) bool {
@@ -117,6 +117,11 @@ func ValidateErrorMessage(fe validator.FieldError) ParamError {
 		return ParamError{
 			Param:   fe.Field(),
 			Message: fmt.Sprintf("%s must be %s", fe.Field(), strings.Join(language.ArrayString, ", ")),
+		}
+	case "mustbenumericalboolean":
+		return ParamError{
+			Param:   fe.Field(),
+			Message: "Value must be -1, 0 or 1",
 		}
 	case "username":
 		return ParamError{

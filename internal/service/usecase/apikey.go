@@ -16,9 +16,11 @@ func NewAPIKeyUseCase() APIKeyUseCase {
 	return APIKeyUseCase{ar: repository.NewAPIKeyRepository()}
 }
 
-func (auc *APIKeyUseCase) Create() (*model.APIKey, error) {
+func (auc *APIKeyUseCase) Create(maxUsage uint) (*model.APIKey, error) {
 	key := new(model.APIKey)
 	key.Key = uuid.New().String()
+
+	key.MaxUsage = maxUsage
 
 	return key, auc.ar.Store(key)
 }

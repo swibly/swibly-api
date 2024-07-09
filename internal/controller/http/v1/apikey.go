@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
@@ -58,7 +59,12 @@ func GetAllAPIKeys(ctx *gin.Context) {
 }
 
 func CreateAPIKey(ctx *gin.Context) {
-	newKey, err := service.APIKey.Create()
+	maxUsage, err := strconv.ParseUint(ctx.Query("maxusage"), 10, 64)
+	if err != nil {
+		maxUsage = 0
+	}
+
+	newKey, err := service.APIKey.Create(uint(maxUsage))
 	if err != nil {
 		log.Printf("Error generating new API key: %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Couldn't generate new key"})

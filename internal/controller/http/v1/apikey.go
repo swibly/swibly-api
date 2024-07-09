@@ -20,7 +20,7 @@ func newAPIKeyRoutes(handler *gin.RouterGroup) {
 	h.Use(middleware.APIKeyHasEnabledKeyManage)
 	{
 		h.GET("/all", GetAllAPIKeys)
-		h.POST("/create", CreateAPIKey)
+		h.POST("/create", middleware.OptionalAuthMiddleware, CreateAPIKey)
 	}
 
 	specific := h.Group("/:key")
@@ -59,12 +59,17 @@ func GetAllAPIKeys(ctx *gin.Context) {
 }
 
 func CreateAPIKey(ctx *gin.Context) {
+	var issuerID uint = 0
+	if u, exists := ctx.Get("auth_user"); exists {
+		issuerID = u.(*dto.ProfileSearch).ID
+	}
+
 	maxUsage, err := strconv.ParseUint(ctx.Query("maxusage"), 10, 64)
 	if err != nil {
 		maxUsage = 0
 	}
 
-	newKey, err := service.APIKey.Create(uint(maxUsage))
+	newKey, err := service.APIKey.Create(issuerID, uint(maxUsage))
 	if err != nil {
 		log.Printf("Error generating new API key: %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Couldn't generate new key"})

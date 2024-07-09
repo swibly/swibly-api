@@ -1,6 +1,8 @@
 package dto
 
 type APIKey struct {
+	OwnerID uint `validate:"omitempty" json:"owner_id"`
+
 	EnabledKeyManage   int `validate:"omitempty,mustbenumericalboolean" json:"enabled_key_manage"`
 	EnabledAuth        int `validate:"omitempty,mustbenumericalboolean" json:"enabled_auth"`
 	EnabledSearch      int `validate:"omitempty,mustbenumericalboolean" json:"enabled_search"`

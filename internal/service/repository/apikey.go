@@ -17,6 +17,7 @@ type APIKeyRepository interface {
 	RegisterUse(string) error
 	FindAll() ([]*model.APIKey, error)
 	Find(string) (*model.APIKey, error)
+	FindByOwnerID(uint) ([]*model.APIKey, error)
 	Delete(string) error
 }
 
@@ -54,6 +55,16 @@ func (a apiKeyRepository) Find(key string) (*model.APIKey, error) {
 	}
 
 	return apikey, nil
+}
+
+func (a apiKeyRepository) FindByOwnerID(ownerID uint) ([]*model.APIKey, error) {
+	var apikeys []*model.APIKey
+
+	if err := a.db.Find(&apikeys, "owner_id = ?", ownerID).Error; err != nil {
+		return nil, err
+	}
+
+	return apikeys, nil
 }
 
 func (a apiKeyRepository) Delete(key string) error {

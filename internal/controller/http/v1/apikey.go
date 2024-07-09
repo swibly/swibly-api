@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
@@ -19,7 +20,8 @@ func newAPIKeyRoutes(handler *gin.RouterGroup) {
 	h.Use(middleware.APIKeyHasEnabledKeyManage)
 	{
 		h.GET("/all", GetAllAPIKeys)
-		h.POST("/create", CreateAPIKey)
+		h.GET("/mine", middleware.AuthMiddleware, GetMyAPIKeys)
+		h.POST("/create", middleware.OptionalAuthMiddleware, CreateAPIKey)
 	}
 
 	specific := h.Group("/:key")
@@ -50,7 +52,19 @@ func GetAllAPIKeys(ctx *gin.Context) {
 	keys, err := service.APIKey.FindAll()
 	if err != nil {
 		log.Print(err)
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, keys)
+}
+
+func GetMyAPIKeys(ctx *gin.Context) {
+	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
+
+	keys, err := service.APIKey.FindByOwnerID(issuer.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
 		return
 	}
 
@@ -58,7 +72,17 @@ func GetAllAPIKeys(ctx *gin.Context) {
 }
 
 func CreateAPIKey(ctx *gin.Context) {
-	newKey, err := service.APIKey.Create()
+	var issuerID uint = 0
+	if u, exists := ctx.Get("auth_user"); exists {
+		issuerID = u.(*dto.ProfileSearch).ID
+	}
+
+	maxUsage, err := strconv.ParseUint(ctx.Query("maxusage"), 10, 64)
+	if err != nil {
+		maxUsage = 0
+	}
+
+	newKey, err := service.APIKey.Create(issuerID, uint(maxUsage))
 	if err != nil {
 		log.Printf("Error generating new API key: %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Couldn't generate new key"})
@@ -72,12 +96,12 @@ func GetAPIKeyInfo(ctx *gin.Context) {
 	key, err := service.APIKey.Find(ctx.Param("key"))
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "No API key found."})
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "No API key found."})
 			return
 		}
 
 		log.Print(err)
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
 		return
 	}
 

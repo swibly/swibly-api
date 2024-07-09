@@ -32,8 +32,9 @@ var (
 
 	Permissions struct {
 		Admin             string `yaml:"admin"`
+		ManageAPIKey      string `yaml:"manage_api_key"`
 		ManageUser        string `yaml:"manage_user"`
-		ManagePermissions string `yaml:"manager_permissions"`
+		ManagePermissions string `yaml:"manage_permissions"`
 		ManageProjects    string `yaml:"manage_projects"`
 		ManageStore       string `yaml:"manage_store"`
 	}

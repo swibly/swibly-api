@@ -14,8 +14,10 @@ type apiKeyRepository struct {
 type APIKeyRepository interface {
 	Store(*model.APIKey) error
 	Update(string, *dto.APIKey) error
+	RegisterUse(string) error
 	FindAll() ([]*model.APIKey, error)
 	Find(string) (*model.APIKey, error)
+	FindByOwnerID(uint) ([]*model.APIKey, error)
 	Delete(string) error
 }
 
@@ -29,6 +31,10 @@ func (a apiKeyRepository) Store(createModel *model.APIKey) error {
 
 func (a apiKeyRepository) Update(key string, updateModel *dto.APIKey) error {
 	return a.db.Model(&model.APIKey{}).Where("key = ?", key).Updates(&updateModel).Error
+}
+
+func (a apiKeyRepository) RegisterUse(key string) error {
+	return a.db.Exec("UPDATE api_keys SET times_used = times_used + 1 WHERE key = ?", key).Error
 }
 
 func (a apiKeyRepository) FindAll() ([]*model.APIKey, error) {
@@ -49,6 +55,16 @@ func (a apiKeyRepository) Find(key string) (*model.APIKey, error) {
 	}
 
 	return apikey, nil
+}
+
+func (a apiKeyRepository) FindByOwnerID(ownerID uint) ([]*model.APIKey, error) {
+	var apikeys []*model.APIKey
+
+	if err := a.db.Find(&apikeys, "owner_id = ?", ownerID).Error; err != nil {
+		return nil, err
+	}
+
+	return apikeys, nil
 }
 
 func (a apiKeyRepository) Delete(key string) error {

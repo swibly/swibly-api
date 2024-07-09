@@ -11,6 +11,7 @@ import (
 	v1 "github.com/devkcud/arkhon-foundation/arkhon-api/internal/controller/http/v1"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/db"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,8 +24,7 @@ func main() {
 	gin.SetMode(config.Router.GinMode)
 
 	router := gin.New()
-	router.Use(gin.Logger())
-	router.Use(gin.Recovery())
+	router.Use(gin.Logger(), gin.Recovery(), middleware.GetAPIKey)
 
 	router.GET("/healthz", func(ctx *gin.Context) {
 		ctx.Writer.WriteString("Hello, world!")

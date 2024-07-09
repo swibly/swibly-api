@@ -53,6 +53,7 @@ func Load() {
 	log.Print("Loaded migrations")
 
 	if err := Postgres.AutoMigrate(
+		&model.APIKey{},
 		&model.User{},
 		&model.Follower{},
 		&model.Permission{},

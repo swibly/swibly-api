@@ -19,15 +19,15 @@ import (
 func newUserRoutes(handler *gin.RouterGroup) {
 	h := handler.Group("/user")
 	{
-		h.GET("/:username/profile", middleware.OptionalAuthMiddleware, middleware.GetPermissionsMiddleware, GetProfileHandler)
+		h.GET("/:username/profile", middleware.APIKeyHasEnabledUserFetch, middleware.OptionalAuthMiddleware, middleware.GetPermissionsMiddleware, GetProfileHandler)
 
-		h.GET("/:username/followers", middleware.OptionalAuthMiddleware, middleware.GetPermissionsMiddleware, GetFollowersHandler)
-		h.GET("/:username/following", middleware.OptionalAuthMiddleware, middleware.GetPermissionsMiddleware, GetFollowingHandler)
+		h.GET("/:username/followers", middleware.APIKeyHasEnabledUserFetch, middleware.OptionalAuthMiddleware, middleware.GetPermissionsMiddleware, GetFollowersHandler)
+		h.GET("/:username/following", middleware.APIKeyHasEnabledUserFetch, middleware.OptionalAuthMiddleware, middleware.GetPermissionsMiddleware, GetFollowingHandler)
 
-		h.GET("/:username/permissions", GetUserPermissions)
+		h.GET("/:username/permissions", middleware.APIKeyHasEnabledUserFetch, GetUserPermissions)
 
-		h.POST("/:username/follow", middleware.AuthMiddleware, FollowUserHandler)
-		h.POST("/:username/unfollow", middleware.AuthMiddleware, UnfollowUserHandler)
+		h.POST("/:username/follow", middleware.APIKeyHasEnabledUserActions, middleware.AuthMiddleware, FollowUserHandler)
+		h.POST("/:username/unfollow", middleware.APIKeyHasEnabledUserActions, middleware.AuthMiddleware, UnfollowUserHandler)
 	}
 }
 

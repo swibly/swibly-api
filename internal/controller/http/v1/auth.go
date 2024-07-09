@@ -18,6 +18,7 @@ import (
 
 func newAuthRoutes(handler *gin.RouterGroup) {
 	h := handler.Group("/auth")
+	h.Use(middleware.APIKeyHasEnabledAuth)
 	{
 		h.POST("/register", RegisterHandler)
 		h.POST("/login", LoginHandler)

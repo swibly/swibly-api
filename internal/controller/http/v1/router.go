@@ -7,6 +7,7 @@ import (
 func NewRouter(handler *gin.Engine) {
 	g := handler.Group("/v1")
 	{
+		newAPIKeyRoutes(g)
 		newAuthRoutes(g)
 		newUserRoutes(g)
 		newSearchRoutes(g)

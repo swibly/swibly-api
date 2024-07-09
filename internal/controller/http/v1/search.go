@@ -9,14 +9,17 @@ import (
 	"strings"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/middleware"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
 func newSearchRoutes(handler *gin.RouterGroup) {
 	h := handler.Group("/search")
-
-	h.GET("/user", SearchByNameHandler)
+	h.Use(middleware.APIKeyHasEnabledSearch)
+	{
+		h.GET("/user", SearchByNameHandler)
+	}
 }
 
 func SearchByNameHandler(ctx *gin.Context) {

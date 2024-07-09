@@ -1,4 +1,5 @@
 admin: admin
+manage_api_key: manage_api_key
 manage_user: manage_user
 manage_permissions: manage_permissions
 manage_projects: manage_projects

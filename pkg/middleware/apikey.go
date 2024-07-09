@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
@@ -21,6 +22,17 @@ func GetAPIKey(ctx *gin.Context) {
 }
 
 func apiKeyHas(ctx *gin.Context, b int, field string) {
+	key := ctx.Keys["api_key"].(*model.APIKey)
+
+	if key.MaxUsage != 0 && key.TimesUsed >= key.MaxUsage {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "API key has reached its maximum allowed usage. Please contact support or obtain a new key."})
+		return
+	}
+
+	if err := service.APIKey.RegisterUse(key.Key); err != nil {
+		log.Print(err)
+	}
+
 	if b == -1 {
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": fmt.Sprintf("This API key doesn't have the permission to handle %s", field)})
 		return

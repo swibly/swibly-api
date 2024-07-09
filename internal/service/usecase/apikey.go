@@ -27,6 +27,10 @@ func (auc *APIKeyUseCase) Update(key string, updateModel *dto.APIKey) error {
 	return auc.ar.Update(key, updateModel)
 }
 
+func (auc *APIKeyUseCase) RegisterUse(key string) error {
+	return auc.ar.RegisterUse(key)
+}
+
 func (auc *APIKeyUseCase) FindAll() ([]*model.APIKey, error) {
 	return auc.ar.FindAll()
 }

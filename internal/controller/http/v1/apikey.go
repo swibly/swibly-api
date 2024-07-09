@@ -20,6 +20,7 @@ func newAPIKeyRoutes(handler *gin.RouterGroup) {
 	h.Use(middleware.APIKeyHasEnabledKeyManage)
 	{
 		h.GET("/all", GetAllAPIKeys)
+		h.GET("/mine", middleware.AuthMiddleware, GetMyAPIKeys)
 		h.POST("/create", middleware.OptionalAuthMiddleware, CreateAPIKey)
 	}
 
@@ -51,7 +52,19 @@ func GetAllAPIKeys(ctx *gin.Context) {
 	keys, err := service.APIKey.FindAll()
 	if err != nil {
 		log.Print(err)
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, keys)
+}
+
+func GetMyAPIKeys(ctx *gin.Context) {
+	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
+
+	keys, err := service.APIKey.FindByOwnerID(issuer.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
 		return
 	}
 
@@ -83,12 +96,12 @@ func GetAPIKeyInfo(ctx *gin.Context) {
 	key, err := service.APIKey.Find(ctx.Param("key"))
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "No API key found."})
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "No API key found."})
 			return
 		}
 
 		log.Print(err)
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
 		return
 	}
 

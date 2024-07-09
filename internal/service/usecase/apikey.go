@@ -42,6 +42,10 @@ func (auc *APIKeyUseCase) Find(key string) (*model.APIKey, error) {
 	return auc.ar.Find(key)
 }
 
+func (auc *APIKeyUseCase) FindByOwnerID(id uint) ([]*model.APIKey, error) {
+	return auc.ar.FindByOwnerID(id)
+}
+
 func (auc *APIKeyUseCase) Delete(key string) error {
 	return auc.ar.Delete(key)
 }

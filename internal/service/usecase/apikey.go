@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/repository"
 
 	"github.com/google/uuid"
@@ -22,8 +23,12 @@ func (auc *APIKeyUseCase) Create() (*model.APIKey, error) {
 	return key, auc.ar.Store(key)
 }
 
-func (auc *APIKeyUseCase) Update(key string, updateModel *model.APIKey) error {
+func (auc *APIKeyUseCase) Update(key string, updateModel *dto.APIKey) error {
 	return auc.ar.Update(key, updateModel)
+}
+
+func (auc *APIKeyUseCase) FindAll() ([]*model.APIKey, error) {
+	return auc.ar.FindAll()
 }
 
 func (auc *APIKeyUseCase) Find(key string) (*model.APIKey, error) {

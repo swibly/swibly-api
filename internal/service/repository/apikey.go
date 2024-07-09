@@ -2,6 +2,7 @@ package repository
 
 import (
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/db"
 	"gorm.io/gorm"
 )
@@ -12,7 +13,8 @@ type apiKeyRepository struct {
 
 type APIKeyRepository interface {
 	Store(*model.APIKey) error
-	Update(string, *model.APIKey) error
+	Update(string, *dto.APIKey) error
+	FindAll() ([]*model.APIKey, error)
 	Find(string) (*model.APIKey, error)
 	Delete(string) error
 }
@@ -25,8 +27,18 @@ func (a apiKeyRepository) Store(createModel *model.APIKey) error {
 	return a.db.Create(&createModel).Error
 }
 
-func (a apiKeyRepository) Update(key string, updateModel *model.APIKey) error {
-	return a.db.Where("key = ?", key).Updates(&updateModel).Error
+func (a apiKeyRepository) Update(key string, updateModel *dto.APIKey) error {
+	return a.db.Model(&model.APIKey{}).Where("key = ?", key).Updates(&updateModel).Error
+}
+
+func (a apiKeyRepository) FindAll() ([]*model.APIKey, error) {
+	var apikeys []*model.APIKey
+
+	if err := a.db.Find(&apikeys).Error; err != nil {
+		return nil, err
+	}
+
+	return apikeys, nil
 }
 
 func (a apiKeyRepository) Find(key string) (*model.APIKey, error) {

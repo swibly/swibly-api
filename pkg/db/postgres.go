@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"strings"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
@@ -10,6 +11,7 @@ import (
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/language"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"gorm.io/gorm/logger"
 )
 
@@ -62,11 +64,16 @@ func Load() {
 		log.Fatal(err)
 	}
 
-	Postgres.Create([]model.Permission{
-		{Name: config.Permissions.Admin},
-		{Name: config.Permissions.ManageUser},
-		{Name: config.Permissions.ManagePermissions},
-		{Name: config.Permissions.ManageProjects},
-		{Name: config.Permissions.ManageStore},
-	})
+	var permissions []model.Permission
+	v := reflect.ValueOf(config.Permissions)
+	for i := 0; i < v.NumField(); i++ {
+		permissions = append(permissions, model.Permission{Name: v.Field(i).String()})
+	}
+
+	if err := db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "name"}},
+		DoUpdates: clause.AssignmentColumns([]string{"name"}),
+	}).Create(&permissions).Error; err != nil {
+		log.Println(err)
+	}
 }

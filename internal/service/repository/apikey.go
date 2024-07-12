@@ -39,7 +39,7 @@ func (a apiKeyRepository) RegisterUse(key string) error {
 }
 
 func (a apiKeyRepository) FindAll(page, perPage int) (*dto.Pagination[model.APIKey], error) {
-	return pagination.Generate[model.APIKey](a.db.Raw("SELECT * FROM api_keys"), page, perPage)
+	return pagination.Generate[model.APIKey](a.db.Model(&model.APIKey{}).Exec("SELECT * FROM api_keys"), page, perPage)
 }
 
 func (a apiKeyRepository) Find(key string) (*model.APIKey, error) {
@@ -53,7 +53,7 @@ func (a apiKeyRepository) Find(key string) (*model.APIKey, error) {
 }
 
 func (a apiKeyRepository) FindByOwnerID(ownerID uint, page, perPage int) (*dto.Pagination[model.APIKey], error) {
-	return pagination.Generate[model.APIKey](a.db.Raw("SELECT * FROM api_keys WHERE owner_id = ?", ownerID), page, perPage)
+	return pagination.Generate[model.APIKey](a.db.Model(&model.APIKey{}).Where("owner_id = ?", ownerID), page, perPage)
 }
 
 func (a apiKeyRepository) Delete(key string) error {

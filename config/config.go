@@ -23,6 +23,7 @@ var (
 		User     string `yaml:"user"`
 		Password string `yaml:"password"`
 		SSLMode  string `yaml:"sslmode"`
+		Port     string `yaml:"port"`
 	}
 
 	Security struct {
@@ -47,6 +48,7 @@ func Parse() {
 		"POSTGRES_USER",
 		"POSTGRES_PASSWORD",
 		"POSTGRES_SSLMODE",
+		"POSTGRES_PORT",
 		"JWT_SECRET",
 	); len(missingVars) > 0 {
 		log.Println("You can override the following env variables to get rid of this error:")

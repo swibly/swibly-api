@@ -4,6 +4,7 @@ import (
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/db"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/pagination"
 	"gorm.io/gorm"
 )
 
@@ -15,9 +16,9 @@ type APIKeyRepository interface {
 	Store(*model.APIKey) error
 	Update(string, *dto.APIKey) error
 	RegisterUse(string) error
-	FindAll() ([]*model.APIKey, error)
-	Find(string) (*model.APIKey, error)
-	FindByOwnerID(uint) ([]*model.APIKey, error)
+	FindAll(page, perPage int) (*dto.Pagination[model.APIKey], error)
+	Find(key string) (*model.APIKey, error)
+	FindByOwnerID(id uint, page, perPage int) (*dto.Pagination[model.APIKey], error)
 	Delete(string) error
 }
 
@@ -37,14 +38,8 @@ func (a apiKeyRepository) RegisterUse(key string) error {
 	return a.db.Exec("UPDATE api_keys SET times_used = times_used + 1 WHERE key = ?", key).Error
 }
 
-func (a apiKeyRepository) FindAll() ([]*model.APIKey, error) {
-	var apikeys []*model.APIKey
-
-	if err := a.db.Find(&apikeys).Error; err != nil {
-		return nil, err
-	}
-
-	return apikeys, nil
+func (a apiKeyRepository) FindAll(page, perPage int) (*dto.Pagination[model.APIKey], error) {
+	return pagination.Generate[model.APIKey](a.db.Raw("SELECT * FROM api_keys"), page, perPage)
 }
 
 func (a apiKeyRepository) Find(key string) (*model.APIKey, error) {
@@ -57,14 +52,8 @@ func (a apiKeyRepository) Find(key string) (*model.APIKey, error) {
 	return apikey, nil
 }
 
-func (a apiKeyRepository) FindByOwnerID(ownerID uint) ([]*model.APIKey, error) {
-	var apikeys []*model.APIKey
-
-	if err := a.db.Find(&apikeys, "owner_id = ?", ownerID).Error; err != nil {
-		return nil, err
-	}
-
-	return apikeys, nil
+func (a apiKeyRepository) FindByOwnerID(ownerID uint, page, perPage int) (*dto.Pagination[model.APIKey], error) {
+	return pagination.Generate[model.APIKey](a.db.Raw("SELECT * FROM api_keys WHERE owner_id = ?", ownerID), page, perPage)
 }
 
 func (a apiKeyRepository) Delete(key string) error {

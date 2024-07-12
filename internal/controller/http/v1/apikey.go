@@ -49,7 +49,20 @@ func newAPIKeyRoutes(handler *gin.RouterGroup) {
 }
 
 func GetAllAPIKeys(ctx *gin.Context) {
-	keys, err := service.APIKey.FindAll()
+	var (
+		page    int = 1
+		perpage int = 10
+	)
+
+	if i, e := strconv.Atoi(ctx.Query("page")); e == nil && ctx.Query("page") != "" {
+		page = i
+	}
+
+	if i, e := strconv.Atoi(ctx.Query("perpage")); e == nil && ctx.Query("perpage") != "" {
+		perpage = i
+	}
+
+	keys, err := service.APIKey.FindAll(page, perpage)
 	if err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
@@ -62,7 +75,20 @@ func GetAllAPIKeys(ctx *gin.Context) {
 func GetMyAPIKeys(ctx *gin.Context) {
 	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
 
-	keys, err := service.APIKey.FindByOwnerID(issuer.ID)
+	var (
+		page    int = 1
+		perpage int = 10
+	)
+
+	if i, e := strconv.Atoi(ctx.Query("page")); e == nil && ctx.Query("page") != "" {
+		page = i
+	}
+
+	if i, e := strconv.Atoi(ctx.Query("perpage")); e == nil && ctx.Query("perpage") != "" {
+		perpage = i
+	}
+
+	keys, err := service.APIKey.FindByOwnerID(issuer.ID, page, perpage)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
 		return

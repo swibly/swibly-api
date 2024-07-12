@@ -34,16 +34,16 @@ func (auc *APIKeyUseCase) RegisterUse(key string) error {
 	return auc.ar.RegisterUse(key)
 }
 
-func (auc *APIKeyUseCase) FindAll() ([]*model.APIKey, error) {
-	return auc.ar.FindAll()
+func (auc *APIKeyUseCase) FindAll(page, perPage int) (*dto.Pagination[model.APIKey], error) {
+	return auc.ar.FindAll(page, perPage)
 }
 
 func (auc *APIKeyUseCase) Find(key string) (*model.APIKey, error) {
 	return auc.ar.Find(key)
 }
 
-func (auc *APIKeyUseCase) FindByOwnerID(id uint) ([]*model.APIKey, error) {
-	return auc.ar.FindByOwnerID(id)
+func (auc *APIKeyUseCase) FindByOwnerID(id uint, page, perPage int) (*dto.Pagination[model.APIKey], error) {
+	return auc.ar.FindByOwnerID(id, page, perPage)
 }
 
 func (auc *APIKeyUseCase) Delete(key string) error {

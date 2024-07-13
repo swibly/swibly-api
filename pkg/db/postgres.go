@@ -36,7 +36,7 @@ func typeCheckAndCreate(db *gorm.DB, typeName string, values []string) error {
 
 func Load() {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", config.Postgres.Host, config.Postgres.User, config.Postgres.Password, config.Postgres.DB, config.Postgres.Port, config.Postgres.SSLMode)
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{PrepareStmt: false})
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}

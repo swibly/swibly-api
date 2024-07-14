@@ -15,3 +15,8 @@ no_api_key_found: Nenhuma chave de API encontrada com este ID.
 require_permission_api_key: 'Esta chave de API não tem a permissão de: %s'
 search_incorrect: As pesquisas não podem ser compostas apenas por espaços ou caracteres especiais.
 search_no_results: Nada encontrado com esse critério de pesquisa.
+user_disabled_followers: Usuário desativou a visualização de seus seguidores.
+user_disabled_following: Usuário desativou a visualização de quem o está seguindo.
+user_disabled_profile: Usuário desativou a visualização de seu perfil.
+user_error_follow_itself: Usuários não podem seguir ou deixar de seguir a si mesmos.
+user_not_found: Usuário não encontrado; você tem certeza de que este é o nome de usuário?

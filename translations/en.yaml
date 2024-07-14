@@ -14,3 +14,12 @@ no_api_key_found: No API key found with that ID.
 require_permission_api_key: 'This API key does not have permission to: %s'
 search_incorrect: Searches cannot be composed of spaces only or special characters.
 search_no_results: Nothing found with that search criteria.
+user_disabled_followers: User disabled viewing their followers.
+user_disabled_following: User disabled viewing whom are following them.
+user_disabled_profile: User disabled viewing their profile.
+user_error_follow_itself: Users cannot follow or unfollow themselves.
+user_following_already: Already following %s.
+user_following_not: Not following %s.
+user_following_started: Started following %s.
+user_following_stopped: Stopped following %s.
+user_not_found: User not found; are you sure this is their username?

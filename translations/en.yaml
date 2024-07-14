@@ -18,8 +18,8 @@ user_disabled_followers: User disabled viewing their followers.
 user_disabled_following: User disabled viewing whom are following them.
 user_disabled_profile: User disabled viewing their profile.
 user_error_follow_itself: Users cannot follow or unfollow themselves.
-user_following_already: Already following %s.
-user_following_not: Not following %s.
-user_following_started: Started following %s.
-user_following_stopped: Stopped following %s.
+user_following_already: User is already following %s.
+user_following_not: User is not following %s.
+user_following_started: User started following %s.
+user_following_stopped: User stopped following %s.
 user_not_found: User not found; are you sure this is their username?

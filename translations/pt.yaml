@@ -19,4 +19,8 @@ user_disabled_followers: Usuário desativou a visualização de seus seguidores.
 user_disabled_following: Usuário desativou a visualização de quem o está seguindo.
 user_disabled_profile: Usuário desativou a visualização de seu perfil.
 user_error_follow_itself: Usuários não podem seguir ou deixar de seguir a si mesmos.
+user_following_already: Usuário já seguindo %s.
+user_following_not: Usuário ainda não está seguindo %s.
+user_following_started: Usuário começou a seguir %s.
+user_following_stopped: Usuário parou de seguir %s.
 user_not_found: Usuário não encontrado; você tem certeza de que este é o nome de usuário?

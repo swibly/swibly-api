@@ -33,6 +33,8 @@ func newUserRoutes(handler *gin.RouterGroup) {
 }
 
 func GetProfileHandler(ctx *gin.Context) {
+	dict := translations.GetLang(ctx)
+
 	var issuer *dto.ProfileSearch = nil
 	if p, exists := ctx.Get("auth_user"); exists {
 		issuer = p.(*dto.ProfileSearch)
@@ -43,7 +45,7 @@ func GetProfileHandler(ctx *gin.Context) {
 	if err == nil {
 		if !utils.HasPermissionsByContext(ctx, config.Permissions.ManageUser) {
 			if user.Show.Profile == -1 && (issuer == nil || issuer.ID != user.ID) {
-				ctx.JSON(http.StatusForbidden, gin.H{"error": ctx.Keys["lang"].(translations.Translation).UserDisabledProfile})
+				ctx.JSON(http.StatusForbidden, gin.H{"error": dict.UserDisabledProfile})
 				return
 			}
 		}
@@ -56,14 +58,16 @@ func GetProfileHandler(ctx *gin.Context) {
 	log.Print(err)
 
 	if err == gorm.ErrRecordNotFound {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": ctx.Keys["lang"].(translations.Translation).UserNotFound})
+		ctx.JSON(http.StatusNotFound, gin.H{"error": dict.UserNotFound})
 		return
 	}
 
-	ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+	ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 }
 
 func GetFollowersHandler(ctx *gin.Context) {
+	dict := translations.GetLang(ctx)
+
 	var issuer *dto.ProfileSearch = nil
 	if p, exists := ctx.Get("auth_user"); exists {
 		issuer = p.(*dto.ProfileSearch)
@@ -73,23 +77,23 @@ func GetFollowersHandler(ctx *gin.Context) {
 	user, err := service.User.GetByUsername(username)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": ctx.Keys["lang"].(translations.Translation).UserNotFound})
+			ctx.JSON(http.StatusNotFound, gin.H{"error": dict.UserNotFound})
 			return
 		}
 
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
 	if !utils.HasPermissionsByContext(ctx, config.Permissions.ManageUser) {
 		if user.Show.Profile == -1 && (issuer == nil || issuer.ID != user.ID) {
-			ctx.JSON(http.StatusForbidden, gin.H{"error": ctx.Keys["lang"].(translations.Translation).UserDisabledProfile})
+			ctx.JSON(http.StatusForbidden, gin.H{"error": dict.UserDisabledProfile})
 			return
 		}
 
 		if user.Show.Followers == -1 && (issuer == nil || issuer.ID != user.ID) {
-			ctx.JSON(http.StatusForbidden, gin.H{"error": ctx.Keys["lang"].(translations.Translation).UserDisabledFollowers})
+			ctx.JSON(http.StatusForbidden, gin.H{"error": dict.UserDisabledFollowers})
 			return
 		}
 	}
@@ -110,7 +114,7 @@ func GetFollowersHandler(ctx *gin.Context) {
 	pagination, err := service.Follow.GetFollowers(user.ID, page, perpage)
 	if err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
@@ -118,6 +122,8 @@ func GetFollowersHandler(ctx *gin.Context) {
 }
 
 func GetFollowingHandler(ctx *gin.Context) {
+	dict := translations.GetLang(ctx)
+
 	var issuer *dto.ProfileSearch = nil
 	if p, exists := ctx.Get("auth_user"); exists {
 		issuer = p.(*dto.ProfileSearch)
@@ -127,23 +133,23 @@ func GetFollowingHandler(ctx *gin.Context) {
 	user, err := service.User.GetByUsername(username)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": ctx.Keys["lang"].(translations.Translation).UserNotFound})
+			ctx.JSON(http.StatusNotFound, gin.H{"error": dict.UserNotFound})
 			return
 		}
 
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
 	if !utils.HasPermissionsByContext(ctx, config.Permissions.ManageUser) {
 		if user.Show.Profile == -1 && (issuer == nil || issuer.ID != user.ID) {
-			ctx.JSON(http.StatusForbidden, gin.H{"error": ctx.Keys["lang"].(translations.Translation).UserDisabledProfile})
+			ctx.JSON(http.StatusForbidden, gin.H{"error": dict.UserDisabledProfile})
 			return
 		}
 
 		if user.Show.Following == -1 && (issuer == nil || issuer.ID != user.ID) {
-			ctx.JSON(http.StatusForbidden, gin.H{"error": ctx.Keys["lang"].(translations.Translation).UserDisabledFollowers})
+			ctx.JSON(http.StatusForbidden, gin.H{"error": dict.UserDisabledFollowers})
 			return
 		}
 	}
@@ -164,7 +170,7 @@ func GetFollowingHandler(ctx *gin.Context) {
 	pagination, err := service.Follow.GetFollowing(user.ID, page, perpage)
 	if err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
@@ -172,23 +178,25 @@ func GetFollowingHandler(ctx *gin.Context) {
 }
 
 func GetUserPermissions(ctx *gin.Context) {
+	dict := translations.GetLang(ctx)
+
 	username := ctx.Param("username")
 	user, err := service.User.GetByUsername(username)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": ctx.Keys["lang"].(translations.Translation).UserNotFound})
+			ctx.JSON(http.StatusNotFound, gin.H{"error": dict.UserNotFound})
 			return
 		}
 
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
 	permissions, err := service.Permission.GetPermissions(user.ID)
 	if err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
@@ -202,67 +210,71 @@ func GetUserPermissions(ctx *gin.Context) {
 }
 
 func FollowUserHandler(ctx *gin.Context) {
+	dict := translations.GetLang(ctx)
+
 	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
 
 	receiver, err := service.User.GetByUsername(ctx.Param("username"))
 	if err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": ctx.Keys["lang"].(translations.Translation).UserNotFound})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UserNotFound})
 		return
 	}
 
 	if issuer.ID == receiver.ID {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": ctx.Keys["lang"].(translations.Translation).UserErrorFollowItself})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UserErrorFollowItself})
 		return
 	}
 
 	if exists, err := service.Follow.Exists(receiver.ID, issuer.ID); err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	} else if exists {
-		ctx.JSON(http.StatusConflict, gin.H{"error": fmt.Sprintf(ctx.Keys["lang"].(translations.Translation).UserFollowingAlready, receiver.Username)})
+		ctx.JSON(http.StatusConflict, gin.H{"error": fmt.Sprintf(dict.UserFollowingAlready, receiver.Username)})
 		return
 	}
 
 	if err := service.Follow.FollowUser(receiver.ID, issuer.ID); err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf(ctx.Keys["lang"].(translations.Translation).UserFollowingStarted, receiver.Username)})
+	ctx.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf(dict.UserFollowingStarted, receiver.Username)})
 }
 
 func UnfollowUserHandler(ctx *gin.Context) {
+	dict := translations.GetLang(ctx)
+
 	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
 
 	receiver, err := service.User.GetByUsername(ctx.Param("username"))
 	if err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": ctx.Keys["lang"].(translations.Translation).UserNotFound})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UserNotFound})
 		return
 	}
 
 	if issuer.ID == receiver.ID {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": ctx.Keys["lang"].(translations.Translation).UserErrorFollowItself})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UserErrorFollowItself})
 		return
 	}
 
 	if exists, err := service.Follow.Exists(receiver.ID, issuer.ID); err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	} else if !exists {
-		ctx.JSON(http.StatusConflict, gin.H{"error": fmt.Sprintf(ctx.Keys["lang"].(translations.Translation).UserFollowingNot, receiver.Username)})
+		ctx.JSON(http.StatusConflict, gin.H{"error": fmt.Sprintf(dict.UserFollowingNot, receiver.Username)})
 		return
 	}
 
 	if err := service.Follow.UnfollowUser(receiver.ID, issuer.ID); err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf(ctx.Keys["lang"].(translations.Translation).UserFollowingStopped, receiver.Username)})
+	ctx.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf(dict.UserFollowingStopped, receiver.Username)})
 }

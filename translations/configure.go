@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	"gopkg.in/yaml.v3"
 )
 
@@ -78,4 +79,8 @@ func Init(dir string) {
 
 		Translations[lang] = *translation
 	}
+}
+
+func GetLang(ctx *gin.Context) Translation {
+	return ctx.Keys["lang"].(Translation)
 }

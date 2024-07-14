@@ -27,15 +27,17 @@ func newAPIKeyRoutes(handler *gin.RouterGroup) {
 
 	specific := h.Group("/:key")
 	specific.Use(func(ctx *gin.Context) {
+		dict := translations.GetLang(ctx)
+
 		key, err := service.APIKey.Find(ctx.Param("key"))
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": ctx.Keys["lang"].(translations.Translation).NoAPIKeyFound})
+				ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": dict.NoAPIKeyFound})
 				return
 			}
 
 			log.Print(err)
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 			return
 		}
 
@@ -50,6 +52,8 @@ func newAPIKeyRoutes(handler *gin.RouterGroup) {
 }
 
 func GetAllAPIKeys(ctx *gin.Context) {
+	dict := translations.GetLang(ctx)
+
 	var (
 		page    int = 1
 		perpage int = 10
@@ -66,7 +70,7 @@ func GetAllAPIKeys(ctx *gin.Context) {
 	keys, err := service.APIKey.FindAll(page, perpage)
 	if err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
@@ -74,6 +78,8 @@ func GetAllAPIKeys(ctx *gin.Context) {
 }
 
 func GetMyAPIKeys(ctx *gin.Context) {
+	dict := translations.GetLang(ctx)
+
 	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
 
 	var (
@@ -91,7 +97,7 @@ func GetMyAPIKeys(ctx *gin.Context) {
 
 	keys, err := service.APIKey.FindByOwnerID(issuer.ID, page, perpage)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
@@ -99,6 +105,8 @@ func GetMyAPIKeys(ctx *gin.Context) {
 }
 
 func CreateAPIKey(ctx *gin.Context) {
+	dict := translations.GetLang(ctx)
+
 	var issuerID uint = 0
 	if u, exists := ctx.Get("auth_user"); exists {
 		issuerID = u.(*dto.ProfileSearch).ID
@@ -112,7 +120,7 @@ func CreateAPIKey(ctx *gin.Context) {
 	newKey, err := service.APIKey.Create(issuerID, uint(maxUsage))
 	if err != nil {
 		log.Printf("Error generating new API key: %v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
@@ -120,15 +128,17 @@ func CreateAPIKey(ctx *gin.Context) {
 }
 
 func GetAPIKeyInfo(ctx *gin.Context) {
+	dict := translations.GetLang(ctx)
+
 	key, err := service.APIKey.Find(ctx.Param("key"))
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": ctx.Keys["lang"].(translations.Translation).NoAPIKeyFound})
+			ctx.JSON(http.StatusNotFound, gin.H{"error": dict.NoAPIKeyFound})
 			return
 		}
 
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
@@ -136,22 +146,26 @@ func GetAPIKeyInfo(ctx *gin.Context) {
 }
 
 func DestroyAPIKey(ctx *gin.Context) {
+	dict := translations.GetLang(ctx)
+
 	if err := service.APIKey.Delete(ctx.Keys["api_key_lookup"].(*model.APIKey).Key); err != nil {
 		log.Printf("Error destroying API key: %v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": gin.H{"error": ctx.Keys["lang"].(translations.Translation).APIKeyDestroyed}})
+	ctx.JSON(http.StatusOK, gin.H{"message": gin.H{"error": dict.APIKeyDestroyed}})
 }
 
 func UpdateAPIKey(ctx *gin.Context) {
+	dict := translations.GetLang(ctx)
+
 	key := ctx.Keys["api_key_lookup"].(*model.APIKey)
 
 	var body dto.APIKey
 	if err := ctx.BindJSON(&body); err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InvalidBody})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.InvalidBody})
 		return
 	}
 
@@ -165,9 +179,9 @@ func UpdateAPIKey(ctx *gin.Context) {
 
 	if err := service.APIKey.Update(key.Key, &body); err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": ctx.Keys["lang"].(translations.Translation).APIKeyUpdated})
+	ctx.JSON(http.StatusOK, gin.H{"message": dict.APIKeyUpdated})
 }

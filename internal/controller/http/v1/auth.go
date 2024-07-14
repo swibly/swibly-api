@@ -29,11 +29,13 @@ func newAuthRoutes(handler *gin.RouterGroup) {
 }
 
 func RegisterHandler(ctx *gin.Context) {
+	dict := translations.GetLang(ctx)
+
 	var body dto.UserRegister
 
 	if err := ctx.BindJSON(&body); err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InvalidBody})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.InvalidBody})
 		return
 	}
 
@@ -50,7 +52,7 @@ func RegisterHandler(ctx *gin.Context) {
 	if err == nil {
 		if token, err := utils.GenerateJWT(user.ID); err != nil {
 			log.Print(err)
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		} else {
 			ctx.JSON(http.StatusOK, gin.H{"token": token})
 		}
@@ -68,19 +70,21 @@ func RegisterHandler(ctx *gin.Context) {
 	var pgErr *pgconn.PgError
 	// 23505 => duplicated key value violates unique constraint
 	if errors.Is(err, gorm.ErrDuplicatedKey) || (errors.As(err, &pgErr) && pgErr.Code == "23505") {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": ctx.Keys["lang"].(translations.Translation).AuthDuplicatedUser})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": dict.AuthDuplicatedUser})
 		return
 	}
 
-	ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+	ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 }
 
 func LoginHandler(ctx *gin.Context) {
+	dict := translations.GetLang(ctx)
+
 	var body dto.UserLogin
 
 	if err := ctx.BindJSON(&body); err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InvalidBody})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.InvalidBody})
 		return
 	}
 
@@ -98,11 +102,11 @@ func LoginHandler(ctx *gin.Context) {
 		log.Print(err)
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"error": ctx.Keys["lang"].(translations.Translation).AuthWrongCredentials})
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": dict.AuthWrongCredentials})
 			return
 		}
 
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
@@ -110,31 +114,33 @@ func LoginHandler(ctx *gin.Context) {
 		log.Print(err)
 
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"error": ctx.Keys["lang"].(translations.Translation).AuthWrongCredentials})
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": dict.AuthWrongCredentials})
 			return
 		}
 
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
 	if token, err := utils.GenerateJWT(user.ID); err != nil {
 		log.Print(err)
 
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 	} else {
 		ctx.JSON(http.StatusOK, gin.H{"token": token})
 	}
 }
 
 func UpdateUserHandler(ctx *gin.Context) {
+	dict := translations.GetLang(ctx)
+
 	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
 
 	var body dto.UserUpdate
 
 	if err := ctx.BindJSON(&body); err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InvalidBody})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.InvalidBody})
 		return
 	}
 
@@ -148,21 +154,21 @@ func UpdateUserHandler(ctx *gin.Context) {
 
 	if body.Username != "" {
 		if profile, err := service.User.GetByUsername(body.Username); profile != nil && err == nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": ctx.Keys["lang"].(translations.Translation).AuthDuplicatedUser})
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.AuthDuplicatedUser})
 			return
 		}
 	}
 
 	if body.Email != "" {
 		if profile, err := service.User.GetByEmail(body.Email); profile != nil && err == nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": ctx.Keys["lang"].(translations.Translation).AuthDuplicatedUser})
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.AuthDuplicatedUser})
 			return
 		}
 	}
 
 	if body.Password != "" {
 		if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), config.Security.BcryptCost); err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		} else {
 			body.Password = string(hashedPassword)
 		}
@@ -170,21 +176,23 @@ func UpdateUserHandler(ctx *gin.Context) {
 
 	if err := service.User.Update(issuer.ID, &body); err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": ctx.Keys["lang"].(translations.Translation).AuthUserUpdated})
+	ctx.JSON(http.StatusOK, gin.H{"message": dict.AuthUserUpdated})
 }
 
 func DeleteUserHandler(ctx *gin.Context) {
+	dict := translations.GetLang(ctx)
+
 	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
 
 	if err := service.User.DeleteUser(issuer.ID); err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": ctx.Keys["lang"].(translations.Translation).AuthUserDeleted})
+	ctx.JSON(http.StatusOK, gin.H{"message": dict.AuthUserDeleted})
 }

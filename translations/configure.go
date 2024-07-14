@@ -10,7 +10,10 @@ import (
 )
 
 type Translation struct {
-	Hello string `yaml:"hello"`
+	Hello                   string `yaml:"hello"`
+	InvalidAPIKey           string `yaml:"invalid_api_key"`
+	MaximumAPIKey           string `yaml:"maximum_api_key"`
+	RequirePermissionAPIKey string `yaml:"require_permission_api_key"`
 }
 
 var Translations = make(map[string]Translation)

@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"log"
 	"slices"
 	"strings"
 
@@ -19,6 +18,5 @@ func DetectLanguage(ctx *gin.Context) {
 
 	ctx.Set("lang", translations.Translations[xlang])
 
-	log.Println(xlang)
 	ctx.Next()
 }

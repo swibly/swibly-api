@@ -1,1 +1,5 @@
 hello: Olá
+invalid_api_key: Chave de API inválida
+maximum_api_key: Chave de API chegou em seu limite máximo permitido. Contate o suporte ou obtenha uma
+  nova chave.
+require_permission_api_key: 'Esta chave de API não tem a permissão de: %s'

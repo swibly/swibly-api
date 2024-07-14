@@ -1,1 +1,4 @@
 hello: Hello
+invalid_api_key: Invalid API key
+maximum_api_key: API key has reached its maximum allowed usage. Contact support or obtain a new key.
+require_permission_api_key: 'This API key does not have permission to: %s'

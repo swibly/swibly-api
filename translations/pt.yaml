@@ -1,16 +1,17 @@
 api_key_destroyed: Chave de API destruída com sucesso.
 api_key_updated: Chave de API atualizada com sucesso.
 auth_duplicated_user: Já existe um usuário com esse nome de usuário ou e-mail.
-auth_user_created: Usuário criado.
 auth_user_deleted: Usuário deletado.
 auth_user_updated: Usuário atualizado.
 auth_wrong_credentials: Email, nome de usuário ou senha estão incorretos ou não existem.
-hello: Olá
+hello: Olá!
 internal_server_error: Erro interno de servidor. Por favor, tente novamente mais tarde.
-invalid_api_key: Chave de API inválida
+invalid_api_key: Chave de API inválida.
 invalid_body: Formato de corpo de solicitação inválido. Certifique-se de que a estrutura JSON esteja correta
   e que todos os campos obrigatórios estejam presentes.
 maximum_api_key: Chave de API chegou em seu limite máximo permitido. Contate o suporte ou obtenha uma
   nova chave.
 no_api_key_found: Nenhuma chave de API encontrada com este ID.
 require_permission_api_key: 'Esta chave de API não tem a permissão de: %s'
+search_incorrect: As pesquisas não podem ser compostas apenas por espaços ou caracteres especiais.
+search_no_results: Nada encontrado com esse critério de pesquisa.

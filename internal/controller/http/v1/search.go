@@ -10,6 +10,7 @@ import (
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/middleware"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/translations"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -26,7 +27,7 @@ func SearchByNameHandler(ctx *gin.Context) {
 	name := ctx.Query("name")
 
 	if !regexp.MustCompile(`[a-zA-Z ]`).MatchString(name) || strings.TrimSpace(name) == "" {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Searches cannot be composed of spaces only or special characters"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": ctx.Keys["lang"].(translations.Translation).SearchIncorrect})
 		return
 	}
 
@@ -46,12 +47,12 @@ func SearchByNameHandler(ctx *gin.Context) {
 	users, err := service.User.GetBySimilarName(name, page, perpage)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": "No user found with that name."})
+			ctx.JSON(http.StatusNotFound, gin.H{"error": ctx.Keys["lang"].(translations.Translation).SearchNoResults})
 			return
 		}
 
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
 		return
 	}
 

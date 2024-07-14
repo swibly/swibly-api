@@ -26,6 +26,9 @@ type Translation struct {
 	AuthUserDeleted      string `yaml:"auth_user_deleted"`
 	AuthUserUpdated      string `yaml:"auth_user_updated"`
 	AuthWrongCredentials string `yaml:"auth_wrong_credentials"`
+
+	SearchIncorrect string `yaml:"search_incorrect"`
+	SearchNoResults string `yaml:"search_no_results"`
 }
 
 var Translations = make(map[string]Translation)

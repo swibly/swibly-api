@@ -10,6 +10,7 @@ import (
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/middleware"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/translations"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgconn"
 	"golang.org/x/crypto/bcrypt"
@@ -32,7 +33,7 @@ func RegisterHandler(ctx *gin.Context) {
 
 	if err := ctx.BindJSON(&body); err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Bad body format"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InvalidBody})
 		return
 	}
 
@@ -49,9 +50,9 @@ func RegisterHandler(ctx *gin.Context) {
 	if err == nil {
 		if token, err := utils.GenerateJWT(user.ID); err != nil {
 			log.Print(err)
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
 		} else {
-			ctx.JSON(http.StatusOK, gin.H{"message": "User created", "token": token})
+			ctx.JSON(http.StatusOK, gin.H{"token": token})
 		}
 
 		return
@@ -67,11 +68,11 @@ func RegisterHandler(ctx *gin.Context) {
 	var pgErr *pgconn.PgError
 	// 23505 => duplicated key value violates unique constraint
 	if errors.Is(err, gorm.ErrDuplicatedKey) || (errors.As(err, &pgErr) && pgErr.Code == "23505") {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "An user with that username or email already exists."})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": ctx.Keys["lang"].(translations.Translation).AuthDuplicatedUser})
 		return
 	}
 
-	ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+	ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
 }
 
 func LoginHandler(ctx *gin.Context) {
@@ -79,7 +80,7 @@ func LoginHandler(ctx *gin.Context) {
 
 	if err := ctx.BindJSON(&body); err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Bad body format"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InvalidBody})
 		return
 	}
 
@@ -97,11 +98,11 @@ func LoginHandler(ctx *gin.Context) {
 		log.Print(err)
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "No user found with that username or email"})
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": ctx.Keys["lang"].(translations.Translation).AuthWrongCredentials})
 			return
 		}
 
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
 		return
 	}
 
@@ -109,20 +110,20 @@ func LoginHandler(ctx *gin.Context) {
 		log.Print(err)
 
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Password mismatch"})
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": ctx.Keys["lang"].(translations.Translation).AuthWrongCredentials})
 			return
 		}
 
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
 		return
 	}
 
 	if token, err := utils.GenerateJWT(user.ID); err != nil {
 		log.Print(err)
 
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
 	} else {
-		ctx.JSON(http.StatusOK, gin.H{"message": "User logged in", "token": token})
+		ctx.JSON(http.StatusOK, gin.H{"token": token})
 	}
 }
 
@@ -133,7 +134,7 @@ func UpdateUserHandler(ctx *gin.Context) {
 
 	if err := ctx.BindJSON(&body); err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Bad body format"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InvalidBody})
 		return
 	}
 
@@ -147,21 +148,21 @@ func UpdateUserHandler(ctx *gin.Context) {
 
 	if body.Username != "" {
 		if profile, err := service.User.GetByUsername(body.Username); profile != nil && err == nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": "An user with that username already exists"})
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": ctx.Keys["lang"].(translations.Translation).AuthDuplicatedUser})
 			return
 		}
 	}
 
 	if body.Email != "" {
 		if profile, err := service.User.GetByEmail(body.Email); profile != nil && err == nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": "An user with that email already exists"})
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": ctx.Keys["lang"].(translations.Translation).AuthDuplicatedUser})
 			return
 		}
 	}
 
 	if body.Password != "" {
 		if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), config.Security.BcryptCost); err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
 		} else {
 			body.Password = string(hashedPassword)
 		}
@@ -169,11 +170,11 @@ func UpdateUserHandler(ctx *gin.Context) {
 
 	if err := service.User.Update(issuer.ID, &body); err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "User updated"})
+	ctx.JSON(http.StatusOK, gin.H{"message": ctx.Keys["lang"].(translations.Translation).AuthUserUpdated})
 }
 
 func DeleteUserHandler(ctx *gin.Context) {
@@ -181,14 +182,9 @@ func DeleteUserHandler(ctx *gin.Context) {
 
 	if err := service.User.DeleteUser(issuer.ID); err != nil {
 		log.Print(err)
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": "User not found."})
-			return
-		}
-
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "User deleted"})
+	ctx.JSON(http.StatusOK, gin.H{"message": ctx.Keys["lang"].(translations.Translation).AuthUserDeleted})
 }

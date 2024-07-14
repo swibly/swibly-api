@@ -21,6 +21,11 @@ type Translation struct {
 	NoAPIKeyFound   string `yaml:"no_api_key_found"` // Used in queries for getting the permissions of keys
 	APIKeyDestroyed string `yaml:"api_key_destroyed"`
 	APIKeyUpdated   string `yaml:"api_key_updated"`
+
+	AuthDuplicatedUser   string `yaml:"auth_duplicated_user"`
+	AuthUserDeleted      string `yaml:"auth_user_deleted"`
+	AuthUserUpdated      string `yaml:"auth_user_updated"`
+	AuthWrongCredentials string `yaml:"auth_wrong_credentials"`
 }
 
 var Translations = make(map[string]Translation)

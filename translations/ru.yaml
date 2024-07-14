@@ -1,5 +1,9 @@
 api_key_destroyed: Ключ API успешно уничтожен.
 api_key_updated: Ключ API успешно обновлен.
+auth_duplicated_user: Уже существует пользователь с таким именем пользователя или электронной почтой.
+auth_user_deleted: Пользователь удален.
+auth_user_updated: Пользователь обновлен.
+auth_wrong_credentials: Электронная почта, имя пользователя или пароль неверны или не существуют.
 hello: Привет
 internal_server_error: Внутренняя ошибка сервера. Пожалуйста, попробуйте позже.
 invalid_api_key: Неверный ключ API

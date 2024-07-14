@@ -30,7 +30,7 @@ func newAPIKeyRoutes(handler *gin.RouterGroup) {
 		key, err := service.APIKey.Find(ctx.Param("key"))
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "No API key found."})
+				ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": ctx.Keys["lang"].(translations.Translation).NoAPIKeyFound})
 				return
 			}
 
@@ -112,7 +112,7 @@ func CreateAPIKey(ctx *gin.Context) {
 	newKey, err := service.APIKey.Create(issuerID, uint(maxUsage))
 	if err != nil {
 		log.Printf("Error generating new API key: %v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Couldn't generate new key"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
 		return
 	}
 
@@ -123,7 +123,7 @@ func GetAPIKeyInfo(ctx *gin.Context) {
 	key, err := service.APIKey.Find(ctx.Param("key"))
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": "No API key found."})
+			ctx.JSON(http.StatusNotFound, gin.H{"error": ctx.Keys["lang"].(translations.Translation).NoAPIKeyFound})
 			return
 		}
 
@@ -138,11 +138,11 @@ func GetAPIKeyInfo(ctx *gin.Context) {
 func DestroyAPIKey(ctx *gin.Context) {
 	if err := service.APIKey.Delete(ctx.Keys["api_key_lookup"].(*model.APIKey).Key); err != nil {
 		log.Printf("Error destroying API key: %v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Couldn't destroy key"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "Destroyied key"})
+	ctx.JSON(http.StatusOK, gin.H{"message": gin.H{"error": ctx.Keys["lang"].(translations.Translation).APIKeyDestroyed}})
 }
 
 func UpdateAPIKey(ctx *gin.Context) {
@@ -169,5 +169,5 @@ func UpdateAPIKey(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "API key updated"})
+	ctx.JSON(http.StatusOK, gin.H{"message": ctx.Keys["lang"].(translations.Translation).APIKeyUpdated})
 }

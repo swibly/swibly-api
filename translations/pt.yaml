@@ -1,3 +1,5 @@
+api_key_destroyed: Chave de API destruída com sucesso.
+api_key_updated: Chave de API atualizada com sucesso.
 hello: Olá
 internal_server_error: Erro interno de servidor. Por favor, tente novamente mais tarde.
 invalid_api_key: Chave de API inválida
@@ -5,4 +7,5 @@ invalid_body: Formato de corpo de solicitação inválido. Certifique-se de que 
   e que todos os campos obrigatórios estejam presentes.
 maximum_api_key: Chave de API chegou em seu limite máximo permitido. Contate o suporte ou obtenha uma
   nova chave.
+no_api_key_found: Nenhuma chave de API encontrada com este ID.
 require_permission_api_key: 'Esta chave de API não tem a permissão de: %s'

@@ -17,6 +17,10 @@ type Translation struct {
 
 	InternalServerError string `yaml:"internal_server_error"`
 	InvalidBody         string `yaml:"invalid_body"`
+
+	NoAPIKeyFound   string `yaml:"no_api_key_found"` // Used in queries for getting the permissions of keys
+	APIKeyDestroyed string `yaml:"api_key_destroyed"`
+	APIKeyUpdated   string `yaml:"api_key_updated"`
 }
 
 var Translations = make(map[string]Translation)

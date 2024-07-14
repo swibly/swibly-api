@@ -12,9 +12,11 @@ import (
 )
 
 func GetAPIKey(ctx *gin.Context) {
+	dict := translations.GetLang(ctx)
+
 	key, err := service.APIKey.Find(ctx.GetHeader("X-API-KEY"))
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InvalidAPIKey})
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": dict.InvalidAPIKey})
 		return
 	}
 
@@ -23,10 +25,12 @@ func GetAPIKey(ctx *gin.Context) {
 }
 
 func apiKeyHas(ctx *gin.Context, b int, permission string) {
+	dict := translations.GetLang(ctx)
+
 	key := ctx.Keys["api_key"].(*model.APIKey)
 
 	if key.MaxUsage != 0 && key.TimesUsed >= key.MaxUsage {
-		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": ctx.Keys["lang"].(translations.Translation).MaximumAPIKey})
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": dict.MaximumAPIKey})
 		return
 	}
 
@@ -35,7 +39,7 @@ func apiKeyHas(ctx *gin.Context, b int, permission string) {
 	}
 
 	if b == -1 {
-		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": fmt.Sprintf(ctx.Keys["lang"].(translations.Translation).RequirePermissionAPIKey, permission)})
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": fmt.Sprintf(dict.RequirePermissionAPIKey, permission)})
 		return
 	}
 

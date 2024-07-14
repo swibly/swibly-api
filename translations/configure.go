@@ -14,6 +14,9 @@ type Translation struct {
 	InvalidAPIKey           string `yaml:"invalid_api_key"`
 	MaximumAPIKey           string `yaml:"maximum_api_key"`
 	RequirePermissionAPIKey string `yaml:"require_permission_api_key"`
+
+	InternalServerError string `yaml:"internal_server_error"`
+	InvalidBody         string `yaml:"invalid_body"`
 }
 
 var Translations = make(map[string]Translation)

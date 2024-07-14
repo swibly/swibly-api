@@ -1,5 +1,8 @@
 hello: Olá
+internal_server_error: Erro interno de servidor. Por favor, tente novamente mais tarde.
 invalid_api_key: Chave de API inválida
+invalid_body: Formato de corpo de solicitação inválido. Certifique-se de que a estrutura JSON esteja correta
+  e que todos os campos obrigatórios estejam presentes.
 maximum_api_key: Chave de API chegou em seu limite máximo permitido. Contate o suporte ou obtenha uma
   nova chave.
 require_permission_api_key: 'Esta chave de API não tem a permissão de: %s'

@@ -11,6 +11,7 @@ import (
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/middleware"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/translations"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -34,7 +35,7 @@ func newAPIKeyRoutes(handler *gin.RouterGroup) {
 			}
 
 			log.Print(err)
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
 			return
 		}
 
@@ -65,7 +66,7 @@ func GetAllAPIKeys(ctx *gin.Context) {
 	keys, err := service.APIKey.FindAll(page, perpage)
 	if err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
 		return
 	}
 
@@ -90,7 +91,7 @@ func GetMyAPIKeys(ctx *gin.Context) {
 
 	keys, err := service.APIKey.FindByOwnerID(issuer.ID, page, perpage)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
 		return
 	}
 
@@ -127,7 +128,7 @@ func GetAPIKeyInfo(ctx *gin.Context) {
 		}
 
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
 		return
 	}
 
@@ -150,7 +151,7 @@ func UpdateAPIKey(ctx *gin.Context) {
 	var body dto.APIKey
 	if err := ctx.BindJSON(&body); err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Bad body format"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InvalidBody})
 		return
 	}
 
@@ -164,7 +165,7 @@ func UpdateAPIKey(ctx *gin.Context) {
 
 	if err := service.APIKey.Update(key.Key, &body); err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": ctx.Keys["lang"].(translations.Translation).InternalServerError})
 		return
 	}
 

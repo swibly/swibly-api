@@ -11,6 +11,7 @@ import (
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/middleware"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/translations"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -26,15 +27,17 @@ func newAPIKeyRoutes(handler *gin.RouterGroup) {
 
 	specific := h.Group("/:key")
 	specific.Use(func(ctx *gin.Context) {
+		dict := translations.GetTranslation(ctx)
+
 		key, err := service.APIKey.Find(ctx.Param("key"))
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "No API key found."})
+				ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": dict.NoAPIKeyFound})
 				return
 			}
 
 			log.Print(err)
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 			return
 		}
 
@@ -49,6 +52,8 @@ func newAPIKeyRoutes(handler *gin.RouterGroup) {
 }
 
 func GetAllAPIKeys(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
 	var (
 		page    int = 1
 		perpage int = 10
@@ -65,7 +70,7 @@ func GetAllAPIKeys(ctx *gin.Context) {
 	keys, err := service.APIKey.FindAll(page, perpage)
 	if err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
@@ -73,6 +78,8 @@ func GetAllAPIKeys(ctx *gin.Context) {
 }
 
 func GetMyAPIKeys(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
 	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
 
 	var (
@@ -90,7 +97,7 @@ func GetMyAPIKeys(ctx *gin.Context) {
 
 	keys, err := service.APIKey.FindByOwnerID(issuer.ID, page, perpage)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
@@ -98,6 +105,8 @@ func GetMyAPIKeys(ctx *gin.Context) {
 }
 
 func CreateAPIKey(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
 	var issuerID uint = 0
 	if u, exists := ctx.Get("auth_user"); exists {
 		issuerID = u.(*dto.ProfileSearch).ID
@@ -111,7 +120,7 @@ func CreateAPIKey(ctx *gin.Context) {
 	newKey, err := service.APIKey.Create(issuerID, uint(maxUsage))
 	if err != nil {
 		log.Printf("Error generating new API key: %v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Couldn't generate new key"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
@@ -119,15 +128,17 @@ func CreateAPIKey(ctx *gin.Context) {
 }
 
 func GetAPIKeyInfo(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
 	key, err := service.APIKey.Find(ctx.Param("key"))
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": "No API key found."})
+			ctx.JSON(http.StatusNotFound, gin.H{"error": dict.NoAPIKeyFound})
 			return
 		}
 
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
@@ -135,27 +146,31 @@ func GetAPIKeyInfo(ctx *gin.Context) {
 }
 
 func DestroyAPIKey(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
 	if err := service.APIKey.Delete(ctx.Keys["api_key_lookup"].(*model.APIKey).Key); err != nil {
 		log.Printf("Error destroying API key: %v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Couldn't destroy key"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "Destroyied key"})
+	ctx.JSON(http.StatusOK, gin.H{"message": gin.H{"error": dict.APIKeyDestroyed}})
 }
 
 func UpdateAPIKey(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
 	key := ctx.Keys["api_key_lookup"].(*model.APIKey)
 
 	var body dto.APIKey
 	if err := ctx.BindJSON(&body); err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Bad body format"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.InvalidBody})
 		return
 	}
 
 	if errs := utils.ValidateStruct(&body); errs != nil {
-		err := utils.ValidateErrorMessage(errs[0])
+		err := utils.ValidateErrorMessage(ctx, errs[0])
 
 		log.Print(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": gin.H{err.Param: err.Message}})
@@ -164,9 +179,9 @@ func UpdateAPIKey(ctx *gin.Context) {
 
 	if err := service.APIKey.Update(key.Key, &body); err != nil {
 		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error. Please, try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "API key updated"})
+	ctx.JSON(http.StatusOK, gin.H{"message": dict.APIKeyUpdated})
 }

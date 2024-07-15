@@ -7,13 +7,16 @@ import (
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/translations"
 	"github.com/gin-gonic/gin"
 )
 
 func GetAPIKey(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
 	key, err := service.APIKey.Find(ctx.GetHeader("X-API-KEY"))
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid API key"})
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": dict.InvalidAPIKey})
 		return
 	}
 
@@ -21,11 +24,13 @@ func GetAPIKey(ctx *gin.Context) {
 	ctx.Next()
 }
 
-func apiKeyHas(ctx *gin.Context, b int, field string) {
+func apiKeyHas(ctx *gin.Context, b int, permission string) {
+	dict := translations.GetTranslation(ctx)
+
 	key := ctx.Keys["api_key"].(*model.APIKey)
 
 	if key.MaxUsage != 0 && key.TimesUsed >= key.MaxUsage {
-		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "API key has reached its maximum allowed usage. Please contact support or obtain a new key."})
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": dict.MaximumAPIKey})
 		return
 	}
 
@@ -34,7 +39,7 @@ func apiKeyHas(ctx *gin.Context, b int, field string) {
 	}
 
 	if b == -1 {
-		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": fmt.Sprintf("This API key doesn't have the permission to handle %s", field)})
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": fmt.Sprintf(dict.RequirePermissionAPIKey, permission)})
 		return
 	}
 
@@ -43,25 +48,25 @@ func apiKeyHas(ctx *gin.Context, b int, field string) {
 
 func APIKeyHasEnabledKeyManage(ctx *gin.Context) {
 	key := ctx.Keys["api_key"].(*model.APIKey)
-	apiKeyHas(ctx, key.EnabledKeyManage, "api key manipulation")
+	apiKeyHas(ctx, key.EnabledKeyManage, "manage.api")
 }
 
 func APIKeyHasEnabledAuth(ctx *gin.Context) {
 	key := ctx.Keys["api_key"].(*model.APIKey)
-	apiKeyHas(ctx, key.EnabledAuth, "auth")
+	apiKeyHas(ctx, key.EnabledAuth, "manage.auth")
 }
 
 func APIKeyHasEnabledSearch(ctx *gin.Context) {
 	key := ctx.Keys["api_key"].(*model.APIKey)
-	apiKeyHas(ctx, key.EnabledSearch, "searches")
+	apiKeyHas(ctx, key.EnabledSearch, "query.search")
 }
 
 func APIKeyHasEnabledUserFetch(ctx *gin.Context) {
 	key := ctx.Keys["api_key"].(*model.APIKey)
-	apiKeyHas(ctx, key.EnabledUserFetch, "user fetch")
+	apiKeyHas(ctx, key.EnabledUserFetch, "query.user")
 }
 
 func APIKeyHasEnabledUserActions(ctx *gin.Context) {
 	key := ctx.Keys["api_key"].(*model.APIKey)
-	apiKeyHas(ctx, key.EnabledUserActions, "user actions")
+	apiKeyHas(ctx, key.EnabledUserActions, "actions")
 }

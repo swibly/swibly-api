@@ -12,6 +12,7 @@ import (
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/db"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/middleware"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/translations"
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,14 +21,15 @@ func main() {
 	db.Load()
 
 	service.Init()
+	translations.Init("./translations")
 
 	gin.SetMode(config.Router.GinMode)
 
 	router := gin.New()
-	router.Use(gin.Logger(), gin.Recovery(), middleware.GetAPIKey)
+	router.Use(gin.Logger(), gin.Recovery(), middleware.DetectLanguage, middleware.GetAPIKey)
 
-	router.GET("/healthz", func(ctx *gin.Context) {
-		ctx.Writer.WriteString("Hello, world!")
+	router.GET("/healthcare", func(ctx *gin.Context) {
+		ctx.Writer.WriteString(ctx.Keys["lang"].(translations.Translation).Hello)
 	})
 
 	v1.NewRouter(router)

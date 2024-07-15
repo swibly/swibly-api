@@ -1,0 +1,35 @@
+api_key_destroyed: API key was destroyed successfully.
+api_key_updated: API key was updated successfully.
+auth_duplicated_user: An user with that username or email already exists.
+auth_user_deleted: User deleted.
+auth_user_updated: User updated.
+auth_wrong_credentials: Email, username or password are incorrect or don't exist.
+hello: Hello!
+internal_server_error: Internal server error. Please, try again later.
+invalid_api_key: Invalid API key.
+invalid_body: Invalid request body format. Please ensure the JSON structure is correct and all required
+  fields are present.
+maximum_api_key: API key has reached its maximum allowed usage. Contact support or obtain a new key.
+no_api_key_found: No API key found with that ID.
+require_permission_api_key: 'This API key does not have permission to: %s'
+search_incorrect: Searches cannot be composed of spaces only or special characters.
+search_no_results: Nothing found with that search criteria.
+user_disabled_followers: User disabled viewing their followers.
+user_disabled_following: User disabled viewing whom are following them.
+user_disabled_profile: User disabled viewing their profile.
+user_error_follow_itself: Users cannot follow or unfollow themselves.
+user_following_already: User is already following %s.
+user_following_not: User is not following %s.
+user_following_started: User started following %s.
+user_following_stopped: User stopped following %s.
+user_not_found: User not found; are you sure this is their username?
+validator_incorrect_email_format: Email format is incorrect.
+validator_incorrect_password_format: The password should have a minimum of 8 characters, contain at least
+  one uppercase letter, one lowercase letter, one special character, and one numeral.
+validator_incorrect_username_format: Usernames must consist only of lowercase alphanumeric (a-z & 0-9)
+  characters.
+validator_max_chars: '%s must have a maximum of %s characters.'
+validator_min_chars: '%s must have at least %s characters.'
+validator_must_be_numerical_boolean: Value must be -1, 0 or 1.
+validator_must_be_supported_language: '%s must be one of the following supported languages: %s.'
+validator_required: '%s is a required field.'

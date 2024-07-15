@@ -28,7 +28,8 @@ func main() {
 	router := gin.New()
 	router.Use(gin.Logger(), gin.Recovery(), middleware.DisableCaching, middleware.DetectLanguage, middleware.GetAPIKey)
 
-	router.GET("/healthcare", func(ctx *gin.Context) {
+	// Apparently, some testing frameworks and is-this-alive-checking-tools just can't handle GET and prefer OPTIONS instead :/
+	router.Any("/healthcare", func(ctx *gin.Context) {
 		ctx.Writer.WriteString(ctx.Keys["lang"].(translations.Translation).Hello)
 	})
 

@@ -26,7 +26,7 @@ func main() {
 	gin.SetMode(config.Router.GinMode)
 
 	router := gin.New()
-	router.Use(gin.Logger(), gin.Recovery(), middleware.DetectLanguage, middleware.GetAPIKey)
+	router.Use(gin.Logger(), gin.Recovery(), middleware.DisableCaching, middleware.DetectLanguage, middleware.GetAPIKey)
 
 	router.GET("/healthcare", func(ctx *gin.Context) {
 		ctx.Writer.WriteString(ctx.Keys["lang"].(translations.Translation).Hello)

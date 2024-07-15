@@ -23,6 +23,7 @@ WORKDIR /root/
 
 COPY --from=builder /app/cmd/api/main .
 COPY config /root/config
+COPY translations /root/translations
 
 EXPOSE 8080
 

@@ -29,7 +29,7 @@ func newAuthRoutes(handler *gin.RouterGroup) {
 }
 
 func RegisterHandler(ctx *gin.Context) {
-	dict := translations.GetLang(ctx)
+	dict := translations.GetTranslation(ctx)
 
 	var body dto.UserRegister
 
@@ -78,7 +78,7 @@ func RegisterHandler(ctx *gin.Context) {
 }
 
 func LoginHandler(ctx *gin.Context) {
-	dict := translations.GetLang(ctx)
+	dict := translations.GetTranslation(ctx)
 
 	var body dto.UserLogin
 
@@ -132,7 +132,7 @@ func LoginHandler(ctx *gin.Context) {
 }
 
 func UpdateUserHandler(ctx *gin.Context) {
-	dict := translations.GetLang(ctx)
+	dict := translations.GetTranslation(ctx)
 
 	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
 
@@ -184,7 +184,7 @@ func UpdateUserHandler(ctx *gin.Context) {
 }
 
 func DeleteUserHandler(ctx *gin.Context) {
-	dict := translations.GetLang(ctx)
+	dict := translations.GetTranslation(ctx)
 
 	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
 

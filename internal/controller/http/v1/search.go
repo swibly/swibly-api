@@ -24,7 +24,7 @@ func newSearchRoutes(handler *gin.RouterGroup) {
 }
 
 func SearchByNameHandler(ctx *gin.Context) {
-	dict := translations.GetLang(ctx)
+	dict := translations.GetTranslation(ctx)
 
 	name := ctx.Query("name")
 

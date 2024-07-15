@@ -12,7 +12,7 @@ import (
 )
 
 func GetAPIKey(ctx *gin.Context) {
-	dict := translations.GetLang(ctx)
+	dict := translations.GetTranslation(ctx)
 
 	key, err := service.APIKey.Find(ctx.GetHeader("X-API-KEY"))
 	if err != nil {
@@ -25,7 +25,7 @@ func GetAPIKey(ctx *gin.Context) {
 }
 
 func apiKeyHas(ctx *gin.Context, b int, permission string) {
-	dict := translations.GetLang(ctx)
+	dict := translations.GetTranslation(ctx)
 
 	key := ctx.Keys["api_key"].(*model.APIKey)
 

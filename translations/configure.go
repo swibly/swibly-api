@@ -90,6 +90,6 @@ func Init(dir string) {
 	}
 }
 
-func GetLang(ctx *gin.Context) Translation {
+func GetTranslation(ctx *gin.Context) Translation {
 	return ctx.Keys["lang"].(Translation)
 }

@@ -95,7 +95,7 @@ func ValidateStruct(s any) validator.ValidationErrors {
 }
 
 func ValidateErrorMessage(ctx *gin.Context, fe validator.FieldError) ParamError {
-	dict := translations.GetLang(ctx)
+	dict := translations.GetTranslation(ctx)
 	field := strings.ToLower(fe.Field())
 
 	if fe.Tag() == "min" {

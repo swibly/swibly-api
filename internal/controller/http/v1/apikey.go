@@ -27,7 +27,7 @@ func newAPIKeyRoutes(handler *gin.RouterGroup) {
 
 	specific := h.Group("/:key")
 	specific.Use(func(ctx *gin.Context) {
-		dict := translations.GetLang(ctx)
+		dict := translations.GetTranslation(ctx)
 
 		key, err := service.APIKey.Find(ctx.Param("key"))
 		if err != nil {
@@ -52,7 +52,7 @@ func newAPIKeyRoutes(handler *gin.RouterGroup) {
 }
 
 func GetAllAPIKeys(ctx *gin.Context) {
-	dict := translations.GetLang(ctx)
+	dict := translations.GetTranslation(ctx)
 
 	var (
 		page    int = 1
@@ -78,7 +78,7 @@ func GetAllAPIKeys(ctx *gin.Context) {
 }
 
 func GetMyAPIKeys(ctx *gin.Context) {
-	dict := translations.GetLang(ctx)
+	dict := translations.GetTranslation(ctx)
 
 	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
 
@@ -105,7 +105,7 @@ func GetMyAPIKeys(ctx *gin.Context) {
 }
 
 func CreateAPIKey(ctx *gin.Context) {
-	dict := translations.GetLang(ctx)
+	dict := translations.GetTranslation(ctx)
 
 	var issuerID uint = 0
 	if u, exists := ctx.Get("auth_user"); exists {
@@ -128,7 +128,7 @@ func CreateAPIKey(ctx *gin.Context) {
 }
 
 func GetAPIKeyInfo(ctx *gin.Context) {
-	dict := translations.GetLang(ctx)
+	dict := translations.GetTranslation(ctx)
 
 	key, err := service.APIKey.Find(ctx.Param("key"))
 	if err != nil {
@@ -146,7 +146,7 @@ func GetAPIKeyInfo(ctx *gin.Context) {
 }
 
 func DestroyAPIKey(ctx *gin.Context) {
-	dict := translations.GetLang(ctx)
+	dict := translations.GetTranslation(ctx)
 
 	if err := service.APIKey.Delete(ctx.Keys["api_key_lookup"].(*model.APIKey).Key); err != nil {
 		log.Printf("Error destroying API key: %v", err)
@@ -158,7 +158,7 @@ func DestroyAPIKey(ctx *gin.Context) {
 }
 
 func UpdateAPIKey(ctx *gin.Context) {
-	dict := translations.GetLang(ctx)
+	dict := translations.GetTranslation(ctx)
 
 	key := ctx.Keys["api_key_lookup"].(*model.APIKey)
 

@@ -18,17 +18,14 @@ import (
 var Postgres *gorm.DB
 
 func typeCheckAndCreate(db *gorm.DB, typeName string, values []string) error {
-	var typeExists bool
-	err := db.Raw("SELECT EXISTS (SELECT 1 FROM pg_type WHERE typname =?)", typeName).Scan(&typeExists).Error
-	if err != nil {
-		return fmt.Errorf("error checking type existence: %w", err)
-	}
+	createTypeSQL := fmt.Sprintf(`DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = '%s') THEN CREATE TYPE %s AS ENUM ('%s'); END IF; END $$;`,
+		typeName,
+		typeName,
+		strings.Join(values, "', '"),
+	)
 
-	if !typeExists {
-		err := db.Exec(fmt.Sprintf("CREATE TYPE %s AS ENUM ('%s')", typeName, strings.Join(values, "', '"))).Error
-		if err != nil {
-			return fmt.Errorf("error creating type: %w", err)
-		}
+	if err := db.Exec(createTypeSQL).Error; err != nil {
+		return fmt.Errorf("error creating type: %w", err)
 	}
 
 	return nil
@@ -36,7 +33,10 @@ func typeCheckAndCreate(db *gorm.DB, typeName string, values []string) error {
 
 func Load() {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", config.Postgres.Host, config.Postgres.User, config.Postgres.Password, config.Postgres.DB, config.Postgres.Port, config.Postgres.SSLMode)
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{PrepareStmt: false})
+	db, err := gorm.Open(postgres.New(postgres.Config{
+		DSN:                  dsn,
+		PreferSimpleProtocol: true,
+	}), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
@@ -48,13 +48,13 @@ func Load() {
 
 	log.Print("Loaded Database")
 
-	if err := typeCheckAndCreate(Postgres, "enum_language", language.ArrayString); err != nil {
+	if err := typeCheckAndCreate(db, "enum_language", language.ArrayString); err != nil {
 		log.Fatal(err)
 	}
 
 	log.Print("Loaded migrations")
 
-	if err := Postgres.AutoMigrate(
+	if err := db.AutoMigrate(
 		&model.APIKey{},
 		&model.User{},
 		&model.Follower{},

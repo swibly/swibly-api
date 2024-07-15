@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/language"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/translations"
+	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -17,7 +19,7 @@ type ParamError struct {
 }
 
 func (pe ParamError) Error() string {
-	return fmt.Sprintf("%s: %s", pe.Param, pe.Message)
+	return fmt.Sprintf("%s: %s", strings.ToLower(pe.Param), pe.Message)
 }
 
 func newValidator() *validator.Validate {
@@ -92,55 +94,58 @@ func ValidateStruct(s any) validator.ValidationErrors {
 	return nil
 }
 
-func ValidateErrorMessage(fe validator.FieldError) ParamError {
+func ValidateErrorMessage(ctx *gin.Context, fe validator.FieldError) ParamError {
+	dict := translations.GetLang(ctx)
+	field := strings.ToLower(fe.Field())
+
 	if fe.Tag() == "min" {
 		return ParamError{
-			Param:   fe.Field(),
-			Message: fmt.Sprintf("%s must have at least %s characters", fe.Field(), fe.Param()),
+			Param:   field,
+			Message: fmt.Sprintf(dict.ValidatorMinChars, field, fe.Param()),
 		}
 	}
 
 	if fe.Tag() == "max" {
 		return ParamError{
-			Param:   fe.Field(),
-			Message: fmt.Sprintf("%s must have a maximum of %s characters", fe.Field(), fe.Param()),
+			Param:   field,
+			Message: fmt.Sprintf(dict.ValidatorMaxChars, field, fe.Param()),
 		}
 	}
 
 	switch fe.Tag() {
 	case "required":
 		return ParamError{
-			Param:   fe.Field(),
-			Message: fmt.Sprintf("%s is required", fe.Field()),
+			Param:   field,
+			Message: fmt.Sprintf(dict.ValidatorRequired, field),
 		}
 	case "mustbesupportedlanguage":
 		return ParamError{
-			Param:   fe.Field(),
-			Message: fmt.Sprintf("%s must be %s", fe.Field(), strings.Join(language.ArrayString, ", ")),
+			Param:   field,
+			Message: fmt.Sprintf(dict.ValidatorMustBeSupportedLanguage, field, strings.Join(language.ArrayString, ", ")),
 		}
 	case "mustbenumericalboolean":
 		return ParamError{
-			Param:   fe.Field(),
-			Message: "Value must be -1, 0 or 1",
+			Param:   field,
+			Message: dict.ValidatorMustBeNumericalBoolean,
 		}
 	case "username":
 		return ParamError{
-			Param:   fe.Field(),
-			Message: "Usernames must consist only of lowercase alphanumeric (a-z & 0-9) characters",
+			Param:   field,
+			Message: dict.ValidatorIncorrectUsernameFormat,
 		}
 	case "email":
 		return ParamError{
-			Param:   fe.Field(),
-			Message: "Email format is incorrect",
+			Param:   field,
+			Message: dict.ValidatorIncorrectEmailFormat,
 		}
 	case "password":
 		return ParamError{
-			Param:   fe.Field(),
-			Message: "The password should contain at least one uppercase letter, one lowercase letter, one special character, and one numeral",
+			Param:   field,
+			Message: dict.ValidatorIncorrectPasswordFormat,
 		}
 	default:
 		return ParamError{
-			Param:   fe.Field(),
+			Param:   field,
 			Message: fe.Error(),
 		}
 	}

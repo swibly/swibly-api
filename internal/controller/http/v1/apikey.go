@@ -170,7 +170,7 @@ func UpdateAPIKey(ctx *gin.Context) {
 	}
 
 	if errs := utils.ValidateStruct(&body); errs != nil {
-		err := utils.ValidateErrorMessage(errs[0])
+		err := utils.ValidateErrorMessage(ctx, errs[0])
 
 		log.Print(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": gin.H{err.Param: err.Message}})

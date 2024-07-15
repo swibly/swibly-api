@@ -24,3 +24,13 @@ user_following_not: Usuário ainda não está seguindo %s.
 user_following_started: Usuário começou a seguir %s.
 user_following_stopped: Usuário parou de seguir %s.
 user_not_found: Usuário não encontrado; você tem certeza de que este é o nome de usuário?
+validator_incorrect_email_format: Formato de email incorreto.
+validator_incorrect_password_format: A senha deve ter no mínimo 8 caracteres, conter pelo menos uma letra
+  maiúscula, uma letra minúscula, um caractere especial e um numeral.
+validator_incorrect_username_format: Os nomes de usuário devem consistir apenas de caracteres alfanuméricos
+  minúsculos (a-z e 0-9).
+validator_max_chars: '%s deve ter no máximo %s caracteres.'
+validator_min_chars: '%s deve ter no mínimo %s caracteres.'
+validator_must_be_numerical_boolean: Valor deve ser -1, 0 ou 1.
+validator_must_be_supported_language: '%s deve ser uma das seguintes linguas suportadas: %s.'
+validator_required: '%s é um campo obrigatório.'

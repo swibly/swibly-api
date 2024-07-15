@@ -40,14 +40,14 @@ func RegisterHandler(ctx *gin.Context) {
 	}
 
 	if errs := utils.ValidateStruct(&body); errs != nil {
-		err := utils.ValidateErrorMessage(errs[0])
+		err := utils.ValidateErrorMessage(ctx, errs[0])
 
 		log.Print(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": gin.H{err.Param: err.Message}})
 		return
 	}
 
-	user, err := service.User.CreateUser(body.FirstName, body.LastName, body.Username, body.Email, body.Password)
+	user, err := service.User.CreateUser(ctx, body.FirstName, body.LastName, body.Username, body.Email, body.Password)
 
 	if err == nil {
 		if token, err := utils.GenerateJWT(user.ID); err != nil {
@@ -89,7 +89,7 @@ func LoginHandler(ctx *gin.Context) {
 	}
 
 	if errs := utils.ValidateStruct(&body); errs != nil {
-		err := utils.ValidateErrorMessage(errs[0])
+		err := utils.ValidateErrorMessage(ctx, errs[0])
 
 		log.Print(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": gin.H{err.Param: err.Message}})
@@ -145,7 +145,7 @@ func UpdateUserHandler(ctx *gin.Context) {
 	}
 
 	if errs := utils.ValidateStruct(&body); errs != nil {
-		err := utils.ValidateErrorMessage(errs[0])
+		err := utils.ValidateErrorMessage(ctx, errs[0])
 
 		log.Print(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": gin.H{err.Param: err.Message}})

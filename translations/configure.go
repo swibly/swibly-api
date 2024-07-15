@@ -40,6 +40,15 @@ type Translation struct {
 	UserFollowingNot      string `yaml:"user_following_not"`
 	UserFollowingStarted  string `yaml:"user_following_started"`
 	UserFollowingStopped  string `yaml:"user_following_stopped"`
+
+	ValidatorIncorrectEmailFormat    string `yaml:"validator_incorrect_email_format"`
+	ValidatorIncorrectPasswordFormat string `yaml:"validator_incorrect_password_format"`
+	ValidatorIncorrectUsernameFormat string `yaml:"validator_incorrect_username_format"`
+	ValidatorMaxChars                string `yaml:"validator_max_chars"`
+	ValidatorMinChars                string `yaml:"validator_min_chars"`
+	ValidatorMustBeNumericalBoolean  string `yaml:"validator_must_be_numerical_boolean"`
+	ValidatorMustBeSupportedLanguage string `yaml:"validator_must_be_supported_language"`
+	ValidatorRequired                string `yaml:"validator_required"`
 }
 
 var Translations = make(map[string]Translation)

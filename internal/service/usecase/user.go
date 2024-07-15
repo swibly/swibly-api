@@ -6,6 +6,7 @@ import (
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/repository"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
+	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -18,7 +19,7 @@ func NewUserUseCase() UserUseCase {
 	return UserUseCase{ur: repository.NewUserRepository()}
 }
 
-func (uuc UserUseCase) CreateUser(firstname, lastname, username, email, password string) (*model.User, error) {
+func (uuc UserUseCase) CreateUser(ctx *gin.Context, firstname, lastname, username, email, password string) (*model.User, error) {
 	newUser := model.User{
 		FirstName: firstname,
 		LastName:  lastname,
@@ -28,7 +29,7 @@ func (uuc UserUseCase) CreateUser(firstname, lastname, username, email, password
 	}
 
 	if errs := utils.ValidateStruct(&newUser); errs != nil {
-		return nil, utils.ValidateErrorMessage(errs[0])
+		return nil, utils.ValidateErrorMessage(ctx, errs[0])
 	}
 
 	if _, err := uuc.GetByUsernameOrEmail(username, email); err == nil {

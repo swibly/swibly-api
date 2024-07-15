@@ -24,3 +24,13 @@ user_following_not: Пользователь не следует за %s.
 user_following_started: Пользователь начал следовать %s.
 user_following_stopped: Пользователь прекратил следовать за %s.
 user_not_found: Пользователь не найден; вы уверены, что это его имя пользователя?
+validator_incorrect_email_format: Формат электронной почты неверен.
+validator_incorrect_password_format: Пароль должен состоять минимум из 8 символов, содержать как минимум
+  одну заглавную букву, одну строчную букву, один специальный символ и одну цифру.
+validator_incorrect_username_format: Имена пользователей должны состоять только из строчных буквенно-цифровых
+  символов (a-z и 0-9).
+validator_max_chars: '%s должно содержать не более %s символов.'
+validator_min_chars: В %s должно быть не менее %s символов.
+validator_must_be_numerical_boolean: Значение должно быть -1, 0 или 1.
+validator_must_be_supported_language: '%s должен быть одним из следующих поддерживаемых языков: %s.'
+validator_required: '%s - обязательное поле.'

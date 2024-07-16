@@ -29,8 +29,23 @@ type UserUpdate struct {
 	Email    string `validate:"omitempty,email"                  json:"email"`
 	Password string `validate:"omitempty,password,min=12,max=48" json:"password"`
 
-	// NOTE: Notification and Show structs will be in another method/route to update
-	//       due to the nature of structs being a pain in the ass to work with :/
+	Notification struct {
+		InApp int `validate:"omitempty,mustbenumericalboolean" json:"inapp"`
+		Email int `validate:"omitempty,mustbenumericalboolean" json:"email"`
+	} `validate:"omitempty,dive" json:"notify" gorm:"embedded;embeddedPrefix:notify_"`
+
+	Show struct {
+		Profile    int `validate:"omitempty,mustbenumericalboolean" json:"profile"`
+		Image      int `validate:"omitempty,mustbenumericalboolean" json:"image"`
+		Comments   int `validate:"omitempty,mustbenumericalboolean" json:"comments"`
+		Favorites  int `validate:"omitempty,mustbenumericalboolean" json:"favorites"`
+		Projects   int `validate:"omitempty,mustbenumericalboolean" json:"projects"`
+		Components int `validate:"omitempty,mustbenumericalboolean" json:"components"`
+		Followers  int `validate:"omitempty,mustbenumericalboolean" json:"followers"`
+		Following  int `validate:"omitempty,mustbenumericalboolean" json:"following"`
+		Inventory  int `validate:"omitempty,mustbenumericalboolean" json:"inventory"`
+		Formations int `validate:"omitempty,mustbenumericalboolean" json:"formations"`
+	} `validate:"omitempty,dive" gorm:"embedded;embeddedPrefix:show_"`
 
 	Country string `validate:"omitempty" json:"country"`
 

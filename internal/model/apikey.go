@@ -1,8 +1,8 @@
 package model
 
 type APIKey struct {
-	Key     string `json:"key" gorm:"primarykey"`
-	OwnerID uint   `json:"owner_id" gorm:"index"`
+	Key           string `json:"key"   gorm:"primarykey"`
+	OwnerUsername string `json:"owner" gorm:"index"`
 
 	EnabledKeyManage   int `json:"enabled_key_manage"   gorm:"default:-1"` // Manage existing API keys
 	EnabledAuth        int `json:"enabled_auth"         gorm:"default:-1"` // Register, Login, Update, Delete

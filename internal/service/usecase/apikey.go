@@ -16,17 +16,24 @@ func NewAPIKeyUseCase() APIKeyUseCase {
 	return APIKeyUseCase{ar: repository.NewAPIKeyRepository()}
 }
 
-func (auc *APIKeyUseCase) Create(ownerID, maxUsage uint) (*model.APIKey, error) {
+func (auc *APIKeyUseCase) Create(ownerUsername string, maxUsage uint) (*model.APIKey, error) {
 	key := new(model.APIKey)
 	key.Key = uuid.New().String()
 
-	key.OwnerID = ownerID
+	if ownerUsername != "" {
+		if _, err := NewUserUseCase().GetByUsername(ownerUsername); err != nil {
+			return nil, err
+		}
+
+		key.OwnerUsername = ownerUsername
+	}
+
 	key.MaxUsage = maxUsage
 
 	return key, auc.ar.Store(key)
 }
 
-func (auc *APIKeyUseCase) Update(key string, updateModel *dto.APIKey) error {
+func (auc *APIKeyUseCase) Update(key string, updateModel *dto.UpdateAPIKey) error {
 	return auc.ar.Update(key, updateModel)
 }
 
@@ -34,16 +41,16 @@ func (auc *APIKeyUseCase) RegisterUse(key string) error {
 	return auc.ar.RegisterUse(key)
 }
 
-func (auc *APIKeyUseCase) FindAll(page, perPage int) (*dto.Pagination[model.APIKey], error) {
+func (auc *APIKeyUseCase) FindAll(page, perPage int) (*dto.Pagination[dto.ReadAPIKey], error) {
 	return auc.ar.FindAll(page, perPage)
 }
 
-func (auc *APIKeyUseCase) Find(key string) (*model.APIKey, error) {
+func (auc *APIKeyUseCase) Find(key string) (*dto.ReadAPIKey, error) {
 	return auc.ar.Find(key)
 }
 
-func (auc *APIKeyUseCase) FindByOwnerID(id uint, page, perPage int) (*dto.Pagination[model.APIKey], error) {
-	return auc.ar.FindByOwnerID(id, page, perPage)
+func (auc *APIKeyUseCase) FindByOwnerUsername(username string, page, perPage int) (*dto.Pagination[dto.ReadAPIKey], error) {
+	return auc.ar.FindByOwnerUsername(username, page, perPage)
 }
 
 func (auc *APIKeyUseCase) Delete(key string) error {

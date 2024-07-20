@@ -1,7 +1,7 @@
 package dto
 
-type APIKey struct {
-	OwnerID uint `validate:"omitempty" json:"owner_id"`
+type UpdateAPIKey struct {
+	OwnerUsername string `validate:"omitempty" json:"owner"`
 
 	EnabledKeyManage   int `validate:"omitempty,mustbenumericalboolean" json:"enabled_key_manage"`
 	EnabledAuth        int `validate:"omitempty,mustbenumericalboolean" json:"enabled_auth"`
@@ -11,4 +11,18 @@ type APIKey struct {
 
 	TimesUsed uint `validate:"omitempty" json:"times_used"`
 	MaxUsage  uint `validate:"omitempty" json:"max_usage"`
+}
+
+type ReadAPIKey struct {
+	Key           string `json:"key"`
+	OwnerUsername string `json:"owner"`
+
+	EnabledKeyManage   int `json:"enabled_key_manage"`
+	EnabledAuth        int `json:"enabled_auth"`
+	EnabledSearch      int `json:"enabled_search"`
+	EnabledUserFetch   int `json:"enabled_user_fetch"`
+	EnabledUserActions int `json:"enabled_user_actions"`
+
+	TimesUsed uint `json:"times_used"`
+	MaxUsage  uint `json:"max_usage"`
 }

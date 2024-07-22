@@ -14,11 +14,11 @@ type apiKeyRepository struct {
 
 type APIKeyRepository interface {
 	Store(*model.APIKey) error
-	Update(string, *dto.APIKey) error
+	Update(string, *dto.UpdateAPIKey) error
 	RegisterUse(string) error
-	FindAll(page, perPage int) (*dto.Pagination[model.APIKey], error)
-	Find(key string) (*model.APIKey, error)
-	FindByOwnerID(id uint, page, perPage int) (*dto.Pagination[model.APIKey], error)
+	FindAll(page, perPage int) (*dto.Pagination[dto.ReadAPIKey], error)
+	Find(key string) (*dto.ReadAPIKey, error)
+	FindByOwnerUsername(username string, page, perPage int) (*dto.Pagination[dto.ReadAPIKey], error)
 	Delete(string) error
 }
 
@@ -30,7 +30,7 @@ func (a apiKeyRepository) Store(createModel *model.APIKey) error {
 	return a.db.Create(&createModel).Error
 }
 
-func (a apiKeyRepository) Update(key string, updateModel *dto.APIKey) error {
+func (a apiKeyRepository) Update(key string, updateModel *dto.UpdateAPIKey) error {
 	return a.db.Model(&model.APIKey{}).Where("key = ?", key).Updates(&updateModel).Error
 }
 
@@ -38,22 +38,22 @@ func (a apiKeyRepository) RegisterUse(key string) error {
 	return a.db.Exec("UPDATE api_keys SET times_used = times_used + 1 WHERE key = ?", key).Error
 }
 
-func (a apiKeyRepository) FindAll(page, perPage int) (*dto.Pagination[model.APIKey], error) {
-	return pagination.Generate[model.APIKey](a.db.Model(&model.APIKey{}).Exec("SELECT * FROM api_keys"), page, perPage)
+func (a apiKeyRepository) FindAll(page, perPage int) (*dto.Pagination[dto.ReadAPIKey], error) {
+	return pagination.Generate[dto.ReadAPIKey](a.db.Model(&model.APIKey{}).Exec("SELECT * FROM api_keys"), page, perPage)
 }
 
-func (a apiKeyRepository) Find(key string) (*model.APIKey, error) {
-	var apikey *model.APIKey
+func (a apiKeyRepository) Find(key string) (*dto.ReadAPIKey, error) {
+	var apikey *dto.ReadAPIKey
 
-	if err := a.db.First(&apikey, "key = ?", key).Error; err != nil {
+	if err := a.db.Model(&model.APIKey{}).First(&apikey, "key = ?", key).Error; err != nil {
 		return nil, err
 	}
 
 	return apikey, nil
 }
 
-func (a apiKeyRepository) FindByOwnerID(ownerID uint, page, perPage int) (*dto.Pagination[model.APIKey], error) {
-	return pagination.Generate[model.APIKey](a.db.Model(&model.APIKey{}).Where("owner_id = ?", ownerID), page, perPage)
+func (a apiKeyRepository) FindByOwnerUsername(ownerUsername string, page, perPage int) (*dto.Pagination[dto.ReadAPIKey], error) {
+	return pagination.Generate[dto.ReadAPIKey](a.db.Model(&model.APIKey{}).Where("owner_username = ?", ownerUsername), page, perPage)
 }
 
 func (a apiKeyRepository) Delete(key string) error {

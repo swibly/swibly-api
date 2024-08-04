@@ -8,16 +8,19 @@ import (
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/translations"
 	"github.com/gin-gonic/gin"
 )
 
 func AuthMiddleware(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
 	tokenString := strings.TrimPrefix(ctx.GetHeader("Authorization"), "Bearer ")
 
 	if tokenString == "" {
 		log.Print("Couldn't find JWT token in header")
 
-		ctx.AbortWithStatus(http.StatusUnauthorized)
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": dict.Unauthorized})
 		return
 	}
 
@@ -25,7 +28,7 @@ func AuthMiddleware(ctx *gin.Context) {
 	if err != nil {
 		log.Print(err)
 
-		ctx.AbortWithStatus(http.StatusUnauthorized)
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": dict.Unauthorized})
 		return
 	}
 
@@ -33,7 +36,7 @@ func AuthMiddleware(ctx *gin.Context) {
 	if err != nil || id < 0 {
 		log.Print(err)
 
-		ctx.AbortWithStatus(http.StatusUnauthorized)
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": dict.Unauthorized})
 		return
 	}
 
@@ -41,7 +44,7 @@ func AuthMiddleware(ctx *gin.Context) {
 	if pf == nil && err != nil {
 		log.Print(err)
 
-		ctx.AbortWithStatus(http.StatusUnauthorized)
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": dict.Unauthorized})
 		return
 	}
 
@@ -50,6 +53,7 @@ func AuthMiddleware(ctx *gin.Context) {
 }
 
 func OptionalAuthMiddleware(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
 	tokenString := strings.TrimPrefix(ctx.GetHeader("Authorization"), "Bearer ")
 
 	if tokenString == "" {
@@ -69,7 +73,7 @@ func OptionalAuthMiddleware(ctx *gin.Context) {
 	if err != nil || id < 0 {
 		log.Print(err)
 
-		ctx.AbortWithStatus(http.StatusUnauthorized)
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": dict.Unauthorized})
 		return
 	}
 
@@ -77,7 +81,7 @@ func OptionalAuthMiddleware(ctx *gin.Context) {
 	if pf == nil && err != nil {
 		log.Print(err)
 
-		ctx.AbortWithStatus(http.StatusUnauthorized)
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": dict.Unauthorized})
 		return
 	}
 

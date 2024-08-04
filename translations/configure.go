@@ -17,6 +17,7 @@ type Translation struct {
 	RequirePermissionAPIKey string `yaml:"require_permission_api_key"`
 
 	InternalServerError string `yaml:"internal_server_error"`
+	Unauthorized        string `yaml:"unauthorized"`
 	InvalidBody         string `yaml:"invalid_body"`
 
 	NoAPIKeyFound   string `yaml:"no_api_key_found"` // Used in queries for getting the permissions of keys

@@ -39,4 +39,7 @@ type ProfileSearch struct {
 		Inventory  int `json:"inventory"`
 		Formations int `json:"formations"`
 	} `gorm:"embedded;embeddedPrefix:show_" json:"show"`
+
+	Country  string `json:"country"`
+	Language string `json:"language"`
 }

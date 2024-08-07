@@ -13,6 +13,7 @@ import (
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/db"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/middleware"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/translations"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,7 +27,20 @@ func main() {
 	gin.SetMode(config.Router.GinMode)
 
 	router := gin.New()
-	router.Use(gin.Logger(), gin.Recovery(), middleware.DisableCaching, middleware.DetectLanguage, middleware.GetAPIKey)
+	router.Use(
+		gin.Logger(),
+		gin.Recovery(),
+		middleware.DisableCaching,
+		middleware.DetectLanguage,
+		middleware.GetAPIKey,
+		cors.New(cors.Config{
+			AllowOrigins:     []string{"*"},
+			AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"},
+			AllowHeaders:     []string{"Origin"},
+			ExposeHeaders:    []string{"*"},
+			AllowCredentials: true,
+		}),
+	)
 
 	// Apparently, some testing frameworks and is-this-alive-checking-tools just can't handle GET and prefer OPTIONS instead :/
 	router.Any("/healthcare", func(ctx *gin.Context) {

@@ -28,11 +28,6 @@ func main() {
 
 	router := gin.New()
 	router.Use(
-		gin.Logger(),
-		gin.Recovery(),
-		middleware.DisableCaching,
-		middleware.DetectLanguage,
-		middleware.GetAPIKey,
 		cors.New(cors.Config{
 			AllowOrigins:     []string{"*"},
 			AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"},
@@ -40,6 +35,11 @@ func main() {
 			ExposeHeaders:    []string{"*"},
 			AllowCredentials: true,
 		}),
+		gin.Logger(),
+		gin.Recovery(),
+		middleware.DisableCaching,
+		middleware.DetectLanguage,
+		middleware.GetAPIKey,
 	)
 
 	// Apparently, some testing frameworks and is-this-alive-checking-tools just can't handle GET and prefer OPTIONS instead :/

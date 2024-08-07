@@ -45,8 +45,8 @@ func newAPIKeyRoutes(handler *gin.RouterGroup) {
 	})
 	{
 		specific.GET("", GetAPIKeyInfo)
-		specific.DELETE("/destroy", DestroyAPIKey)
-		specific.PATCH("/update", UpdateAPIKey)
+		specific.DELETE("", DestroyAPIKey)
+		specific.PATCH("", UpdateAPIKey)
 	}
 }
 
@@ -174,6 +174,13 @@ func UpdateAPIKey(ctx *gin.Context) {
 		log.Print(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": gin.H{err.Param: err.Message}})
 		return
+	}
+
+	if body.OwnerUsername != "" {
+		if _, err := service.User.GetByUsername(body.OwnerUsername); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UserNotFound})
+			return
+		}
 	}
 
 	if err := service.APIKey.Update(key.Key, &body); err != nil {

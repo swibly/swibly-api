@@ -44,7 +44,7 @@ func (f followRepository) GetFollowers(userID uint, page, perPage int) (*dto.Pag
 	query := f.db.Table("users").
 		Select("users.*, followers.since").
 		Joins("JOIN followers ON followers.follower_id = users.id").
-		Where("users.id = ?", userID)
+		Where("followers.following_id = ?", userID)
 
 	return pagination.Generate[dto.Follower](query, page, perPage)
 }
@@ -53,7 +53,7 @@ func (f followRepository) GetFollowing(userID uint, page, perPage int) (*dto.Pag
 	query := f.db.Table("users").
 		Select("users.*, followers.since").
 		Joins("JOIN followers ON followers.following_id = users.id").
-		Where("users.id = ?", userID)
+		Where("followers.follower_id = ?", userID)
 
 	return pagination.Generate[dto.Follower](query, page, perPage)
 }

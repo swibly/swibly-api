@@ -31,7 +31,7 @@ func main() {
 		cors.New(cors.Config{
 			AllowOrigins:     []string{"*"},
 			AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"},
-			AllowHeaders:     []string{"Origin"},
+			AllowHeaders:     []string{"*"},
 			ExposeHeaders:    []string{"*"},
 			AllowCredentials: true,
 		}),

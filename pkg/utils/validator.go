@@ -60,6 +60,10 @@ func newValidator() *validator.Validate {
 			return false
 		}
 
+		if len(password) > 48 {
+			return false
+		}
+
 		// \d stands for digits [0-9]
 		// \W_ stands for [^a-zA-Z0-9_]
 

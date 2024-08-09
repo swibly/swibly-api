@@ -7,13 +7,13 @@ type UserRegister struct {
 	LastName  string `validate:"required,min=3"                  json:"lastname"`
 	Username  string `validate:"required,username,min=3,max=32"  json:"username"`
 	Email     string `validate:"required,email"                  json:"email"`
-	Password  string `validate:"required,password,min=12,max=48" json:"password"`
+	Password  string `validate:"required,password" json:"password"`
 }
 
 type UserLogin struct {
 	Username string `validate:"omitempty,username,min=3,max=32" json:"username"`
 	Email    string `validate:"omitempty,email"                 json:"email"`
-	Password string `validate:"required,password,min=12,max=48" json:"password"`
+	Password string `validate:"required,password" json:"password"`
 }
 
 type UserUpdate struct {
@@ -27,7 +27,7 @@ type UserUpdate struct {
 	// NOTE: XP and Arkhoins doesn't make sense to update here
 
 	Email    string `validate:"omitempty,email"                  json:"email"`
-	Password string `validate:"omitempty,password,min=12,max=48" json:"password"`
+	Password string `validate:"omitempty,password" json:"password"`
 
 	Notification struct {
 		InApp int `validate:"omitempty,mustbenumericalboolean" json:"inapp"`

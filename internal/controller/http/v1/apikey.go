@@ -47,6 +47,7 @@ func newAPIKeyRoutes(handler *gin.RouterGroup) {
 		specific.GET("", GetAPIKeyInfo)
 		specific.DELETE("", DestroyAPIKey)
 		specific.PATCH("", UpdateAPIKey)
+		specific.POST("regenerate", RegenerateAPIKey)
 	}
 }
 
@@ -190,4 +191,19 @@ func UpdateAPIKey(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.APIKeyUpdated})
+}
+
+func RegenerateAPIKey(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	oldKey := ctx.Keys["api_key_lookup"].(*dto.ReadAPIKey)
+
+	newKey, err := service.APIKey.Regenerate(oldKey.Key)
+	if err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, newKey)
 }

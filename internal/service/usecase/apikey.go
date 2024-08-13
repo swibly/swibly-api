@@ -56,3 +56,7 @@ func (auc *APIKeyUseCase) FindByOwnerUsername(username string, page, perPage int
 func (auc *APIKeyUseCase) Delete(key string) error {
 	return auc.ar.Delete(key)
 }
+
+func (auc *APIKeyUseCase) Regenerate(key string) (*model.APIKey, error) {
+	return auc.ar.Regenerate(key, uuid.New().String())
+}

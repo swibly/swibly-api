@@ -20,6 +20,7 @@ type APIKeyRepository interface {
 	Find(key string) (*dto.ReadAPIKey, error)
 	FindByOwnerUsername(username string, page, perPage int) (*dto.Pagination[dto.ReadAPIKey], error)
 	Delete(string) error
+	Regenerate(oldKey, newKey string) (*model.APIKey, error)
 }
 
 func NewAPIKeyRepository() APIKeyRepository {
@@ -58,4 +59,20 @@ func (a apiKeyRepository) FindByOwnerUsername(ownerUsername string, page, perPag
 
 func (a apiKeyRepository) Delete(key string) error {
 	return a.db.Exec("DELETE FROM api_keys WHERE key = ?", key).Error
+}
+
+func (a apiKeyRepository) Regenerate(oldKey, newKey string) (*model.APIKey, error) {
+	var apiKey model.APIKey
+
+	err := a.db.Where("key = ?", oldKey).First(&apiKey).Error
+	if err != nil {
+		return nil, err
+	}
+
+	err = a.db.Model(&apiKey).Update("key", newKey).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &apiKey, nil
 }

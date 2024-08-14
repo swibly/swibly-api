@@ -8,8 +8,8 @@ import "github.com/gin-gonic/gin"
 //
 // HACK: Please, future me, fix this when you got time, it's kinda hacky
 func DisableCaching(ctx *gin.Context) {
-	ctx.Header("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
+	ctx.Header("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0")
 	ctx.Header("Pragma", "no-cache")
-	ctx.Header("Expires", "0")
+	ctx.Header("Expires", "1")
 	ctx.Next()
 }

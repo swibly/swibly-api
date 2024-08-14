@@ -8,7 +8,7 @@ import (
 
 // GetPermissionsMiddleware must be after OptionalAuthMiddleware or AuthMiddleware
 func GetPermissionsMiddleware(ctx *gin.Context) {
-	var issuer *dto.ProfileSearch = nil
+	var issuer *dto.UserProfile = nil
 	p, exists := ctx.Get("auth_user")
 
 	if !exists {
@@ -17,7 +17,7 @@ func GetPermissionsMiddleware(ctx *gin.Context) {
 		return
 	}
 
-	issuer = p.(*dto.ProfileSearch)
+	issuer = p.(*dto.UserProfile)
 
 	permissions, err := service.Permission.GetPermissions(issuer.ID)
 	if err != nil {

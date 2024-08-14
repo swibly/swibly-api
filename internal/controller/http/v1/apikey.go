@@ -80,7 +80,7 @@ func GetAllAPIKeys(ctx *gin.Context) {
 func GetMyAPIKeys(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
-	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
 
 	var (
 		page    int = 1
@@ -109,7 +109,7 @@ func CreateAPIKey(ctx *gin.Context) {
 
 	var issuerUsername string = ""
 	if u, exists := ctx.Get("auth_user"); exists {
-		issuerUsername = u.(*dto.ProfileSearch).Username
+		issuerUsername = u.(*dto.UserProfile).Username
 	}
 
 	maxUsage, err := strconv.ParseUint(ctx.Query("maxusage"), 10, 64)

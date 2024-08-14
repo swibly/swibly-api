@@ -25,8 +25,6 @@ func newUserRoutes(handler *gin.RouterGroup) {
 		h.GET("/:username/followers", middleware.APIKeyHasEnabledUserFetch, middleware.OptionalAuthMiddleware, middleware.GetPermissionsMiddleware, GetFollowersHandler)
 		h.GET("/:username/following", middleware.APIKeyHasEnabledUserFetch, middleware.OptionalAuthMiddleware, middleware.GetPermissionsMiddleware, GetFollowingHandler)
 
-		h.GET("/:username/permissions", middleware.APIKeyHasEnabledUserFetch, GetUserPermissions)
-
 		h.POST("/:username/follow", middleware.APIKeyHasEnabledUserActions, middleware.AuthMiddleware, FollowUserHandler)
 		h.POST("/:username/unfollow", middleware.APIKeyHasEnabledUserActions, middleware.AuthMiddleware, UnfollowUserHandler)
 	}
@@ -35,9 +33,9 @@ func newUserRoutes(handler *gin.RouterGroup) {
 func GetProfileHandler(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
-	var issuer *dto.ProfileSearch = nil
+	var issuer *dto.UserProfile = nil
 	if p, exists := ctx.Get("auth_user"); exists {
-		issuer = p.(*dto.ProfileSearch)
+		issuer = p.(*dto.UserProfile)
 	}
 
 	username := ctx.Param("username")
@@ -68,9 +66,9 @@ func GetProfileHandler(ctx *gin.Context) {
 func GetFollowersHandler(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
-	var issuer *dto.ProfileSearch = nil
+	var issuer *dto.UserProfile = nil
 	if p, exists := ctx.Get("auth_user"); exists {
-		issuer = p.(*dto.ProfileSearch)
+		issuer = p.(*dto.UserProfile)
 	}
 
 	username := ctx.Param("username")
@@ -124,9 +122,9 @@ func GetFollowersHandler(ctx *gin.Context) {
 func GetFollowingHandler(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
-	var issuer *dto.ProfileSearch = nil
+	var issuer *dto.UserProfile = nil
 	if p, exists := ctx.Get("auth_user"); exists {
-		issuer = p.(*dto.ProfileSearch)
+		issuer = p.(*dto.UserProfile)
 	}
 
 	username := ctx.Param("username")
@@ -177,42 +175,10 @@ func GetFollowingHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, pagination)
 }
 
-func GetUserPermissions(ctx *gin.Context) {
-	dict := translations.GetTranslation(ctx)
-
-	username := ctx.Param("username")
-	user, err := service.User.GetByUsername(username)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": dict.UserNotFound})
-			return
-		}
-
-		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
-		return
-	}
-
-	permissions, err := service.Permission.GetPermissions(user.ID)
-	if err != nil {
-		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
-		return
-	}
-
-	list := []string{}
-
-	for _, permission := range permissions {
-		list = append(list, permission.Name)
-	}
-
-	ctx.JSON(http.StatusOK, list)
-}
-
 func FollowUserHandler(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
-	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
 
 	receiver, err := service.User.GetByUsername(ctx.Param("username"))
 	if err != nil {
@@ -247,7 +213,7 @@ func FollowUserHandler(ctx *gin.Context) {
 func UnfollowUserHandler(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
-	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
 
 	receiver, err := service.User.GetByUsername(ctx.Param("username"))
 	if err != nil {

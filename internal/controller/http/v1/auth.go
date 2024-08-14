@@ -93,6 +93,11 @@ func LoginHandler(ctx *gin.Context) {
 		return
 	}
 
+	if body.Username == "" && body.Email == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.InvalidBody})
+		return
+	}
+
 	if errs := utils.ValidateStruct(&body); errs != nil {
 		err := utils.ValidateErrorMessage(ctx, errs[0])
 

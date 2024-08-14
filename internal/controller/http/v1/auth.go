@@ -144,7 +144,7 @@ func LoginHandler(ctx *gin.Context) {
 func UpdateUserHandler(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
-	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
 
 	var body dto.UserUpdate
 
@@ -196,7 +196,7 @@ func UpdateUserHandler(ctx *gin.Context) {
 func DeleteUserHandler(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
-	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
 
 	if err := service.User.DeleteUser(issuer.ID); err != nil {
 		log.Print(err)

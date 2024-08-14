@@ -20,8 +20,8 @@ type UserRepository interface {
 	Store(*model.User) error
 	Update(uint, *dto.UserUpdate) error
 	UnsafeFind(*model.User) (*model.User, error)
-	Find(*model.User) (*dto.ProfileSearch, error)
-	SearchLikeName(name string, page, perpage int) (*dto.Pagination[dto.ProfileSearch], error)
+	Find(*model.User) (*dto.UserProfile, error)
+	SearchLikeName(name string, page, perpage int) (*dto.Pagination[dto.UserProfile], error)
 	Delete(uint) error
 }
 
@@ -47,8 +47,8 @@ func (u userRepository) UnsafeFind(searchModel *model.User) (*model.User, error)
 	return user, nil
 }
 
-func (u userRepository) Find(searchModel *model.User) (*dto.ProfileSearch, error) {
-	var user *dto.ProfileSearch
+func (u userRepository) Find(searchModel *model.User) (*dto.UserProfile, error) {
+	var user *dto.UserProfile
 
 	if err := u.db.Model(&model.User{}).First(&user, searchModel).Error; err != nil {
 		return nil, err
@@ -85,7 +85,7 @@ func (u userRepository) Find(searchModel *model.User) (*dto.ProfileSearch, error
 	return user, nil
 }
 
-func (u userRepository) SearchLikeName(name string, page, perPage int) (*dto.Pagination[dto.ProfileSearch], error) {
+func (u userRepository) SearchLikeName(name string, page, perPage int) (*dto.Pagination[dto.UserProfile], error) {
 	terms := strings.Fields(name)
 
 	var query = u.db.Model(&model.User{})
@@ -103,7 +103,7 @@ func (u userRepository) SearchLikeName(name string, page, perPage int) (*dto.Pag
 		},
 	})
 
-	return pagination.Generate[dto.ProfileSearch](query, page, perPage)
+	return pagination.Generate[dto.UserProfile](query, page, perPage)
 }
 
 func (u userRepository) Delete(id uint) error {

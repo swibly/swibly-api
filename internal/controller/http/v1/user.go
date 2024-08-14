@@ -35,9 +35,9 @@ func newUserRoutes(handler *gin.RouterGroup) {
 func GetProfileHandler(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
-	var issuer *dto.ProfileSearch = nil
+	var issuer *dto.UserProfile = nil
 	if p, exists := ctx.Get("auth_user"); exists {
-		issuer = p.(*dto.ProfileSearch)
+		issuer = p.(*dto.UserProfile)
 	}
 
 	username := ctx.Param("username")
@@ -68,9 +68,9 @@ func GetProfileHandler(ctx *gin.Context) {
 func GetFollowersHandler(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
-	var issuer *dto.ProfileSearch = nil
+	var issuer *dto.UserProfile = nil
 	if p, exists := ctx.Get("auth_user"); exists {
-		issuer = p.(*dto.ProfileSearch)
+		issuer = p.(*dto.UserProfile)
 	}
 
 	username := ctx.Param("username")
@@ -124,9 +124,9 @@ func GetFollowersHandler(ctx *gin.Context) {
 func GetFollowingHandler(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
-	var issuer *dto.ProfileSearch = nil
+	var issuer *dto.UserProfile = nil
 	if p, exists := ctx.Get("auth_user"); exists {
-		issuer = p.(*dto.ProfileSearch)
+		issuer = p.(*dto.UserProfile)
 	}
 
 	username := ctx.Param("username")
@@ -212,7 +212,7 @@ func GetUserPermissions(ctx *gin.Context) {
 func FollowUserHandler(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
-	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
 
 	receiver, err := service.User.GetByUsername(ctx.Param("username"))
 	if err != nil {
@@ -247,7 +247,7 @@ func FollowUserHandler(ctx *gin.Context) {
 func UnfollowUserHandler(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
-	issuer := ctx.Keys["auth_user"].(*dto.ProfileSearch)
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
 
 	receiver, err := service.User.GetByUsername(ctx.Param("username"))
 	if err != nil {

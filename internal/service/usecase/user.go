@@ -57,23 +57,23 @@ func (uuc UserUseCase) DeleteUser(id uint) error {
 	return uuc.ur.Delete(id)
 }
 
-func (uuc UserUseCase) GetByID(id uint) (*dto.ProfileSearch, error) {
+func (uuc UserUseCase) GetByID(id uint) (*dto.UserProfile, error) {
 	return uuc.ur.Find(&model.User{ID: id})
 }
 
-func (uuc UserUseCase) GetByUsername(username string) (*dto.ProfileSearch, error) {
+func (uuc UserUseCase) GetByUsername(username string) (*dto.UserProfile, error) {
 	return uuc.ur.Find(&model.User{Username: username})
 }
 
-func (uuc UserUseCase) GetByEmail(email string) (*dto.ProfileSearch, error) {
+func (uuc UserUseCase) GetByEmail(email string) (*dto.UserProfile, error) {
 	return uuc.ur.Find(&model.User{Email: email})
 }
 
-func (uuc UserUseCase) GetByUsernameOrEmail(username, email string) (*dto.ProfileSearch, error) {
+func (uuc UserUseCase) GetByUsernameOrEmail(username, email string) (*dto.UserProfile, error) {
 	return uuc.ur.Find(&model.User{Username: username, Email: email})
 }
 
-func (uuc UserUseCase) GetBySimilarName(name string, page, perpage int) (*dto.Pagination[dto.ProfileSearch], error) {
+func (uuc UserUseCase) GetBySimilarName(name string, page, perpage int) (*dto.Pagination[dto.UserProfile], error) {
 	return uuc.ur.SearchLikeName(name, page, perpage)
 }
 

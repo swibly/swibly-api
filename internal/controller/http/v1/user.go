@@ -25,8 +25,6 @@ func newUserRoutes(handler *gin.RouterGroup) {
 		h.GET("/:username/followers", middleware.APIKeyHasEnabledUserFetch, middleware.OptionalAuthMiddleware, middleware.GetPermissionsMiddleware, GetFollowersHandler)
 		h.GET("/:username/following", middleware.APIKeyHasEnabledUserFetch, middleware.OptionalAuthMiddleware, middleware.GetPermissionsMiddleware, GetFollowingHandler)
 
-		h.GET("/:username/permissions", middleware.APIKeyHasEnabledUserFetch, GetUserPermissions)
-
 		h.POST("/:username/follow", middleware.APIKeyHasEnabledUserActions, middleware.AuthMiddleware, FollowUserHandler)
 		h.POST("/:username/unfollow", middleware.APIKeyHasEnabledUserActions, middleware.AuthMiddleware, UnfollowUserHandler)
 	}
@@ -175,38 +173,6 @@ func GetFollowingHandler(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, pagination)
-}
-
-func GetUserPermissions(ctx *gin.Context) {
-	dict := translations.GetTranslation(ctx)
-
-	username := ctx.Param("username")
-	user, err := service.User.GetByUsername(username)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": dict.UserNotFound})
-			return
-		}
-
-		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
-		return
-	}
-
-	permissions, err := service.Permission.GetPermissions(user.ID)
-	if err != nil {
-		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
-		return
-	}
-
-	list := []string{}
-
-	for _, permission := range permissions {
-		list = append(list, permission.Name)
-	}
-
-	ctx.JSON(http.StatusOK, list)
 }
 
 func FollowUserHandler(ctx *gin.Context) {

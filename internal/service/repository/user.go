@@ -54,10 +54,13 @@ func (u userRepository) Find(searchModel *model.User) (*dto.ProfileSearch, error
 		return nil, err
 	}
 
-	// Temp follow repo
+	user.Permissions = []string{}
+
+	// Temp repos
 	// Tricky, not recommended, not performant
-	// But I don't care
+	// But I don't care ;)
 	tempFollowRepo := NewFollowRepository()
+	tempPermissionRepo := NewPermissionRepository()
 
 	if count, err := tempFollowRepo.GetFollowersCount(user.ID); err != nil {
 		return nil, err
@@ -69,6 +72,14 @@ func (u userRepository) Find(searchModel *model.User) (*dto.ProfileSearch, error
 		return nil, err
 	} else {
 		user.Following = count
+	}
+
+	if permissions, err := tempPermissionRepo.GetPermissions(user.ID); err != nil {
+		return nil, err
+	} else {
+		for _, permission := range permissions {
+			user.Permissions = append(user.Permissions, permission.Name)
+		}
 	}
 
 	return user, nil

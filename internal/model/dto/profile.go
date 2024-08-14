@@ -42,4 +42,6 @@ type ProfileSearch struct {
 
 	Country  string `json:"country"`
 	Language string `json:"language"`
+
+	Permissions []string `gorm:"-" json:"permissions"`
 }

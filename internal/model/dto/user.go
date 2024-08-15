@@ -36,7 +36,7 @@ type UserUpdate struct {
 	Notification struct {
 		InApp int `validate:"omitempty,mustbenumericalboolean" json:"inapp"`
 		Email int `validate:"omitempty,mustbenumericalboolean" json:"email"`
-	} `validate:"omitempty,dive" json:"notify" gorm:"embedded;embeddedPrefix:notify_"`
+	} `validate:"omitempty" json:"notify" gorm:"embedded;embeddedPrefix:notify_"`
 
 	Show struct {
 		Profile    int `validate:"omitempty,mustbenumericalboolean" json:"profile"`
@@ -49,7 +49,7 @@ type UserUpdate struct {
 		Following  int `validate:"omitempty,mustbenumericalboolean" json:"following"`
 		Inventory  int `validate:"omitempty,mustbenumericalboolean" json:"inventory"`
 		Formations int `validate:"omitempty,mustbenumericalboolean" json:"formations"`
-	} `validate:"omitempty,dive" gorm:"embedded;embeddedPrefix:show_"`
+  } `validate:"omitempty" json:"show" gorm:"embedded;embeddedPrefix:show_"`
 
 	Country string `validate:"omitempty" json:"country"`
 

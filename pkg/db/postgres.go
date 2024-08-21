@@ -60,6 +60,7 @@ func Load() {
 		&model.Follower{},
 		&model.Permission{},
 		&model.UserPermission{},
+		&model.Project{},
 	); err != nil {
 		log.Fatal(err)
 	}

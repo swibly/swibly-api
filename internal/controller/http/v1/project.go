@@ -17,7 +17,17 @@ func newProjectRoutes(handler *gin.RouterGroup) {
 	g := handler.Group("/projects")
 	{
 		g.POST("/create", middleware.AuthMiddleware, CreateProject)
-		g.GET("/public", ListPublicProjects)
+
+		g.GET("", ListPublicProjects)
+	}
+
+	specific := g.Group("/:project")
+	specific.Use(middleware.AuthMiddleware, middleware.ProjectLookup)
+	{
+		specific.GET("", GetProjectInfo)
+		specific.GET("/content", GetProjectContent)
+
+		specific.PATCH("/content", middleware.ProjectOwnership, UpdateProject)
 	}
 }
 
@@ -54,7 +64,8 @@ func CreateProject(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "Project created successfully"})
+	// TODO: Add translation
+	ctx.JSON(http.StatusCreated, gin.H{"message": "Project created successfully"})
 }
 
 func ListPublicProjects(ctx *gin.Context) {
@@ -81,4 +92,36 @@ func ListPublicProjects(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, projects)
+}
+
+func GetProjectInfo(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, ctx.Keys["project_lookup"])
+}
+
+func GetProjectContent(ctx *gin.Context) {
+	content := service.Project.GetContent(ctx.Keys["project_lookup"].(*dto.ProjectInformation).ID)
+
+	ctx.JSON(http.StatusOK, content)
+}
+
+func UpdateProject(ctx *gin.Context) {
+	var content map[string]any
+
+	if err := ctx.BindJSON(&content); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid body"})
+		return
+	}
+
+	if content == nil {
+		log.Print("Empty content")
+
+		// TODO: Add translation
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Empty content"})
+		return
+	}
+
+	service.Project.SaveContent(ctx.Keys["project_lookup"].(*dto.ProjectInformation).ID, content)
+
+	// TODO: Add translation
+	ctx.JSON(http.StatusOK, gin.H{"message": "Project updated successfully"})
 }

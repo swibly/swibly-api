@@ -1,8 +1,6 @@
 package model
 
-import (
-	"time"
-)
+import "time"
 
 type Project struct {
 	ID        uint `gorm:"primarykey"`

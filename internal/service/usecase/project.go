@@ -21,3 +21,11 @@ func (puc *ProjectUseCase) Create(p *dto.ProjectCreation) error {
 func (puc *ProjectUseCase) GetPublicAll(page, perPage int) (*dto.Pagination[model.Project], error) {
 	return puc.pr.GetPublicAll(page, perPage)
 }
+
+func (puc *ProjectUseCase) GetContent(id uint) map[string]any {
+	return puc.pr.GetContent(id)
+}
+
+func (puc *ProjectUseCase) SaveContent(id uint, content map[string]any) error {
+	return puc.pr.SaveContent(id, content)
+}

@@ -1,0 +1,84 @@
+package v1
+
+import (
+	"log"
+	"net/http"
+	"strconv"
+
+	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/middleware"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/translations"
+	"github.com/gin-gonic/gin"
+)
+
+func newProjectRoutes(handler *gin.RouterGroup) {
+	g := handler.Group("/projects")
+	{
+		g.POST("/create", middleware.AuthMiddleware, CreateProject)
+		g.GET("/public", ListPublicProjects)
+	}
+}
+
+func CreateProject(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
+
+	var body dto.ProjectCreation
+
+	if err := ctx.BindJSON(&body); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.InvalidBody})
+		return
+	}
+
+	if errs := utils.ValidateStruct(&body); errs != nil {
+		err := utils.ValidateErrorMessage(ctx, errs[0])
+
+		log.Print(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": gin.H{err.Param: err.Message}})
+		return
+	}
+
+	if body.Content == nil {
+		body.Content = make(map[string]any)
+	}
+
+	body.Owner = issuer.Username
+
+	err := service.Project.Create(&body)
+	if err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "Project created successfully"})
+}
+
+func ListPublicProjects(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	var (
+		page    int = 1
+		perpage int = 10
+	)
+
+	if ctx.Query("page") != "" {
+		page, _ = strconv.Atoi(ctx.Query("page"))
+	}
+
+	if ctx.Query("perpage") != "" {
+		perpage, _ = strconv.Atoi(ctx.Query("perpage"))
+	}
+
+	projects, err := service.Project.GetPublicAll(page, perpage)
+	if err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, projects)
+}

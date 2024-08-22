@@ -17,8 +17,8 @@ type ProjectRepository interface {
 	GetPublicAll(page, perPage int) (*dto.Pagination[model.Project], error)
 	GetPublicOwner(ownerID string, page, perPage int) (*dto.Pagination[model.Project], error)
 	GetByID(id uint) (*dto.ProjectInformation, error)
-	GetContent(id uint) map[string]any
-	SaveContent(id uint, content map[string]any) error
+	GetContent(id uint) any
+	SaveContent(id uint, content any) error
 }
 
 func NewProjectRepository() ProjectRepository {
@@ -51,14 +51,12 @@ func (p projectRepository) GetByID(id uint) (*dto.ProjectInformation, error) {
 	return &project, p.db.Model(&model.Project{}).First(&project, id).Error
 }
 
-func (p projectRepository) GetContent(id uint) map[string]any {
+func (p projectRepository) GetContent(id uint) any {
 	var project model.Project
 	p.db.Model(&model.Project{}).First(&project, id)
 	return project.Content
 }
 
-func (p projectRepository) SaveContent(id uint, content map[string]any) error {
-	println(id)
-
+func (p projectRepository) SaveContent(id uint, content any) error {
 	return p.db.Model(&model.Project{}).Where("id = ?", id).Updates(&model.Project{Content: content}).Error
 }

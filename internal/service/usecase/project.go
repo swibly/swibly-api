@@ -26,10 +26,10 @@ func (puc *ProjectUseCase) GetByID(id uint) (*dto.ProjectInformation, error) {
 	return puc.pr.GetByID(id)
 }
 
-func (puc *ProjectUseCase) GetContent(id uint) map[string]any {
+func (puc *ProjectUseCase) GetContent(id uint) any {
 	return puc.pr.GetContent(id)
 }
 
-func (puc *ProjectUseCase) SaveContent(id uint, content map[string]any) error {
+func (puc *ProjectUseCase) SaveContent(id uint, content any) error {
 	return puc.pr.SaveContent(id, content)
 }

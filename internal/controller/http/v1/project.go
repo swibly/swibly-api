@@ -51,10 +51,6 @@ func CreateProject(ctx *gin.Context) {
 		return
 	}
 
-	if body.Content == nil {
-		body.Content = make(map[string]any)
-	}
-
 	body.Owner = issuer.Username
 
 	err := service.Project.Create(&body)
@@ -105,18 +101,12 @@ func GetProjectContent(ctx *gin.Context) {
 }
 
 func UpdateProject(ctx *gin.Context) {
-	var content map[string]any
+	dict := translations.GetTranslation(ctx)
+
+	var content any
 
 	if err := ctx.BindJSON(&content); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid body"})
-		return
-	}
-
-	if content == nil {
-		log.Print("Empty content")
-
-		// TODO: Add translation
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Empty content"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.InvalidBody})
 		return
 	}
 

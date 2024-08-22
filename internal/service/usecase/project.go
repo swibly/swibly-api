@@ -22,6 +22,10 @@ func (puc *ProjectUseCase) GetPublicAll(page, perPage int) (*dto.Pagination[mode
 	return puc.pr.GetPublicAll(page, perPage)
 }
 
+func (puc *ProjectUseCase) GetByID(id uint) (*dto.ProjectInformation, error) {
+	return puc.pr.GetByID(id)
+}
+
 func (puc *ProjectUseCase) GetContent(id uint) map[string]any {
 	return puc.pr.GetContent(id)
 }

@@ -16,6 +16,7 @@ type ProjectRepository interface {
 	Store(*dto.ProjectCreation) error
 	GetPublicAll(page, perPage int) (*dto.Pagination[model.Project], error)
 	GetPublicOwner(ownerID string, page, perPage int) (*dto.Pagination[model.Project], error)
+	GetByID(id uint) (*dto.ProjectInformation, error)
 	GetContent(id uint) map[string]any
 	SaveContent(id uint, content map[string]any) error
 }
@@ -43,6 +44,11 @@ func (p projectRepository) GetPublicAll(page, perPage int) (*dto.Pagination[mode
 
 func (p projectRepository) GetPublicOwner(owner string, page, perPage int) (*dto.Pagination[model.Project], error) {
 	return pagination.Generate[model.Project](p.db.Exec("SELECT * FROM projects WHERE published = true AND owner = ?", owner), page, perPage)
+}
+
+func (p projectRepository) GetByID(id uint) (*dto.ProjectInformation, error) {
+	var project dto.ProjectInformation
+	return &project, p.db.Model(&model.Project{}).First(&project, id).Error
 }
 
 func (p projectRepository) GetContent(id uint) map[string]any {

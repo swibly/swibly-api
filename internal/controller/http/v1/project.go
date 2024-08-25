@@ -21,6 +21,8 @@ func newProjectRoutes(handler *gin.RouterGroup) {
 		g.POST("/create", middleware.AuthMiddleware, CreateProject)
 	}
 
+	g.GET("/mine", middleware.AuthMiddleware, ListMyProjects)
+
 	owner := g.Group("/owner/:owner")
 	owner.Use(middleware.AuthMiddleware)
 	{
@@ -71,6 +73,21 @@ func CreateProject(ctx *gin.Context) {
 
 	// TODO: Add translation
 	ctx.JSON(http.StatusCreated, gin.H{"message": "Project created successfully"})
+}
+
+func ListMyProjects(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
+
+	projects, err := service.Project.GetByOwnerUsername(issuer.Username, true, 1, 10)
+	if err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, projects)
 }
 
 func ListPublicProjects(ctx *gin.Context) {

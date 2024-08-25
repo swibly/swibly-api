@@ -16,9 +16,9 @@ import (
 func newProjectRoutes(handler *gin.RouterGroup) {
 	g := handler.Group("/projects")
 	{
-		g.POST("/create", middleware.AuthMiddleware, CreateProject)
-
 		g.GET("", ListPublicProjects)
+
+		g.POST("/create", middleware.AuthMiddleware, CreateProject)
 	}
 
 	specific := g.Group("/:project")
@@ -28,6 +28,9 @@ func newProjectRoutes(handler *gin.RouterGroup) {
 		specific.GET("/content", GetProjectContent)
 
 		specific.PATCH("/content", middleware.ProjectOwnership, UpdateProject)
+
+		specific.POST("/publish", middleware.ProjectOwnership, PublishProject)
+		specific.POST("/unpublish", middleware.ProjectOwnership, UnpublishProject)
 	}
 }
 
@@ -114,4 +117,32 @@ func UpdateProject(ctx *gin.Context) {
 
 	// TODO: Add translation
 	ctx.JSON(http.StatusOK, gin.H{"message": "Project updated successfully"})
+}
+
+func PublishProject(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	err := service.Project.Publish(ctx.Keys["project_lookup"].(*dto.ProjectInformation).ID)
+	if err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
+
+	// TODO: Add translation
+	ctx.JSON(http.StatusOK, gin.H{"message": "Project published successfully"})
+}
+
+func UnpublishProject(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	err := service.Project.Unpublish(ctx.Keys["project_lookup"].(*dto.ProjectInformation).ID)
+	if err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
+
+	// TODO: Add translation
+	ctx.JSON(http.StatusOK, gin.H{"message": "Project unpublished successfully"})
 }

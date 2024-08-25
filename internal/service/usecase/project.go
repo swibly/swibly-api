@@ -33,3 +33,11 @@ func (puc *ProjectUseCase) GetContent(id uint) any {
 func (puc *ProjectUseCase) SaveContent(id uint, content any) error {
 	return puc.pr.SaveContent(id, content)
 }
+
+func (puc *ProjectUseCase) Publish(id uint) error {
+	return puc.pr.Publish(id)
+}
+
+func (puc *ProjectUseCase) Unpublish(id uint) error {
+	return puc.pr.Unpublish(id)
+}

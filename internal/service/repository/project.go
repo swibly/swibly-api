@@ -19,6 +19,8 @@ type ProjectRepository interface {
 	GetByID(id uint) (*dto.ProjectInformation, error)
 	GetContent(id uint) any
 	SaveContent(id uint, content any) error
+	Publish(id uint) error
+	Unpublish(id uint) error
 }
 
 func NewProjectRepository() ProjectRepository {
@@ -59,4 +61,16 @@ func (p projectRepository) GetContent(id uint) any {
 
 func (p projectRepository) SaveContent(id uint, content any) error {
 	return p.db.Model(&model.Project{}).Where("id = ?", id).Updates(&model.Project{Content: content}).Error
+}
+
+func (p projectRepository) Publish(id uint) error {
+	return p.db.Model(&model.Project{}).Where("id = ?", id).Updates(map[string]any{
+		"published": true,
+	}).Error
+}
+
+func (p projectRepository) Unpublish(id uint) error {
+	return p.db.Model(&model.Project{}).Where("id = ?", id).Updates(map[string]any{
+		"published": false,
+	}).Error
 }

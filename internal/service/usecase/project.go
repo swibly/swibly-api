@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/repository"
 )
@@ -18,7 +17,7 @@ func (puc *ProjectUseCase) Create(p *dto.ProjectCreation) error {
 	return puc.pr.Store(p)
 }
 
-func (puc *ProjectUseCase) GetPublicAll(page, perPage int) (*dto.Pagination[model.Project], error) {
+func (puc *ProjectUseCase) GetPublicAll(page, perPage int) (*dto.Pagination[dto.ProjectInformation], error) {
 	return puc.pr.GetPublicAll(page, perPage)
 }
 

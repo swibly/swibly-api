@@ -20,7 +20,7 @@ func ProjectLookup(ctx *gin.Context) {
 	if err != nil {
 		log.Print(err)
 		// TODO: Add translation
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Invalid project ID"})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
 		return
 	}
 

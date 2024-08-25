@@ -21,6 +21,10 @@ func (puc *ProjectUseCase) GetPublicAll(page, perPage int) (*dto.Pagination[dto.
 	return puc.pr.GetPublicAll(page, perPage)
 }
 
+func (puc *ProjectUseCase) GetByOwnerUsername(ownerUsername string, amIOwner bool, page, perPage int) (*dto.Pagination[dto.ProjectInformation], error) {
+	return puc.pr.GetByOwnerUsername(ownerUsername, amIOwner, page, perPage)
+}
+
 func (puc *ProjectUseCase) GetByID(id uint) (*dto.ProjectInformation, error) {
 	return puc.pr.GetByID(id)
 }

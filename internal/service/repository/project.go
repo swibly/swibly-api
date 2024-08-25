@@ -15,6 +15,7 @@ type projectRepository struct {
 type ProjectRepository interface {
 	Store(*dto.ProjectCreation) error
 	GetPublicAll(page, perPage int) (*dto.Pagination[dto.ProjectInformation], error)
+	GetByOwnerUsername(ownerUsername string, amIOwner bool, page, perPage int) (*dto.Pagination[dto.ProjectInformation], error)
 	GetByID(id uint) (*dto.ProjectInformation, error)
 	GetContent(id uint) any
 	SaveContent(id uint, content any) error
@@ -41,6 +42,17 @@ func (p projectRepository) Store(project *dto.ProjectCreation) error {
 
 func (p projectRepository) GetPublicAll(page, perPage int) (*dto.Pagination[dto.ProjectInformation], error) {
 	return pagination.Generate[dto.ProjectInformation](p.db.Model(&model.Project{}).Select("*").Where("published = ?", true), page, perPage)
+}
+
+func (p projectRepository) GetByOwnerUsername(ownerUsername string, amIOwner bool, page, perPage int) (*dto.Pagination[dto.ProjectInformation], error) {
+	var query *gorm.DB
+	if amIOwner {
+		query = p.db.Model(&model.Project{}).Select("*").Where("owner = ?", ownerUsername)
+	} else {
+		query = p.db.Model(&model.Project{}).Select("*").Where("owner = ?", ownerUsername).Where("published = ?", true)
+	}
+
+	return pagination.Generate[dto.ProjectInformation](query, page, perPage)
 }
 
 func (p projectRepository) GetByID(id uint) (*dto.ProjectInformation, error) {

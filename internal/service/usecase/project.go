@@ -33,6 +33,10 @@ func (puc *ProjectUseCase) GetContent(id uint) any {
 	return puc.pr.GetContent(id)
 }
 
+func (puc *ProjectUseCase) GetBySimilarName(name string, page, perpage int) (*dto.Pagination[dto.ProjectInformation], error) {
+	return puc.pr.SearchLikeName(name, page, perpage)
+}
+
 func (puc *ProjectUseCase) SaveContent(id uint, content any) error {
 	return puc.pr.SaveContent(id, content)
 }

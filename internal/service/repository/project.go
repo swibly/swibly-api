@@ -1,11 +1,15 @@
 package repository
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/db"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/pagination"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type projectRepository struct {
@@ -18,6 +22,7 @@ type ProjectRepository interface {
 	GetByOwnerUsername(ownerUsername string, amIOwner bool, page, perPage int) (*dto.Pagination[dto.ProjectInformation], error)
 	GetByID(id uint) (*dto.ProjectInformation, error)
 	GetContent(id uint) any
+	SearchLikeName(name string, page, perpage int) (*dto.Pagination[dto.ProjectInformation], error)
 	SaveContent(id uint, content any) error
 	Publish(id uint) error
 	Unpublish(id uint) error
@@ -64,6 +69,29 @@ func (p projectRepository) GetContent(id uint) any {
 	var project model.Project
 	p.db.Model(&model.Project{}).First(&project, id)
 	return project.Content
+}
+
+func (p projectRepository) SearchLikeName(name string, page, perPage int) (*dto.Pagination[dto.ProjectInformation], error) {
+	terms := strings.Fields(name)
+
+	query := p.db.Model(&model.Project{}).Where("published = ?", true)
+
+	orConditions := p.db
+	for _, term := range terms {
+		alike := fmt.Sprintf("%%%s%%", strings.ToLower(term))
+		orConditions = orConditions.Or("LOWER(name) LIKE ?", alike)
+	}
+	query = query.Where(orConditions)
+
+	query = query.Order(clause.OrderBy{
+		Expression: clause.Expr{
+			SQL:                "CASE WHEN LOWER(name) = LOWER(?) THEN 1 ELSE 2 END",
+			Vars:               []any{name},
+			WithoutParentheses: true,
+		},
+	})
+
+	return pagination.Generate[dto.ProjectInformation](query, page, perPage)
 }
 
 func (p projectRepository) SaveContent(id uint, content any) error {

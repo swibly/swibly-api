@@ -23,11 +23,7 @@ func newProjectRoutes(handler *gin.RouterGroup) {
 
 	g.GET("/mine", middleware.AuthMiddleware, ListMyProjects)
 
-	owner := g.Group("/owner/:owner")
-	owner.Use(middleware.AuthMiddleware)
-	{
-		owner.GET("", ListProjectsByOwner)
-	}
+	g.GET("/owner/:owner", middleware.OptionalAuthMiddleware, ListProjectsByOwner)
 
 	specific := g.Group("/:project")
 	specific.Use(middleware.AuthMiddleware, middleware.ProjectLookup)
@@ -120,7 +116,10 @@ func ListPublicProjects(ctx *gin.Context) {
 func ListProjectsByOwner(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
-	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
+	var issuerUsername string = ""
+	if u, exists := ctx.Get("auth_user"); exists {
+		issuerUsername = u.(*dto.UserProfile).Username
+	}
 
 	ownerUsername := ctx.Param("owner")
 
@@ -135,7 +134,7 @@ func ListProjectsByOwner(ctx *gin.Context) {
 		perPage = i
 	}
 
-	projects, err := service.Project.GetByOwnerUsername(ownerUsername, issuer.Username == ownerUsername, page, perPage)
+	projects, err := service.Project.GetByOwnerUsername(ownerUsername, issuerUsername == ownerUsername, page, perPage)
 	if err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})

@@ -7,9 +7,11 @@ auth_wrong_credentials: Email, nome de usuário ou senha estão incorretos ou n�
 hello: Olá!
 internal_server_error: Erro interno de servidor. Por favor, tente novamente mais tarde.
 invalid_api_key: Chave de API inválida.
-invalid_body: Formato de corpo de solicitação inválido. Certifique-se de que a estrutura JSON esteja correta
+invalid_body:
+  Formato de corpo de solicitação inválido. Certifique-se de que a estrutura JSON esteja correta
   e que todos os campos obrigatórios estejam presentes.
-maximum_api_key: Chave de API chegou em seu limite máximo permitido. Contate o suporte ou obtenha uma
+maximum_api_key:
+  Chave de API chegou em seu limite máximo permitido. Contate o suporte ou obtenha uma
   nova chave.
 no_api_key_found: Nenhuma chave de API encontrada com este ID.
 require_permission_api_key: 'Esta chave de API não tem a permissão de: %s'
@@ -26,12 +28,21 @@ user_following_started: Usuário começou a seguir %s.
 user_following_stopped: Usuário parou de seguir %s.
 user_not_found: Usuário não encontrado; você tem certeza de que este é o nome de usuário?
 validator_incorrect_email_format: Formato de email incorreto.
-validator_incorrect_password_format: A senha deve ter no mínimo 8, e no máximo caracteres, conter pelo menos uma letra
+validator_incorrect_password_format:
+  A senha deve ter no mínimo 8, e no máximo caracteres, conter pelo menos uma letra
   maiúscula, uma letra minúscula, um caractere especial e um numeral.
-validator_incorrect_username_format: Os nomes de usuário devem consistir apenas de caracteres alfanuméricos
+validator_incorrect_username_format:
+  Os nomes de usuário devem consistir apenas de caracteres alfanuméricos
   minúsculos (a-z e 0-9).
 validator_max_chars: '%s deve ter no máximo %s caracteres.'
 validator_min_chars: '%s deve ter no mínimo %s caracteres.'
 validator_must_be_numerical_boolean: Valor deve ser -1, 0 ou 1.
 validator_must_be_supported_language: '%s deve ser uma das seguintes linguas suportadas: %s.'
 validator_required: '%s é um campo obrigatório.'
+project_not_found: Projeto não encontrado.
+project_created: Projeto criado.
+project_updated: Projeto atualizado.
+project_deleted: Projeto excluído.
+project_published: Projeto publicado.
+project_unpublished: Projeto privado.
+project_invalid: ID de projeto inválido.

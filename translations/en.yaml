@@ -7,7 +7,8 @@ auth_wrong_credentials: Email, username or password are incorrect or don't exist
 hello: Hello!
 internal_server_error: Internal server error. Please, try again later.
 invalid_api_key: Invalid API key.
-invalid_body: Invalid request body format. Please ensure the JSON structure is correct and all required
+invalid_body:
+  Invalid request body format. Please ensure the JSON structure is correct and all required
   fields are present.
 maximum_api_key: API key has reached its maximum allowed usage. Contact support or obtain a new key.
 no_api_key_found: No API key found with that ID.
@@ -25,12 +26,21 @@ user_following_started: User started following %s.
 user_following_stopped: User stopped following %s.
 user_not_found: User not found; are you sure this is their username?
 validator_incorrect_email_format: Email format is incorrect.
-validator_incorrect_password_format: The password should have a minimum of 8, maximum of 48 characters, contain at least
+validator_incorrect_password_format:
+  The password should have a minimum of 8, maximum of 48 characters, contain at least
   one uppercase letter, one lowercase letter, one special character, and one numeral.
-validator_incorrect_username_format: Usernames must consist only of lowercase alphanumeric (a-z & 0-9)
+validator_incorrect_username_format:
+  Usernames must consist only of lowercase alphanumeric (a-z & 0-9)
   characters.
 validator_max_chars: '%s must have a maximum of %s characters.'
 validator_min_chars: '%s must have at least %s characters.'
 validator_must_be_numerical_boolean: Value must be -1, 0 or 1.
 validator_must_be_supported_language: '%s must be one of the following supported languages: %s.'
 validator_required: '%s is a required field.'
+project_not_found: Project not found.
+project_created: Project created.
+project_updated: Project updated.
+project_deleted: Project deleted.
+project_published: Project published.
+project_unpublished: Project unpublished.
+project_invalid: Invalid project ID.

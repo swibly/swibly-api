@@ -26,6 +26,7 @@ type ProjectRepository interface {
 	SaveContent(id uint, content any) error
 	Publish(id uint) error
 	Unpublish(id uint) error
+	Delete(id uint) error
 }
 
 func NewProjectRepository() ProjectRepository {
@@ -108,4 +109,8 @@ func (p projectRepository) Unpublish(id uint) error {
 	return p.db.Model(&model.Project{}).Where("id = ?", id).Updates(map[string]any{
 		"published": false,
 	}).Error
+}
+
+func (p projectRepository) Delete(id uint) error {
+	return p.db.Where("id = ?", id).Unscoped().Delete(&model.Project{}).Error
 }

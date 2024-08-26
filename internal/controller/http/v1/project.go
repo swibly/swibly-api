@@ -39,6 +39,8 @@ func newProjectRoutes(handler *gin.RouterGroup) {
 
 		specific.POST("/publish", middleware.ProjectOwnership, PublishProject)
 		specific.POST("/unpublish", middleware.ProjectOwnership, UnpublishProject)
+
+		specific.DELETE("", middleware.ProjectOwnership, DeleteProject)
 	}
 }
 
@@ -196,4 +198,18 @@ func UnpublishProject(ctx *gin.Context) {
 
 	// TODO: Add translation
 	ctx.JSON(http.StatusOK, gin.H{"message": "Project unpublished successfully"})
+}
+
+func DeleteProject(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	err := service.Project.Delete(ctx.Keys["project_lookup"].(*dto.ProjectInformation).ID)
+	if err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
+
+	// TODO: Add translation
+	ctx.JSON(http.StatusOK, gin.H{"message": "Project deleted successfully"})
 }

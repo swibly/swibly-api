@@ -48,3 +48,7 @@ func (puc *ProjectUseCase) Publish(id uint) error {
 func (puc *ProjectUseCase) Unpublish(id uint) error {
 	return puc.pr.Unpublish(id)
 }
+
+func (puc *ProjectUseCase) Delete(id uint) error {
+	return puc.pr.Delete(id)
+}

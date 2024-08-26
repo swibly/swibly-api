@@ -19,16 +19,14 @@ func ProjectLookup(ctx *gin.Context) {
 	projectID, err := strconv.ParseUint(ctx.Param("project"), 10, 64)
 	if err != nil {
 		log.Print(err)
-		// TODO: Add translation
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": dict.ProjectInvalid})
 		return
 	}
 
 	project, err := service.Project.GetByID(uint(projectID))
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			// TODO: Add translation
-			ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "No project found"})
+			ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": dict.ProjectNotFound})
 			return
 		}
 
@@ -38,8 +36,7 @@ func ProjectLookup(ctx *gin.Context) {
 	}
 
 	if !project.Published && project.Owner != ctx.Keys["auth_user"].(*dto.UserProfile).Username {
-		// TODO: Add translation
-		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "No project found"})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": dict.ProjectNotFound})
 		return
 	}
 
@@ -48,10 +45,11 @@ func ProjectLookup(ctx *gin.Context) {
 }
 
 func ProjectOwnership(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
 	project := ctx.Keys["project_lookup"].(*dto.ProjectInformation)
 	if project.Owner != ctx.Keys["auth_user"].(*dto.UserProfile).Username {
-		// TODO: Add translation
-		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "No project found"})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": dict.ProjectNotFound})
 		return
 	}
 

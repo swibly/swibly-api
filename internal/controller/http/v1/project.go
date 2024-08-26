@@ -73,8 +73,7 @@ func CreateProject(ctx *gin.Context) {
 		return
 	}
 
-	// TODO: Add translation
-	ctx.JSON(http.StatusCreated, gin.H{"message": "Project created successfully"})
+	ctx.JSON(http.StatusCreated, gin.H{"message": dict.ProjectCreated})
 }
 
 func ListMyProjects(ctx *gin.Context) {
@@ -168,8 +167,7 @@ func UpdateProject(ctx *gin.Context) {
 
 	service.Project.SaveContent(ctx.Keys["project_lookup"].(*dto.ProjectInformation).ID, content)
 
-	// TODO: Add translation
-	ctx.JSON(http.StatusOK, gin.H{"message": "Project updated successfully"})
+	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectUpdated})
 }
 
 func PublishProject(ctx *gin.Context) {
@@ -182,8 +180,7 @@ func PublishProject(ctx *gin.Context) {
 		return
 	}
 
-	// TODO: Add translation
-	ctx.JSON(http.StatusOK, gin.H{"message": "Project published successfully"})
+	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectPublished})
 }
 
 func UnpublishProject(ctx *gin.Context) {
@@ -196,8 +193,7 @@ func UnpublishProject(ctx *gin.Context) {
 		return
 	}
 
-	// TODO: Add translation
-	ctx.JSON(http.StatusOK, gin.H{"message": "Project unpublished successfully"})
+	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectUnpublished})
 }
 
 func DeleteProject(ctx *gin.Context) {
@@ -210,6 +206,5 @@ func DeleteProject(ctx *gin.Context) {
 		return
 	}
 
-	// TODO: Add translation
-	ctx.JSON(http.StatusOK, gin.H{"message": "Project deleted successfully"})
+	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectDeleted})
 }

@@ -49,6 +49,14 @@ func (puc *ProjectUseCase) Unpublish(id uint) error {
 	return puc.pr.Unpublish(id)
 }
 
+func (puc *ProjectUseCase) Favorite(userId, projectId uint) error {
+	return puc.pr.Unfavorite(userId, projectId)
+}
+
+func (puc *ProjectUseCase) Unfavorite(userId, projectId uint) error {
+	return puc.pr.Unfavorite(userId, projectId)
+}
+
 func (puc *ProjectUseCase) Delete(id uint) error {
 	return puc.pr.Delete(id)
 }

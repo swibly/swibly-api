@@ -20,3 +20,8 @@ type Project struct {
 
 	Upstream uint `gorm:"index"`
 }
+
+type ProjectFavorite struct {
+	ProjectID uint `gorm:"index"`
+	UserID    uint `gorm:"index"`
+}

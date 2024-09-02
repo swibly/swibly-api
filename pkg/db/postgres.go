@@ -63,6 +63,7 @@ func Load() {
 		&model.Permission{},
 		&model.UserPermission{},
 		&model.Project{},
+		&model.ProjectFavorite{},
 	); err != nil {
 		log.Fatal(err)
 	}

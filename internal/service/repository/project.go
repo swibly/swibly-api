@@ -26,6 +26,8 @@ type ProjectRepository interface {
 	SaveContent(id uint, content any) error
 	Publish(id uint) error
 	Unpublish(id uint) error
+	Favorite(userId, projectId uint) error
+	Unfavorite(userId, projectId uint) error
 	Delete(id uint) error
 }
 
@@ -111,6 +113,15 @@ func (p projectRepository) Unpublish(id uint) error {
 	}).Error
 }
 
+func (p projectRepository) Favorite(userId, projectId uint) error {
+	return p.db.Create(&model.ProjectFavorite{ProjectID: projectId, UserID: userId}).Error
+}
+
+func (p projectRepository) Unfavorite(userId, projectId uint) error {
+	return p.db.Model(&model.ProjectFavorite{}).Where("user_id = ? AND project_id = ?", userId, projectId).Unscoped().Delete(&model.ProjectFavorite{}).Error
+}
+
 func (p projectRepository) Delete(id uint) error {
+	// TODO: Send to trash instead of deleting
 	return p.db.Where("id = ?", id).Unscoped().Delete(&model.Project{}).Error
 }

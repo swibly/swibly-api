@@ -36,6 +36,9 @@ func newProjectRoutes(handler *gin.RouterGroup) {
 		specific.POST("/publish", middleware.ProjectOwnership, PublishProject)
 		specific.POST("/unpublish", middleware.ProjectOwnership, UnpublishProject)
 
+		specific.POST("/favorite", FavoriteProject)
+		specific.POST("/unfavorite", UnfavoriteProject)
+
 		specific.DELETE("", middleware.ProjectOwnership, DeleteProject)
 	}
 }
@@ -193,6 +196,44 @@ func UnpublishProject(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectUnpublished})
+}
+
+func FavoriteProject(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	project := ctx.Keys["project_lookup"].(*dto.ProjectInformation)
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
+
+	if project.Owner != issuer.Username {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": dict.ProjectNotFound})
+		return
+	}
+
+	err := service.Project.Favorite(issuer.ID, project.ID)
+	if err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
+
+	// TODO: Add translation
+	ctx.JSON(http.StatusOK, gin.H{"message": "Project favorited"})
+}
+
+func UnfavoriteProject(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
+
+	err := service.Project.Unfavorite(issuer.ID, ctx.Keys["project_lookup"].(*dto.ProjectInformation).ID)
+	if err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
+
+	// TODO: Add translation
+	ctx.JSON(http.StatusOK, gin.H{"message": "Project favorited"})
 }
 
 func DeleteProject(ctx *gin.Context) {

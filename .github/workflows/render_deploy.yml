@@ -7,7 +7,6 @@ on:
       - main
     types:
       - completed
-
 jobs:
   on-success:
     runs-on: ubuntu-latest
@@ -15,7 +14,7 @@ jobs:
       github.event.workflow_run.conclusion == 'success'
     steps:
       - uses: actions/checkout@v4
-      - name: Trigger Deploy
+      - name: Trigger deploy
         env:
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
@@ -23,10 +22,3 @@ jobs:
           curl -X POST \
             -H "Authorization: Bearer $RENDER_API_KEY" \
             "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys"
-  on-failure:
-    runs-on: ubuntu-latest
-    if: >
-      github.event.workflow_run.conclusion == 'failure'
-    steps:
-      - run: |
-          exit 1

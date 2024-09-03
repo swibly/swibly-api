@@ -5,6 +5,7 @@ on:
       - main
     workflows:
       - Go Test
+      - Build and Push Docker Image
     types:
       - completed
 jobs:

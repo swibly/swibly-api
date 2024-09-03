@@ -1,10 +1,10 @@
-name: Deploy to Render
+name: Deploy to Render (Develop)
 on:
   workflow_run:
     branches:
-      - main
+      - develop
     workflows:
-      - Build and Push Docker Image (Production)
+      - Build and Push Docker Image (Develop)
     types:
       - completed
 jobs:
@@ -13,6 +13,6 @@ jobs:
     steps:
       - uses: johnbeynon/render-deploy-action@v0.0.8
         with:
-          service-id: ${{ secrets.RENDER_SERVICE_ID }}
+          service-id: ${{ secrets.DEV_RENDER_SERVICE_ID }}
           api-key: ${{ secrets.RENDER_API_KEY }}
           wait-for-success: true

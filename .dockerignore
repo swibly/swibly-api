@@ -1,4 +1,9 @@
+/.git/
+/.github/
 /build/
 /pgdata/
+
+/.env.example
 /Makefile
 /docker-compose.yml
+/.gitignore

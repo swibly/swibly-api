@@ -5,9 +5,7 @@ on:
       - Go Test
     types:
       - completed
-  push:
-    branches:
-      - main
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -16,7 +14,18 @@ jobs:
       github.event.workflow_run.head_branch == 'main'
     steps:
       - uses: actions/checkout@v4
-      - name: Trigger deploy
+
+      - name: Set Deployment Status to In Progress
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.event.workflow_run.head_sha }} \
+            -d '{"state": "pending", "context": "Deploy Service to Render", "description": "Deployment in progress", "target_url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" }'
+
+      - name: Trigger Deploy
         env:
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
@@ -24,3 +33,25 @@ jobs:
           curl -X POST \
             -H "Authorization: Bearer $RENDER_API_KEY" \
             "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys"
+
+      - name: Set Deployment Status to Success
+        if: ${{ success() }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.event.workflow_run.head_sha }} \
+            -d '{"state": "success", "context": "Deploy Service to Render", "description": "Deployment completed successfully", "target_url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" }'
+
+      - name: Set Deployment Status to Failure
+        if: ${{ failure() }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.event.workflow_run.head_sha }} \
+            -d '{"state": "failure", "context": "Deploy Service to Render", "description": "Deployment failed", "target_url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" }'

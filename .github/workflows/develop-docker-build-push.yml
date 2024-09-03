@@ -1,8 +1,8 @@
-name: Build and Push Docker Image
+name: Build and Push Docker Image (Develop)
 on:
   push:
     branches:
-      - main
+      - develop
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -23,4 +23,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/swibly-api:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/swibly-api:develop

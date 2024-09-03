@@ -4,7 +4,7 @@ on:
     branches:
       - main
     workflows:
-      - Build and Push Docker Image
+      - Build and Push Docker Image (Production)
     types:
       - completed
 jobs:

@@ -5,6 +5,9 @@ on:
       - Go Test
     types:
       - completed
+  push:
+    branches:
+      - main
 jobs:
   deploy:
     runs-on: ubuntu-latest

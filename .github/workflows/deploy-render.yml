@@ -1,6 +1,8 @@
 name: Deploy to Render
 on:
   workflow_run:
+    branches:
+      - main
     workflows:
       - Go Test
     types:

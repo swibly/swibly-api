@@ -1,15 +1,45 @@
 package middleware
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 
+	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/translations"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
+
+func APIKeyLookup(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	key, err := service.APIKey.GetByKey(ctx.Param("key"))
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": dict.NoAPIKeyFound})
+			return
+		}
+
+		log.Print(err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
+
+	user := ctx.Keys["auth_user"].(*dto.UserProfile)
+
+	if key.Owner != user.Username && !utils.HasPermissions(user.Permissions, config.Permissions.ManageAPIKey) {
+		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": dict.Unauthorized})
+		return
+	}
+
+	ctx.Set("api_key_lookup", key)
+	ctx.Next()
+}
 
 func GetAPIKey(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)

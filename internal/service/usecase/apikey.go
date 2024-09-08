@@ -9,54 +9,69 @@ import (
 )
 
 type APIKeyUseCase struct {
-	ar repository.APIKeyRepository
+	akr repository.APIKeyRepository
 }
 
 func NewAPIKeyUseCase() APIKeyUseCase {
-	return APIKeyUseCase{ar: repository.NewAPIKeyRepository()}
+	return APIKeyUseCase{akr: repository.NewAPIKeyRepository()}
 }
 
-func (auc *APIKeyUseCase) Create(ownerUsername string, maxUsage uint) (*model.APIKey, error) {
+func (akuc *APIKeyUseCase) Create(owner string, maxUsage uint) (*model.APIKey, error) {
 	key := new(model.APIKey)
 	key.Key = uuid.New().String()
 
-	if ownerUsername != "" {
-		if _, err := NewUserUseCase().GetByUsername(ownerUsername); err != nil {
+	if owner != "" {
+		if _, err := NewUserUseCase().GetByUsername(owner); err != nil {
 			return nil, err
 		}
 
-		key.OwnerUsername = ownerUsername
+		key.Owner = owner
 	}
 
 	key.MaxUsage = maxUsage
 
-	return key, auc.ar.Store(key)
+	return key, akuc.akr.Create(key)
 }
 
-func (auc *APIKeyUseCase) Update(key string, updateModel *dto.UpdateAPIKey) error {
-	return auc.ar.Update(key, updateModel)
+func (akuc *APIKeyUseCase) Update(key string, updateModel *dto.UpdateAPIKey) error {
+	return akuc.akr.Update(key, &model.APIKey{
+		Owner:              updateModel.Owner,
+		EnabledKeyManage:   updateModel.EnabledKeyManage,
+		EnabledAuth:        updateModel.EnabledAuth,
+		EnabledSearch:      updateModel.EnabledSearch,
+		EnabledUserFetch:   updateModel.EnabledUserFetch,
+		EnabledUserActions: updateModel.EnabledUserActions,
+		TimesUsed:          updateModel.TimesUsed,
+		MaxUsage:           updateModel.MaxUsage,
+	})
 }
 
-func (auc *APIKeyUseCase) RegisterUse(key string) error {
-	return auc.ar.RegisterUse(key)
+func (akuc *APIKeyUseCase) Delete(key string) error {
+	return akuc.akr.Delete(key)
 }
 
-func (auc *APIKeyUseCase) FindAll(page, perPage int) (*dto.Pagination[dto.ReadAPIKey], error) {
-	return auc.ar.FindAll(page, perPage)
+func (akuc *APIKeyUseCase) GetAll(page, perPage int) (*dto.Pagination[dto.ReadAPIKey], error) {
+	return akuc.akr.GetAll(page, perPage)
 }
 
-func (auc *APIKeyUseCase) Find(key string) (*dto.ReadAPIKey, error) {
-	return auc.ar.Find(key)
+func (akuc *APIKeyUseCase) GetByKey(key string) (*dto.ReadAPIKey, error) {
+	return akuc.akr.GetByKey(key)
 }
 
-func (auc *APIKeyUseCase) FindByOwnerUsername(username string, page, perPage int) (*dto.Pagination[dto.ReadAPIKey], error) {
-	return auc.ar.FindByOwnerUsername(username, page, perPage)
+func (akuc *APIKeyUseCase) GetByOwner(owner string, page, perPage int) (*dto.Pagination[dto.ReadAPIKey], error) {
+	return akuc.akr.GetByOwner(owner, page, perPage)
 }
 
-func (auc *APIKeyUseCase) Delete(key string) error {
-	return auc.ar.Delete(key)
+func (akuc *APIKeyUseCase) RegisterUse(key string) error {
+	return akuc.akr.RegisterUse(key)
 }
 
-func (auc *APIKeyUseCase) Regenerate(key string) (*model.APIKey, error) {
-	return auc.ar.Regenerate(key, uuid.New().String())
+func (akuc *APIKeyUseCase) Regenerate(key string) error {
+	newKey := uuid.New().String()
+
+	if existingKey, _ := akuc.GetByKey(newKey); existingKey != nil {
+		return akuc.Regenerate(key)
+	}
+
+	return akuc.akr.Update(key, &model.APIKey{Key: newKey})
 }

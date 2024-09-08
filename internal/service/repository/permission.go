@@ -11,14 +11,14 @@ type permissionRepository struct {
 }
 
 type PermissionRepository interface {
-	GetPermissions(userID uint) ([]*model.Permission, error)
+	GetByUser(userID uint) ([]*model.Permission, error)
 }
 
 func NewPermissionRepository() PermissionRepository {
-	return permissionRepository{db: db.Postgres}
+	return &permissionRepository{db: db.Postgres}
 }
 
-func (pr permissionRepository) GetPermissions(userID uint) ([]*model.Permission, error) {
+func (pr *permissionRepository) GetByUser(userID uint) ([]*model.Permission, error) {
 	var permissions []*model.Permission
 
 	err := pr.db.Table("users").
@@ -28,9 +28,5 @@ func (pr permissionRepository) GetPermissions(userID uint) ([]*model.Permission,
 		Where("users.id = ?", userID).
 		Scan(&permissions).Error
 
-	if err != nil {
-		return nil, err
-	}
-
-	return permissions, nil
+	return permissions, err
 }

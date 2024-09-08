@@ -17,25 +17,24 @@ type projectRepository struct {
 }
 
 type ProjectRepository interface {
-	Store(*dto.ProjectCreation) error
-	GetPublicAll(page, perPage int) (*dto.Pagination[dto.ProjectInformation], error)
-	GetByOwnerUsername(ownerUsername string, amIOwner bool, page, perPage int) (*dto.Pagination[dto.ProjectInformation], error)
-	GetByID(id uint) (*dto.ProjectInformation, error)
-	GetContent(id uint) any
-	SearchLikeName(name string, page, perpage int) (*dto.Pagination[dto.ProjectInformation], error)
-	SaveContent(id uint, content any) error
-	Publish(id uint) error
-	Unpublish(id uint) error
+	Create(*dto.ProjectCreation) error
+	Update(id uint, newModel *model.Project) error
+	Delete(id uint) error
+
+	Get(searchModel *model.Project, page, perPage int) (*dto.Pagination[dto.ProjectInformation], error)
+	GetContent(id uint) (any, error)
+
+	SearchByName(name string, page, perpage int) (*dto.Pagination[dto.ProjectInformation], error)
+
 	Favorite(userId, projectId uint) error
 	Unfavorite(userId, projectId uint) error
-	Delete(id uint) error
 }
 
 func NewProjectRepository() ProjectRepository {
 	return projectRepository{db.Postgres}
 }
 
-func (p projectRepository) Store(project *dto.ProjectCreation) error {
+func (p projectRepository) Create(project *dto.ProjectCreation) error {
 	newProject := &model.Project{
 		Owner:       project.Owner,
 		Name:        project.Name,
@@ -48,33 +47,11 @@ func (p projectRepository) Store(project *dto.ProjectCreation) error {
 	return p.db.Create(newProject).Error
 }
 
-func (p projectRepository) GetPublicAll(page, perPage int) (*dto.Pagination[dto.ProjectInformation], error) {
-	return pagination.Generate[dto.ProjectInformation](p.db.Model(&model.Project{}).Select("*").Where("published = ?", true), page, perPage)
+func (p projectRepository) Update(id uint, newModel *model.Project) error {
+	return p.db.Model(&model.Project{}).Where("id = ?", id).Updates(newModel).Error
 }
 
-func (p projectRepository) GetByOwnerUsername(ownerUsername string, amIOwner bool, page, perPage int) (*dto.Pagination[dto.ProjectInformation], error) {
-	var query *gorm.DB
-	if amIOwner {
-		query = p.db.Model(&model.Project{}).Select("*").Where("owner = ?", ownerUsername)
-	} else {
-		query = p.db.Model(&model.Project{}).Select("*").Where("owner = ?", ownerUsername).Where("published = ?", true)
-	}
-
-	return pagination.Generate[dto.ProjectInformation](query, page, perPage)
-}
-
-func (p projectRepository) GetByID(id uint) (*dto.ProjectInformation, error) {
-	var project dto.ProjectInformation
-	return &project, p.db.Model(&model.Project{}).First(&project, id).Error
-}
-
-func (p projectRepository) GetContent(id uint) any {
-	var project model.Project
-	p.db.Model(&model.Project{}).First(&project, id)
-	return project.Content
-}
-
-func (p projectRepository) SearchLikeName(name string, page, perPage int) (*dto.Pagination[dto.ProjectInformation], error) {
+func (p projectRepository) SearchByName(name string, page, perPage int) (*dto.Pagination[dto.ProjectInformation], error) {
 	terms := strings.Fields(name)
 
 	query := p.db.Model(&model.Project{}).Where("published = ?", true)
@@ -97,20 +74,15 @@ func (p projectRepository) SearchLikeName(name string, page, perPage int) (*dto.
 	return pagination.Generate[dto.ProjectInformation](query, page, perPage)
 }
 
-func (p projectRepository) SaveContent(id uint, content any) error {
-	return p.db.Model(&model.Project{}).Where("id = ?", id).Updates(&model.Project{Content: content}).Error
+func (p projectRepository) Get(searchModel *model.Project, page, perPage int) (*dto.Pagination[dto.ProjectInformation], error) {
+	return pagination.Generate[dto.ProjectInformation](p.db.Model(&model.Project{}).Where(searchModel), page, perPage)
 }
 
-func (p projectRepository) Publish(id uint) error {
-	return p.db.Model(&model.Project{}).Where("id = ?", id).Updates(map[string]any{
-		"published": true,
-	}).Error
-}
+func (p projectRepository) GetContent(id uint) (any, error) {
+	var project model.Project
+	err := p.db.Where("id = ?", id).First(&project).Error
 
-func (p projectRepository) Unpublish(id uint) error {
-	return p.db.Model(&model.Project{}).Where("id = ?", id).Updates(map[string]any{
-		"published": false,
-	}).Error
+	return project.Content, err
 }
 
 func (p projectRepository) Favorite(userId, projectId uint) error {

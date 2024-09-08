@@ -86,8 +86,6 @@ func Load() {
 		&model.Follower{},
 		&model.Permission{},
 		&model.UserPermission{},
-		&model.Project{},
-		&model.ProjectFavorite{},
 	}
 
 	if err := db.AutoMigrate(models...); err != nil {

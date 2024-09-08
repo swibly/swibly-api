@@ -1,6 +1,8 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type Project struct {
 	ID        uint `gorm:"primarykey"`
@@ -22,6 +24,10 @@ type Project struct {
 }
 
 type ProjectFavorite struct {
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+
 	ProjectID uint `gorm:"index"`
 	UserID    uint `gorm:"index"`
 }

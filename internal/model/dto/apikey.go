@@ -1,7 +1,7 @@
 package dto
 
 type UpdateAPIKey struct {
-	OwnerUsername string `validate:"omitempty" json:"owner"`
+	Owner string `validate:"omitempty" json:"owner"`
 
 	EnabledKeyManage   int `validate:"omitempty,mustbenumericalboolean" json:"enabled_key_manage"`
 	EnabledAuth        int `validate:"omitempty,mustbenumericalboolean" json:"enabled_auth"`
@@ -14,8 +14,8 @@ type UpdateAPIKey struct {
 }
 
 type ReadAPIKey struct {
-	Key           string `json:"key"`
-	OwnerUsername string `json:"owner"`
+	Key   string `json:"key"`
+	Owner string `json:"owner"`
 
 	EnabledKeyManage   int `json:"enabled_key_manage"`
 	EnabledAuth        int `json:"enabled_auth"`

@@ -1,8 +1,14 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type Follower struct {
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+
 	FollowingID uint `gorm:"index"`
 	FollowerID  uint `gorm:"index"`
 

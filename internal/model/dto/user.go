@@ -28,8 +28,6 @@ type UserUpdate struct {
 	Bio      string `validate:"omitempty,max=480" json:"bio"`
 	Verified bool   `validate:"omitempty"         json:"verified"`
 
-	// NOTE: XP and Arkhoins doesn't make sense to update here
-
 	Email    string `validate:"omitempty,email"    json:"email"`
 	Password string `validate:"omitempty,password" json:"password"`
 
@@ -49,7 +47,7 @@ type UserUpdate struct {
 		Following  int `validate:"omitempty,mustbenumericalboolean" json:"following"`
 		Inventory  int `validate:"omitempty,mustbenumericalboolean" json:"inventory"`
 		Formations int `validate:"omitempty,mustbenumericalboolean" json:"formations"`
-  } `validate:"omitempty" json:"show" gorm:"embedded;embeddedPrefix:show_"`
+	} `validate:"omitempty" json:"show" gorm:"embedded;embeddedPrefix:show_"`
 
 	Country string `validate:"omitempty" json:"country"`
 

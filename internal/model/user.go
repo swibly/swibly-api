@@ -4,15 +4,12 @@ import (
 	"time"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/language"
-	"gorm.io/gorm"
 )
 
 type User struct {
-	// NOTE: Not using gorm.Model since it's properties cannot be accessed directly
 	ID        uint `gorm:"primarykey"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
 
 	FirstName string
 	LastName  string
@@ -26,12 +23,9 @@ type User struct {
 	XP      uint64 `gorm:"default:500"`
 	Arkhoin uint64 `gorm:"default:1000"`
 
-	// TODO: Add comments, the last implementation was wacky to say the least.
-
 	Notification struct {
 		InApp int `gorm:"default:1"`
 		Email int `gorm:"default:-1"`
-		// SMS int `gorm:"default:-1"` // NOTE: Not sure if we want to send SMS, it can get expensive
 	} `gorm:"embedded;embeddedPrefix:notify_"`
 
 	Show struct {
@@ -47,7 +41,7 @@ type User struct {
 		Formations int `gorm:"default:1"`
 	} `gorm:"embedded;embeddedPrefix:show_"`
 
-	Country string // Country can be anything really
+	Country string
 
 	Language language.Language `gorm:"type:enum_language;default:pt"`
 }

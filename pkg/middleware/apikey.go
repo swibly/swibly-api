@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
@@ -43,6 +44,11 @@ func APIKeyLookup(ctx *gin.Context) {
 
 func GetAPIKey(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
+
+	if strings.TrimSpace(ctx.GetHeader("X-API-KEY")) == "" {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": dict.InvalidAPIKey})
+		return
+	}
 
 	key, err := service.APIKey.GetByKey(ctx.GetHeader("X-API-KEY"))
 	if err != nil {

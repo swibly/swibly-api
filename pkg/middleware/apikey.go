@@ -14,7 +14,7 @@ import (
 func GetAPIKey(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
-	key, err := service.APIKey.Find(ctx.GetHeader("X-API-KEY"))
+	key, err := service.APIKey.GetByKey(ctx.GetHeader("X-API-KEY"))
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": dict.InvalidAPIKey})
 		return

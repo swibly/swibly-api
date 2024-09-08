@@ -8,11 +8,11 @@ hello: Olá!
 internal_server_error: Erro interno de servidor. Por favor, tente novamente mais tarde.
 invalid_api_key: Chave de API inválida.
 invalid_body:
-  Formato de corpo de solicitação inválido. Certifique-se de que a estrutura JSON esteja correta
-  e que todos os campos obrigatórios estejam presentes.
+    Formato de corpo de solicitação inválido. Certifique-se de que a estrutura JSON esteja correta
+    e que todos os campos obrigatórios estejam presentes.
 maximum_api_key:
-  Chave de API chegou em seu limite máximo permitido. Contate o suporte ou obtenha uma
-  nova chave.
+    Chave de API chegou em seu limite máximo permitido. Contate o suporte ou obtenha uma
+    nova chave.
 no_api_key_found: Nenhuma chave de API encontrada com este ID.
 require_permission_api_key: 'Esta chave de API não tem a permissão de: %s'
 search_incorrect: As pesquisas não podem ser compostas apenas por espaços ou caracteres especiais.
@@ -29,16 +29,16 @@ user_following_stopped: Usuário parou de seguir %s.
 user_not_found: Usuário não encontrado; você tem certeza de que este é o nome de usuário?
 validator_incorrect_email_format: Formato de email incorreto.
 validator_incorrect_password_format:
-  A senha deve ter no mínimo 8, e no máximo caracteres, conter pelo menos uma letra
-  maiúscula, uma letra minúscula, um caractere especial e um numeral.
+    A senha deve ter no mínimo 8, e no máximo caracteres, conter pelo menos uma letra
+    maiúscula, uma letra minúscula, um caractere especial e um numeral.
 validator_incorrect_username_format:
-  Os nomes de usuário devem consistir apenas de caracteres alfanuméricos
-  minúsculos (a-z e 0-9).
-validator_max_chars: '%s deve ter no máximo %s caracteres.'
-validator_min_chars: '%s deve ter no mínimo %s caracteres.'
+    Os nomes de usuário devem consistir apenas de caracteres alfanuméricos
+    minúsculos (a-z e 0-9).
+validator_max_chars: Máximo de %s caracteres.
+validator_min_chars: Mínimo de %s caracteres.
 validator_must_be_numerical_boolean: Valor deve ser -1, 0 ou 1.
-validator_must_be_supported_language: '%s deve ser uma das seguintes linguas suportadas: %s.'
-validator_required: '%s é um campo obrigatório.'
+validator_must_be_supported_language: Deve ser uma das seguintes linguas suportadas (pt, en, ru).
+validator_required: Campo obrigatório.
 project_not_found: Projeto não encontrado.
 project_created: Projeto criado.
 project_updated: Projeto atualizado.

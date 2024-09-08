@@ -47,7 +47,7 @@ func SearchUserByNameHandler(ctx *gin.Context) {
 		perpage = i
 	}
 
-	users, err := service.User.GetBySimilarName(name, page, perpage)
+	users, err := service.User.SearchByName(name, page, perpage)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": dict.SearchNoResults})
@@ -85,7 +85,7 @@ func SearchProjectByNameHandler(ctx *gin.Context) {
 		perpage = i
 	}
 
-	projects, err := service.Project.GetBySimilarName(name, page, perpage)
+	projects, err := service.Project.SearchByName(name, page, perpage)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": dict.SearchNoResults})

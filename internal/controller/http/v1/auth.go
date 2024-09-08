@@ -18,19 +18,14 @@ import (
 )
 
 func newAuthRoutes(handler *gin.RouterGroup) {
-	h := handler.Group("/auth")
-	h.Use(middleware.APIKeyHasEnabledAuth)
+	h := handler.Group("/auth", middleware.APIKeyHasEnabledAuth)
 	{
-		h.GET("/validate", middleware.AuthMiddleware, ValidateUserHandler) // Made so you can look up whenever you want to check if the token is valid
 		h.POST("/register", RegisterHandler)
 		h.POST("/login", LoginHandler)
-		h.PATCH("/update", middleware.AuthMiddleware, UpdateUserHandler)
-		h.DELETE("/delete", middleware.AuthMiddleware, DeleteUserHandler)
-	}
-}
 
-func ValidateUserHandler(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, ctx.Keys["auth_user"])
+		h.PATCH("/update", middleware.APIKeyHasEnabledUserActions, middleware.Auth, UpdateUserHandler)
+		h.DELETE("/delete", middleware.APIKeyHasEnabledUserActions, middleware.Auth, DeleteUserHandler)
+	}
 }
 
 func RegisterHandler(ctx *gin.Context) {

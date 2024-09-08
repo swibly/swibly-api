@@ -16,17 +16,13 @@ import (
 func newProjectRoutes(handler *gin.RouterGroup) {
 	g := handler.Group("/projects")
 	{
-		g.GET("", ListPublicProjects)
-
-		g.POST("/create", middleware.AuthMiddleware, CreateProject)
+		g.GET("", middleware.OptionalAuth, ListPublicProjects)
+		g.POST("/create", middleware.Auth, CreateProject)
 	}
 
-	g.GET("/mine", middleware.AuthMiddleware, ListMyProjects)
+	g.GET("/owner/:owner", middleware.OptionalAuth, ListProjectsByOwner)
 
-	g.GET("/owner/:owner", middleware.OptionalAuthMiddleware, ListProjectsByOwner)
-
-	specific := g.Group("/:project")
-	specific.Use(middleware.AuthMiddleware, middleware.ProjectLookup)
+	specific := g.Group("/:project", middleware.Auth, middleware.ProjectLookup)
 	{
 		specific.GET("", GetProjectInfo)
 		specific.GET("/content", GetProjectContent)
@@ -80,7 +76,7 @@ func ListMyProjects(ctx *gin.Context) {
 
 	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
 
-	projects, err := service.Project.GetByOwnerUsername(issuer.Username, true, 1, 10)
+	projects, err := service.Project.GetByOwner(issuer.Username, true, 1, 10)
 	if err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
@@ -137,7 +133,7 @@ func ListProjectsByOwner(ctx *gin.Context) {
 		perPage = i
 	}
 
-	projects, err := service.Project.GetByOwnerUsername(ownerUsername, issuerUsername == ownerUsername, page, perPage)
+	projects, err := service.Project.GetByOwner(ownerUsername, issuerUsername == ownerUsername, page, perPage)
 	if err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
@@ -152,7 +148,15 @@ func GetProjectInfo(ctx *gin.Context) {
 }
 
 func GetProjectContent(ctx *gin.Context) {
-	content := service.Project.GetContent(ctx.Keys["project_lookup"].(*dto.ProjectInformation).ID)
+	dict := translations.GetTranslation(ctx)
+
+	content, err := service.Project.GetContent(ctx.Keys["project_lookup"].(*dto.ProjectInformation).ID)
+
+	if err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
 
 	ctx.JSON(http.StatusOK, content)
 }

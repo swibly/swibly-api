@@ -18,27 +18,18 @@ import (
 )
 
 func newUserRoutes(handler *gin.RouterGroup) {
-	h := handler.Group("/user")
+	h := handler.Group("/user/:username", middleware.APIKeyHasEnabledUserFetch, middleware.OptionalAuth)
 	{
-		h.GET("", middleware.Auth, GetUserByBearerHandler)
+		h.GET("/profile", GetProfileHandler)
+		h.GET("/followers", GetFollowersHandler)
+		h.GET("/following", GetFollowingHandler)
 	}
 
-	specific := h.Group("/:username", middleware.APIKeyHasEnabledUserFetch, middleware.OptionalAuth)
-	{
-		specific.GET("/profile", GetProfileHandler)
-		specific.GET("/followers", GetFollowersHandler)
-		specific.GET("/following", GetFollowingHandler)
-	}
-
-	actions := h.Group("/:username", middleware.APIKeyHasEnabledUserActions, middleware.Auth)
+	actions := h.Group("", middleware.APIKeyHasEnabledUserActions, middleware.Auth)
 	{
 		actions.POST("/follow", FollowUserHandler)
 		actions.POST("/unfollow", UnfollowUserHandler)
 	}
-}
-
-func GetUserByBearerHandler(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, ctx.Keys["auth_user"])
 }
 
 func GetProfileHandler(ctx *gin.Context) {

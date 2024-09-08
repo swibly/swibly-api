@@ -20,12 +20,18 @@ import (
 func newAuthRoutes(handler *gin.RouterGroup) {
 	h := handler.Group("/auth", middleware.APIKeyHasEnabledAuth)
 	{
+		h.GET("/validate", middleware.Auth, GetUserByBearerHandler)
+
 		h.POST("/register", RegisterHandler)
 		h.POST("/login", LoginHandler)
 
 		h.PATCH("/update", middleware.APIKeyHasEnabledUserActions, middleware.Auth, UpdateUserHandler)
 		h.DELETE("/delete", middleware.APIKeyHasEnabledUserActions, middleware.Auth, DeleteUserHandler)
 	}
+}
+
+func GetUserByBearerHandler(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, ctx.Keys["auth_user"])
 }
 
 func RegisterHandler(ctx *gin.Context) {

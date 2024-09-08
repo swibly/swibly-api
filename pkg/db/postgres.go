@@ -31,6 +31,30 @@ func typeCheckAndCreate(db *gorm.DB, typeName string, values []string) error {
 	return nil
 }
 
+func dropUnusedColumns(db *gorm.DB, dsts ...interface{}) {
+	for _, dst := range dsts {
+		stmt := &gorm.Statement{DB: db}
+		stmt.Parse(dst)
+		fields := stmt.Schema.Fields
+		columns, _ := db.Debug().Migrator().ColumnTypes(dst)
+
+		for i := range columns {
+			found := false
+
+			for j := range fields {
+				if columns[i].Name() == fields[j].DBName {
+					found = true
+					break
+				}
+			}
+
+			if !found {
+				db.Migrator().DropColumn(dst, columns[i].Name())
+			}
+		}
+	}
+}
+
 func Load() {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", config.Postgres.Host, config.Postgres.User, config.Postgres.Password, config.Postgres.DB, config.Postgres.Port, config.Postgres.SSLMode)
 	db, err := gorm.Open(postgres.New(postgres.Config{
@@ -56,7 +80,7 @@ func Load() {
 
 	log.Print("Loaded migrations")
 
-	if err := db.AutoMigrate(
+	models := []any{
 		&model.APIKey{},
 		&model.User{},
 		&model.Follower{},
@@ -64,9 +88,13 @@ func Load() {
 		&model.UserPermission{},
 		&model.Project{},
 		&model.ProjectFavorite{},
-	); err != nil {
+	}
+
+	if err := db.AutoMigrate(models...); err != nil {
 		log.Fatal(err)
 	}
+
+	dropUnusedColumns(db, models...)
 
 	var permissions []model.Permission
 	v := reflect.ValueOf(config.Permissions)

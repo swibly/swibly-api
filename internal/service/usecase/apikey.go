@@ -16,7 +16,7 @@ func NewAPIKeyUseCase() APIKeyUseCase {
 	return APIKeyUseCase{akr: repository.NewAPIKeyRepository()}
 }
 
-func (akuc *APIKeyUseCase) Create(owner string, maxUsage uint) (*model.APIKey, error) {
+func (akuc *APIKeyUseCase) Create(owner string, maxUsage uint) (*dto.ReadAPIKey, error) {
 	key := new(model.APIKey)
 	key.Key = uuid.New().String()
 
@@ -30,7 +30,17 @@ func (akuc *APIKeyUseCase) Create(owner string, maxUsage uint) (*model.APIKey, e
 
 	key.MaxUsage = maxUsage
 
-	return key, akuc.akr.Create(key)
+	return &dto.ReadAPIKey{
+		Key:                key.Key,
+		Owner:              key.Owner,
+		EnabledKeyManage:   key.EnabledKeyManage,
+		EnabledAuth:        key.EnabledAuth,
+		EnabledSearch:      key.EnabledSearch,
+		EnabledUserFetch:   key.EnabledUserFetch,
+		EnabledUserActions: key.EnabledUserActions,
+		TimesUsed:          key.TimesUsed,
+		MaxUsage:           key.MaxUsage,
+	}, akuc.akr.Create(key)
 }
 
 func (akuc *APIKeyUseCase) Update(key string, updateModel *dto.UpdateAPIKey) error {

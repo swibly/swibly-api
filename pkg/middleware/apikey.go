@@ -34,7 +34,7 @@ func APIKeyLookup(ctx *gin.Context) {
 	user := ctx.Keys["auth_user"].(*dto.UserProfile)
 
 	if key.Owner != user.Username && !utils.HasPermissions(user.Permissions, config.Permissions.ManageAPIKey) {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": dict.Unauthorized})
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": dict.Unauthorized})
 		return
 	}
 

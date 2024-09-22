@@ -62,6 +62,7 @@ type UserProfile struct {
 	FirstName string `json:"firstname"`
 	LastName  string `json:"lastname"`
 	Username  string `json:"username"`
+	Email     string `json:"email"`
 
 	Bio      string `json:"bio"`
 	Verified bool   `json:"verified"`
@@ -94,4 +95,6 @@ type UserProfile struct {
 	Language string `json:"language"`
 
 	Permissions []string `gorm:"-" json:"permissions"`
+
+	ProfilePicture string `gorm:"-" json:"pfp"`
 }

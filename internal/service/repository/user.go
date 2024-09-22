@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"strings"
 
@@ -58,7 +60,10 @@ func (u userRepository) Get(searchModel *model.User) (*dto.UserProfile, error) {
 		return nil, err
 	}
 
+	hasher := sha256.Sum256([]byte(user.Email))
+
 	user.Permissions = []string{}
+	user.ProfilePicture = fmt.Sprintf("https://www.gravatar.com/avatar/%s?s=512&d=monsterid&r=g", hex.EncodeToString(hasher[:]))
 
 	// Temp repos
 	// Tricky, not recommended, not performant

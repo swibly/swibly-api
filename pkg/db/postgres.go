@@ -89,6 +89,7 @@ func Load() {
 		&model.UserPermission{},
 
 		&model.Project{},
+    &model.ProjectOwner{},
 		&model.ProjectPublication{},
 		&model.ProjectUserFavorite{},
 		&model.ProjectUserPermission{},

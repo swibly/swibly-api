@@ -56,6 +56,8 @@ func dropUnusedColumns(db *gorm.DB, dsts ...interface{}) {
 }
 
 func Load() {
+  log.Print("WAIT: Loading database")
+
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DSN:                  config.Postgres.ConnectionString,
 		PreferSimpleProtocol: true,
@@ -71,13 +73,13 @@ func Load() {
 
 	Postgres = db
 
-	log.Print("Loaded Database")
+  log.Print("DONE: Loaded database")
+
+  log.Print("WAIT: Loading migrations")
 
 	if err := typeCheckAndCreate(db, "enum_language", language.ArrayString); err != nil {
 		log.Fatal(err)
 	}
-
-	log.Print("Loaded migrations")
 
 	models := []any{
 		&model.APIKey{},
@@ -105,4 +107,6 @@ func Load() {
 	}).Create(&permissions).Error; err != nil {
 		log.Println(err)
 	}
+
+  log.Print("DONE: Loaded migrations")
 }

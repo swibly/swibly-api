@@ -3,6 +3,7 @@ package model
 import (
 	"time"
 
+	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"gorm.io/gorm"
 )
 
@@ -53,15 +54,5 @@ type ProjectUserPermission struct {
 	ProjectID uint `gorm:"index;not null;constraint:OnDelete:CASCADE;"`
 	UserID    uint `gorm:"index;not null"`
 
-	Allow struct { // If user is admin it will ignore all fields
-		View    bool `gorm:"not null;default:false"` // Will be ignored if project is public
-		Edit    bool `gorm:"not null;default:false"`
-		Delete  bool `gorm:"not null;default:false"`
-		Publish bool `gorm:"not null;default:false"`
-		Share   bool `gorm:"not null;default:false"` // Will be ignored if project is public
-		Manage  struct {
-			Users    bool `gorm:"not null;default:false"`
-			Metadata bool `gorm:"not null;default:false"`
-		} `gorm:"embedded;embeddedPrefix:manage_"`
-	} `gorm:"embedded;embeddedPrefix:allow_"`
+	Allow dto.Allow `gorm:"embedded;embeddedPrefix:allow_"`
 }

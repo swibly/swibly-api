@@ -12,18 +12,38 @@ type ProjectCreation struct {
 	Public bool `json:"-"` // Set in an URL query param
 }
 
-type ProjectUpdate struct{}
+type AllowManage struct {
+	Users    bool `gorm:"not null;default:false"`
+	Metadata bool `gorm:"not null;default:false"`
+}
 
-type ProjectAllowList struct {
-	Allow struct {
-		View    bool `validate:"omitempty"`
-		Edit    bool `validate:"omitempty"`
-		Delete  bool `validate:"omitempty"`
-		Publish bool `validate:"omitempty"`
-		Share   bool `validate:"omitempty"`
-		Manage  struct {
-			Users    bool `validate:"omitempty"`
-			Metadata bool `validate:"omitempty"`
-		} `validate:"omitempty" json:"manage"`
-	} `validate:"require" json:"allow"`
+type Allow struct {
+	View    bool        `gorm:"not null;default:false"` // Will be ignored if project is public
+	Edit    bool        `gorm:"not null;default:false"`
+	Delete  bool        `gorm:"not null;default:false"`
+	Publish bool        `gorm:"not null;default:false"`
+	Share   bool        `gorm:"not null;default:false"` // Will be ignored if project is public
+	Manage  AllowManage `gorm:"embedded;embeddedPrefix:manage_"`
+}
+
+type ProjectUserPermissions struct {
+	UserInfoLite
+	Allow Allow `json:"allow"`
+}
+
+type ProjectInfo struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+
+	Content any `json:"content"`
+	Budget  int `json:"budget"`
+
+	Public bool `json:"public"`
+
+	Owner        UserInfoLite             `json:"owner"`
+	AllowedUsers []ProjectUserPermissions `json:"allowed_users"`
+}
+
+func (a Allow) IsEmpty() bool {
+	return !a.View && !a.Edit && !a.Delete && !a.Publish && !a.Share && !a.Manage.Users && !a.Manage.Metadata
 }

@@ -98,3 +98,8 @@ type UserProfile struct {
 
 	ProfilePicture string `gorm:"-" json:"pfp"`
 }
+
+type UserInfoLite struct {
+	Username       string `json:"username"`
+	ProfilePicture string `json:"pfp"`
+}

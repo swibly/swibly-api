@@ -27,8 +27,8 @@ func Generate[T any](query *gorm.DB, page, pageSize int) (*dto.Pagination[T], er
 
 	data := make([]*T, 0, pageSize)
 
-	if err := query.Limit(limit).Offset(offset).Find(&data).Error; err != nil {
-		return nil, fmt.Errorf("failed to fetch users: %w", err)
+	if err := query.Limit(limit).Offset(offset).Scan(&data).Error; err != nil {
+		return nil, fmt.Errorf("failed to fetch data: %w", err)
 	}
 
 	pagination := &dto.Pagination[T]{

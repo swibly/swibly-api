@@ -18,12 +18,7 @@ var (
 	}
 
 	Postgres struct {
-		Host     string `yaml:"host"`
-		DB       string `yaml:"db"`
-		User     string `yaml:"user"`
-		Password string `yaml:"password"`
-		SSLMode  string `yaml:"sslmode"`
-		Port     string `yaml:"port"`
+		ConnectionString string `yaml:"connection_string"`
 	}
 
 	Security struct {
@@ -43,12 +38,7 @@ var (
 
 func Parse() {
 	if missingVars := checkEnvVars(
-		"POSTGRES_HOST",
-		"POSTGRES_DB",
-		"POSTGRES_USER",
-		"POSTGRES_PASSWORD",
-		"POSTGRES_SSLMODE",
-		"POSTGRES_PORT",
+		"POSTGRES_CONNECTION_STRING",
 		"JWT_SECRET",
 	); len(missingVars) > 0 {
 		log.Println("You can override the following env variables to get rid of this error:")

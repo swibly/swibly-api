@@ -56,9 +56,8 @@ func dropUnusedColumns(db *gorm.DB, dsts ...interface{}) {
 }
 
 func Load() {
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", config.Postgres.Host, config.Postgres.User, config.Postgres.Password, config.Postgres.DB, config.Postgres.Port, config.Postgres.SSLMode)
 	db, err := gorm.Open(postgres.New(postgres.Config{
-		DSN:                  dsn,
+		DSN:                  config.Postgres.ConnectionString,
 		PreferSimpleProtocol: true,
 	}), &gorm.Config{
 		PrepareStmt: false,

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"reflect"
@@ -9,6 +10,7 @@ import (
 	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/language"
+	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -56,7 +58,7 @@ func dropUnusedColumns(db *gorm.DB, dsts ...interface{}) {
 }
 
 func Load() {
-  log.Print("WAIT: Loading database")
+	log.Print("WAIT: Loading database")
 
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DSN:                  config.Postgres.ConnectionString,
@@ -73,9 +75,9 @@ func Load() {
 
 	Postgres = db
 
-  log.Print("DONE: Loaded database")
+	log.Print("DONE: Loaded database")
 
-  log.Print("WAIT: Loading migrations")
+	log.Print("WAIT: Loading migrations")
 
 	if err := typeCheckAndCreate(db, "enum_language", language.ArrayString); err != nil {
 		log.Fatal(err)
@@ -89,7 +91,7 @@ func Load() {
 		&model.UserPermission{},
 
 		&model.Project{},
-    &model.ProjectOwner{},
+		&model.ProjectOwner{},
 		&model.ProjectPublication{},
 		&model.ProjectUserFavorite{},
 		&model.ProjectUserPermission{},
@@ -114,5 +116,23 @@ func Load() {
 		log.Println(err)
 	}
 
-  log.Print("DONE: Loaded migrations")
+	log.Print("DONE: Loaded migrations")
+
+	log.Print("WAIT: Validating API keys")
+
+	var apikey model.APIKey
+	if err := db.First(&apikey).Error; err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		key := &model.APIKey{
+			Key:                uuid.New().String(),
+			EnabledKeyManage:   1,
+			EnabledAuth:        1,
+			EnabledSearch:      1,
+			EnabledUserFetch:   1,
+			EnabledUserActions: 1,
+		}
+
+		db.Create(&key)
+	}
+
+	log.Print("DONE: Validated API keys")
 }

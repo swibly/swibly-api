@@ -1,6 +1,10 @@
 package usecase
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+
 	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
@@ -27,6 +31,9 @@ func (uuc UserUseCase) CreateUser(ctx *gin.Context, firstname, lastname, usernam
 		Email:     email,
 		Password:  password, // Hashing later
 	}
+
+	hasher := sha256.Sum256([]byte(email))
+	newUser.ProfilePicture = fmt.Sprintf("https://www.gravatar.com/avatar/%s?s=512&d=monsterid&r=g", hex.EncodeToString(hasher[:]))
 
 	if errs := utils.ValidateStruct(&newUser); errs != nil {
 		return nil, utils.ValidateErrorMessage(ctx, errs[0])

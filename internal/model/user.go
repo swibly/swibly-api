@@ -44,4 +44,6 @@ type User struct {
 	Country string
 
 	Language language.Language `gorm:"type:enum_language;default:pt"`
+
+	ProfilePicture string
 }

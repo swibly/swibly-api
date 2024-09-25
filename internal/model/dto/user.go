@@ -96,7 +96,7 @@ type UserProfile struct {
 
 	Permissions []string `gorm:"-" json:"permissions"`
 
-	ProfilePicture string `gorm:"-" json:"pfp"`
+	ProfilePicture string `json:"pfp"`
 }
 
 type UserInfoLite struct {

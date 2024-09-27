@@ -6,7 +6,6 @@ import (
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/db"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/pagination"
 	"gorm.io/gorm"
 )
 
@@ -22,7 +21,10 @@ type ProjectRepository interface {
 	Assign(userID uint, projectID uint, allowList *dto.Allow) error
 
 	Get(*model.Project) (*dto.ProjectInfo, error)
+	GetByOwner(userID uint, onlyPublic bool, page, pageSize int) (*dto.Pagination[dto.ProjectInfo], error)
 	GetPublic(page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
+
+	SearchByName(name string, page, perpage int) (*dto.Pagination[dto.ProjectInfo], error)
 
 	GetContent() (any, error)
 	SaveContent(any) error
@@ -219,15 +221,16 @@ func (pr *projectRepository) Get(projectModel *model.Project) (*dto.ProjectInfo,
 	return projectInfo, nil
 }
 
+func (pr *projectRepository) GetByOwner(userID uint, onlyPublic bool, page, pageSize int) (*dto.Pagination[dto.ProjectInfo], error) {
+	panic("TODO: implement!!")
+}
+
 func (pr *projectRepository) GetPublic(page int, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
-	query := pr.db.Joins("JOIN project_publications ON project_publications.id = projects.id").Model(&model.Project{})
+	panic("TODO: implement!!")
+}
 
-	paginationResult, err := pagination.Generate[dto.ProjectInfo](query, page, perPage)
-	if err != nil {
-		return nil, err
-	}
-
-	return paginationResult, nil
+func (pr *projectRepository) SearchByName(name string, page, perpage int) (*dto.Pagination[dto.ProjectInfo], error) {
+	panic("TODO: implement!!")
 }
 
 func (pr *projectRepository) GetContent() (any, error) {

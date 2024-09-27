@@ -42,14 +42,6 @@ func newValidator() *validator.Validate {
 	})
 
 	vv.RegisterValidation("username", func(fl validator.FieldLevel) bool {
-		if fl.Field().Len() > 32 {
-			return false
-		}
-
-		if fl.Field().Len() < 3 {
-			return false
-		}
-
 		return regexp.MustCompile(`^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$`).Match([]byte(fl.Field().String()))
 	})
 

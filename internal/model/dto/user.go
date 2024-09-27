@@ -7,11 +7,11 @@ import (
 )
 
 type UserRegister struct {
-	FirstName string `validate:"required,min=3"    json:"firstname"`
-	LastName  string `validate:"required,min=3"    json:"lastname"`
-	Username  string `validate:"required,username" json:"username"`
-	Email     string `validate:"required,email"    json:"email"`
-	Password  string `validate:"required,password" json:"password"`
+	FirstName string `validate:"required,min=3"                 json:"firstname"`
+	LastName  string `validate:"required,min=3"                 json:"lastname"`
+	Username  string `validate:"required,min=3,max=32,username" json:"username"`
+	Email     string `validate:"required,email"                 json:"email"`
+	Password  string `validate:"required,password"              json:"password"`
 }
 
 type UserLogin struct {

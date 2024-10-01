@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -16,8 +17,8 @@ type Project struct {
 	Name        string `gorm:"not null"`
 	Description string `gorm:"default:''"`
 
-	Content any `gorm:"type:jsonb;not null;default:'{}'"`
-	Budget  int `gorm:"default:0"`
+	Content utils.JSON `gorm:"type:jsonb;not null;default:'{}'"`
+	Budget  int        `gorm:"default:0"`
 }
 
 type ProjectOwner struct {
@@ -26,6 +27,24 @@ type ProjectOwner struct {
 	UpdatedAt time.Time
 
 	ProjectID uint `gorm:"unique;index;not null;constraint:OnDelete:CASCADE;"`
+	UserID    uint `gorm:"index;not null;constraint:OnDelete:CASCADE;"`
+}
+
+type ProjectLikes struct {
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+
+	ProjectID uint `gorm:"index;not null;constraint:OnDelete:CASCADE;"`
+	UserID    uint `gorm:"index;not null;constraint:OnDelete:CASCADE;"`
+}
+
+type ProjectDislikes struct {
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+
+	ProjectID uint `gorm:"index;not null;constraint:OnDelete:CASCADE;"`
 	UserID    uint `gorm:"index;not null;constraint:OnDelete:CASCADE;"`
 }
 

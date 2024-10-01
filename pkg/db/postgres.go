@@ -95,6 +95,8 @@ func Load() {
 		&model.ProjectPublication{},
 		&model.ProjectUserFavorite{},
 		&model.ProjectUserPermission{},
+		&model.ProjectLikes{},
+		&model.ProjectDislikes{},
 	}
 
 	if err := db.AutoMigrate(models...); err != nil {

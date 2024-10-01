@@ -1,11 +1,13 @@
 package dto
 
+import "github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
+
 type ProjectCreation struct {
 	Name        string `validate:"required,min=3,max=32"    json:"name"`
 	Description string `validate:"omitempty,min=3,max=5000" json:"description"`
 
-	Content any `validate:"omitempty" json:"content"`
-	Budget  int `validate:"omitempty" json:"budget"`
+	Content utils.JSON `validate:"omitempty" json:"content"`
+	Budget  int        `validate:"omitempty" json:"budget"`
 
 	OwnerID uint `json:"-"` // Set using JWT
 
@@ -27,21 +29,38 @@ type Allow struct {
 }
 
 type ProjectUserPermissions struct {
-	UserInfoLite
-	Allow Allow `json:"allow"`
+	ID             uint   `json:"id"`
+	Username       string `json:"username"`
+	ProfilePicture string `json:"profile_picture"`
+	View           bool   `json:"allow_view"`
+	Edit           bool   `json:"allow_edit"`
+	Delete         bool   `json:"allow_delete"`
+	Publish        bool   `json:"allow_publish"`
+	Share          bool   `json:"allow_share"`
+	ManageUsers    bool   `json:"allow_manage_users"`
+	ManageMetadata bool   `json:"allow_manage_metadata"`
 }
 
 type ProjectInfo struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 
-	Content any `json:"content"`
-	Budget  int `json:"budget"`
+	Content utils.JSON `gorm:"type:jsonb" json:"content"`
+	Budget  int        `json:"budget"`
 
-	Public bool `json:"public"`
+	IsPublic bool `json:"is_public"`
 
-	Owner        UserInfoLite             `json:"owner"`
-	AllowedUsers []ProjectUserPermissions `json:"allowed_users"`
+	OwnerID             uint   `json:"owner_id"`
+	OwnerUsername       string `json:"owner_username"`
+	OwnerProfilePicture string `json:"owner_profile_picture"`
+
+	IsLiked          bool    `json:"is_liked"`
+	IsDisliked       bool    `json:"is_disliked"`
+	TotalLikes       int     `json:"total_likes"`
+	TotalDislikes    int     `json:"total_dislikes"`
+	LikeDislikeRatio float64 `json:"like_dislike_ratio"`
+
+	AllowedUsers []ProjectUserPermissions `gorm:"type:json" json:"allowed_users"`
 }
 
 func (a Allow) IsEmpty() bool {

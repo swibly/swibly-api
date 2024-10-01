@@ -100,6 +100,7 @@ type UserProfile struct {
 }
 
 type UserInfoLite struct {
+	ID             uint   `json:"id"`
 	Username       string `json:"username"`
 	ProfilePicture string `json:"pfp"`
 }

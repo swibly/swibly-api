@@ -35,7 +35,7 @@ test:
 	$(GOTEST) ./tests -v
 
 psql:
-	docker exec -it arkhon-db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
+	docker exec -it $(DEBUG_POSTGRES_CONTAINER_NAME) psql -U $(DEBUG_POSTGRES_USER) -d $(DEBUG_POSTGRES_DATABASE)
 
 up:
 	docker compose up -d

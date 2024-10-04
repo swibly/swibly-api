@@ -24,10 +24,10 @@ type ProjectRepository interface {
 	Assign(userID uint, projectID uint, allowList *dto.Allow) error
 
 	Get(uint, *model.Project) (*dto.ProjectInfo, error)
-	GetByOwner(userID uint, onlyPublic bool, page, pageSize int) (*dto.Pagination[dto.ProjectInfo], error)
+	GetByOwner(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
 	GetPublic(issuerID uint, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
 
-	SearchByName(name string, page, perpage int) (*dto.Pagination[dto.ProjectInfo], error)
+	SearchByName(name string, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
 
 	GetContent() (utils.JSON, error)
 	SaveContent(utils.JSON) error
@@ -253,8 +253,83 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 	return projectInfo, nil
 }
 
-func (pr *projectRepository) GetByOwner(userID uint, onlyPublic bool, page, pageSize int) (*dto.Pagination[dto.ProjectInfo], error) {
-	panic("TODO: implement!!")
+func (pr *projectRepository) GetByOwner(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
+	query := pr.db.Table("projects p").
+		Select(`
+			p.*,
+			u.id AS owner_id,
+			u.username AS owner_username,
+			u.profile_picture AS owner_profile_picture,
+			COALESCE(pl.project_id IS NOT NULL, false) AS is_liked,
+			COALESCE(pd.project_id IS NOT NULL, false) AS is_disliked,
+			COALESCE(like_counts.total_likes, 0) AS total_likes,
+			COALESCE(dislike_counts.total_dislikes, 0) AS total_dislikes,
+			CASE
+				WHEN COALESCE(like_counts.total_likes, 0) + COALESCE(dislike_counts.total_dislikes, 0) = 0
+				THEN 0
+				ELSE COALESCE(like_counts.total_likes, 0) * 1.0 / (COALESCE(like_counts.total_likes, 0) + COALESCE(dislike_counts.total_dislikes, 0))
+			END AS like_dislike_ratio,
+			EXISTS (
+				SELECT 1 
+				FROM project_publications pp 
+				WHERE pp.project_id = p.id
+			) AS is_public,
+			(
+				SELECT json_agg(
+					json_build_object(
+						'id', pu.user_id,
+						'username', puu.username,
+						'profile_picture', puu.profile_picture,
+						'allow_view', pu.allow_view,
+						'allow_edit', pu.allow_edit,
+						'allow_delete', pu.allow_delete,
+						'allow_publish', pu.allow_publish,
+						'allow_share', pu.allow_share,
+						'allow_manage_users', pu.allow_manage_users,
+						'allow_manage_metadata', pu.allow_manage_metadata
+					)
+				)
+				FROM project_user_permissions pu
+				JOIN users puu ON pu.user_id = puu.id
+				WHERE pu.project_id = p.id
+			) AS allowed_users
+		`).
+		Joins("JOIN project_owners po ON po.project_id = p.id").
+		Joins("JOIN users u ON po.user_id = u.id").
+		Joins("LEFT JOIN project_likes pl ON pl.project_id = p.id AND pl.user_id = ?", issuerID).
+		Joins("LEFT JOIN project_dislikes pd ON pd.project_id = p.id AND pd.user_id = ?", issuerID).
+		Joins("LEFT JOIN (SELECT project_id, COUNT(*) AS total_likes FROM project_likes GROUP BY project_id) AS like_counts ON like_counts.project_id = p.id").
+		Joins("LEFT JOIN (SELECT project_id, COUNT(*) AS total_dislikes FROM project_dislikes GROUP BY project_id) AS dislike_counts ON dislike_counts.project_id = p.id").
+		Order("like_dislike_ratio DESC, total_likes DESC").
+		Where("po.user_id = ?", userID)
+
+	if onlyPublic {
+		query = query.Joins("JOIN project_publications pp ON pp.project_id = p.id")
+	}
+
+	paginationResult, err := pagination.Generate[dto.ProjectInfoJSON](query, page, perPage)
+	if err != nil {
+		return nil, err
+	}
+
+	projectInfoList := make([]*dto.ProjectInfo, 0, len(paginationResult.Data))
+	for _, projectInfoJSON := range paginationResult.Data {
+		projectInfo, err := convertToProjectInfo(projectInfoJSON)
+		if err != nil {
+			return nil, err
+		}
+
+		projectInfoList = append(projectInfoList, &projectInfo)
+	}
+
+	return &dto.Pagination[dto.ProjectInfo]{
+		Data:         projectInfoList,
+		TotalRecords: paginationResult.TotalRecords,
+		TotalPages:   paginationResult.TotalPages,
+		CurrentPage:  paginationResult.CurrentPage,
+		NextPage:     paginationResult.NextPage,
+		PreviousPage: paginationResult.PreviousPage,
+	}, nil
 }
 
 func (pr *projectRepository) GetPublic(issuerID uint, page int, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {

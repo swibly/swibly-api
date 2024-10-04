@@ -1,6 +1,8 @@
 package dto
 
-import "github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
+import (
+	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
+)
 
 type ProjectCreation struct {
 	Name        string `validate:"required,min=3,max=32"    json:"name"`
@@ -60,7 +62,7 @@ type ProjectInfo struct {
 	TotalDislikes    int     `json:"total_dislikes"`
 	LikeDislikeRatio float64 `json:"like_dislike_ratio"`
 
-	AllowedUsers []ProjectUserPermissions `gorm:"type:json" json:"allowed_users"`
+	AllowedUsers utils.JSON `gorm:"type:jsonb" json:"allowed_users"`
 }
 
 func (a Allow) IsEmpty() bool {

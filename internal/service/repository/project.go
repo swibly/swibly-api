@@ -1,11 +1,14 @@
 package repository
 
 import (
+	"encoding/json"
 	"errors"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/db"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/pagination"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -22,12 +25,12 @@ type ProjectRepository interface {
 
 	Get(*model.Project) (*dto.ProjectInfo, error)
 	GetByOwner(userID uint, onlyPublic bool, page, pageSize int) (*dto.Pagination[dto.ProjectInfo], error)
-	GetPublic(page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
+	GetPublic(issuerID uint, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
 
 	SearchByName(name string, page, perpage int) (*dto.Pagination[dto.ProjectInfo], error)
 
-	GetContent() (any, error)
-	SaveContent(any) error
+	GetContent() (utils.JSON, error)
+	SaveContent(utils.JSON) error
 
 	SafeDelete(uint) error
 	UnsafeDelete(uint) error
@@ -177,6 +180,7 @@ func (pr *projectRepository) Get(projectModel *model.Project) (*dto.ProjectInfo,
 	}
 
 	owner := dto.UserInfoLite{
+		ID:             ownerModel.ID,
 		Username:       ownerProfile.Username,
 		ProfilePicture: ownerProfile.ProfilePicture,
 	}
@@ -190,32 +194,36 @@ func (pr *projectRepository) Get(projectModel *model.Project) (*dto.ProjectInfo,
 		}
 
 		allowedUserDTOs = append(allowedUserDTOs, dto.ProjectUserPermissions{
-			UserInfoLite: dto.UserInfoLite{
-				Username:       userProfile.Username,
-				ProfilePicture: userProfile.ProfilePicture,
-			},
-			Allow: dto.Allow{
-				View:    userPerm.Allow.View,
-				Edit:    userPerm.Allow.Edit,
-				Delete:  userPerm.Allow.Delete,
-				Publish: userPerm.Allow.Publish,
-				Share:   userPerm.Allow.Share,
-				Manage: dto.AllowManage{
-					Users:    userPerm.Allow.Manage.Users,
-					Metadata: userPerm.Allow.Manage.Metadata,
-				},
-			},
+			ID:             userProfile.ID,
+			Username:       userProfile.Username,
+			ProfilePicture: userProfile.ProfilePicture,
+			View:           userPerm.Allow.View,
+			Edit:           userPerm.Allow.Edit,
+			Delete:         userPerm.Allow.Delete,
+			Share:          userPerm.Allow.Share,
+			Publish:        userPerm.Allow.Publish,
+			ManageUsers:    userPerm.Allow.Manage.Users,
+			ManageMetadata: userPerm.Allow.Manage.Metadata,
 		})
 	}
 
+  allowedUserDTOsAsJSON, err := json.Marshal(allowedUserDTOs)
+
+  if (err != nil) {
+    return nil, err
+  }
+
+	// TODO: Add like/dislike properties
 	projectInfo := &dto.ProjectInfo{
-		Name:         project.Name,
-		Description:  project.Description,
-		Content:      project.Content,
-		Budget:       project.Budget,
-		Public:       isPublic,
-		Owner:        owner,
-		AllowedUsers: allowedUserDTOs,
+		OwnerID:             owner.ID,
+		OwnerUsername:       owner.Username,
+		OwnerProfilePicture: owner.ProfilePicture,
+		Name:                project.Name,
+		Description:         project.Description,
+		Content:             project.Content,
+		Budget:              project.Budget,
+		IsPublic:            isPublic,
+		AllowedUsers:        allowedUserDTOsAsJSON,
 	}
 
 	return projectInfo, nil
@@ -225,16 +233,62 @@ func (pr *projectRepository) GetByOwner(userID uint, onlyPublic bool, page, page
 	panic("TODO: implement!!")
 }
 
-func (pr *projectRepository) GetPublic(page int, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
-	panic("TODO: implement!!")
+func (pr *projectRepository) GetPublic(issuerID uint, page int, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
+	query := pr.db.Table("projects p").
+		Select(`
+	       p.*,
+	       u.id AS owner_id,
+	       u.username AS owner_username,
+	       u.profile_picture AS owner_profile_picture,
+	       COALESCE(pl.project_id IS NOT NULL, false) AS is_liked,
+	       COALESCE(pd.project_id IS NOT NULL, false) AS is_disliked,
+	       COALESCE(like_counts.total_likes, 0) AS total_likes,
+	       COALESCE(dislike_counts.total_dislikes, 0) AS total_dislikes,
+	       CASE
+	           WHEN COALESCE(like_counts.total_likes, 0) + COALESCE(dislike_counts.total_dislikes, 0) = 0
+	           THEN 0
+	           ELSE COALESCE(like_counts.total_likes, 0) * 1.0 / (COALESCE(like_counts.total_likes, 0) + COALESCE(dislike_counts.total_dislikes, 0))
+	       END AS like_dislike_ratio,
+	       TRUE AS is_public,
+	       (
+	           SELECT json_agg(
+	               json_build_object(
+	                   'id', pu.user_id,
+	                   'username', puu.username,
+	                   'profile_picture', puu.profile_picture,
+	                   'allow_view', pu.allow_view,
+	                   'allow_edit', pu.allow_edit,
+	                   'allow_delete', pu.allow_delete,
+	                   'allow_publish', pu.allow_publish,
+	                   'allow_share', pu.allow_share,
+	                   'allow_manage_users', pu.allow_manage_users,
+	                   'allow_manage_metadata', pu.allow_manage_metadata
+	               )
+	           )
+	           FROM project_user_permissions pu
+	           JOIN users puu ON pu.user_id = puu.id
+	           WHERE pu.project_id = p.id
+	       ) AS allowed_users
+	   `).
+		Joins("JOIN project_owners po ON po.project_id = p.id").
+		Joins("JOIN users u ON po.user_id = u.id").
+		Joins("JOIN project_publications pp ON pp.project_id = p.id").
+		Joins("LEFT JOIN project_likes pl ON pl.project_id = p.id AND pl.user_id = ?", issuerID).
+		Joins("LEFT JOIN project_dislikes pd ON pd.project_id = p.id AND pd.user_id = ?", issuerID).
+		Joins("LEFT JOIN (SELECT project_id, COUNT(*) AS total_likes FROM project_likes GROUP BY project_id) AS like_counts ON like_counts.project_id = p.id").
+		Joins("LEFT JOIN (SELECT project_id, COUNT(*) AS total_dislikes FROM project_dislikes GROUP BY project_id) AS dislike_counts ON dislike_counts.project_id = p.id").
+		Order("like_dislike_ratio DESC, total_likes DESC")
+
+	return pagination.Generate[dto.ProjectInfo](query, page, perPage)
 }
 
 func (pr *projectRepository) SearchByName(name string, page, perpage int) (*dto.Pagination[dto.ProjectInfo], error) {
 	panic("TODO: implement!!")
 }
 
-func (pr *projectRepository) GetContent() (any, error) {
-	var content any
+func (pr *projectRepository) GetContent() (utils.JSON, error) {
+	// TODO: Add where project ID
+	var content utils.JSON
 
 	result := pr.db.Model(&model.Project{}).Pluck("content", &content)
 
@@ -245,7 +299,9 @@ func (pr *projectRepository) GetContent() (any, error) {
 	return content, nil
 }
 
-func (pr *projectRepository) SaveContent(content any) error {
+func (pr *projectRepository) SaveContent(content utils.JSON) error {
+	// TODO: Add where project ID
+
 	return pr.db.Updates(&model.Project{
 		Content: content,
 	}).Error

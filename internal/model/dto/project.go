@@ -1,7 +1,10 @@
 package dto
 
 import (
+	"time"
+
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
+	"gorm.io/gorm"
 )
 
 type ProjectCreation struct {
@@ -44,11 +47,15 @@ type ProjectUserPermissions struct {
 }
 
 type ProjectInfoJSON struct {
+	ID        uint           `json:"id"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `json:"deleted_at"`
+
 	Name        string `json:"name"`
 	Description string `json:"description"`
 
-	Content utils.JSON `gorm:"type:jsonb" json:"content"`
-	Budget  int        `json:"budget"`
+	Budget int `json:"budget"`
 
 	IsPublic bool `json:"is_public"`
 
@@ -66,11 +73,15 @@ type ProjectInfoJSON struct {
 }
 
 type ProjectInfo struct {
+	ID        uint           `json:"id"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `json:"deleted_at"`
+
 	Name        string `json:"name"`
 	Description string `json:"description"`
 
-	Content utils.JSON `gorm:"type:jsonb" json:"content"`
-	Budget  int        `json:"budget"`
+	Budget int `json:"budget"`
 
 	IsPublic bool `json:"is_public"`
 

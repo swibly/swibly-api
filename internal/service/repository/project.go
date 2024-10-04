@@ -29,8 +29,8 @@ type ProjectRepository interface {
 
 	SearchByName(name string, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
 
-	GetContent() (utils.JSON, error)
-	SaveContent(utils.JSON) error
+	GetContent(uint) (any, error)
+	SaveContent(uint, any) error
 
 	SafeDelete(uint) error
 	UnsafeDelete(uint) error
@@ -239,7 +239,6 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 		OwnerProfilePicture: owner.ProfilePicture,
 		Name:                project.Name,
 		Description:         project.Description,
-		Content:             project.Content,
 		Budget:              project.Budget,
 		IsPublic:            isPublic,
 		IsLiked:             isLiked,
@@ -256,7 +255,13 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 func (pr *projectRepository) GetByOwner(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
 	query := pr.db.Table("projects p").
 		Select(`
-			p.*,
+			p.id as id,
+			p.created_at as created_at,
+			p.updated_at as updated_at,
+			p.deleted_at as deleted_at,
+			p.name as name,
+			p.description as description,
+			p.budget as budget,
 			u.id AS owner_id,
 			u.username AS owner_username,
 			u.profile_picture AS owner_profile_picture,
@@ -335,7 +340,13 @@ func (pr *projectRepository) GetByOwner(issuerID, userID uint, onlyPublic bool, 
 func (pr *projectRepository) GetPublic(issuerID uint, page int, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
 	query := pr.db.Table("projects p").
 		Select(`
-			p.*,
+			p.id AS id,
+			p.created_at AS created_at,
+			p.updated_at AS updated_at,
+			p.deleted_at AS deleted_at,
+			p.name AS name,
+			p.description AS description,
+			p.budget AS budget,
 			u.id AS owner_id,
 			u.username AS owner_username,
 			u.profile_picture AS owner_profile_picture,
@@ -411,9 +422,12 @@ func convertToProjectInfo(jsonInfo *dto.ProjectInfoJSON) (dto.ProjectInfo, error
 	}
 
 	return dto.ProjectInfo{
+		ID:                  jsonInfo.ID,
+		CreatedAt:           jsonInfo.CreatedAt,
+		UpdatedAt:           jsonInfo.UpdatedAt,
+		DeletedAt:           jsonInfo.DeletedAt,
 		Name:                jsonInfo.Name,
 		Description:         jsonInfo.Description,
-		Content:             jsonInfo.Content,
 		Budget:              jsonInfo.Budget,
 		IsPublic:            jsonInfo.IsPublic,
 		OwnerID:             jsonInfo.OwnerID,
@@ -432,11 +446,10 @@ func (pr *projectRepository) SearchByName(name string, page, perpage int) (*dto.
 	panic("TODO: implement!!")
 }
 
-func (pr *projectRepository) GetContent() (utils.JSON, error) {
-	// TODO: Add where project ID
-	var content utils.JSON
+func (pr *projectRepository) GetContent(projectID uint) (any, error) {
+	var content any
 
-	result := pr.db.Model(&model.Project{}).Pluck("content", &content)
+	result := pr.db.Model(&model.Project{ID: projectID}).Pluck("content", &content)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -445,12 +458,18 @@ func (pr *projectRepository) GetContent() (utils.JSON, error) {
 	return content, nil
 }
 
-func (pr *projectRepository) SaveContent(content utils.JSON) error {
-	// TODO: Add where project ID
+func (pr *projectRepository) SaveContent(projectID uint, content any) error {
+	var contentJSON utils.JSON
+	contentJSON, err := json.Marshal(content)
+	if err != nil {
+		return err
+	}
 
-	return pr.db.Updates(&model.Project{
-		Content: content,
-	}).Error
+	return pr.db.
+		Updates(&model.Project{Content: contentJSON}).
+		Where("id = ?", projectID).
+		Select("content").
+		Error
 }
 
 func (pr *projectRepository) SafeDelete(id uint) error {

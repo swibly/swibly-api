@@ -155,6 +155,8 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 	var projectOwner model.ProjectOwner
 	var projectPublication model.ProjectPublication
 	var allowedUsers []model.ProjectUserPermission
+	var projectLike model.ProjectLikes
+	var projectDislike model.ProjectDislikes
 
 	if err := pr.db.Where("id = ?", projectModel.ID).First(&project).Error; err != nil {
 		return nil, err
@@ -173,14 +175,13 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 		return nil, err
 	}
 
-	ownerModel := &model.User{ID: projectOwner.UserID}
-	ownerProfile, err := pr.userRepo.Get(ownerModel)
+	ownerProfile, err := pr.userRepo.Get(&model.User{ID: projectOwner.UserID})
 	if err != nil {
 		return nil, err
 	}
 
 	owner := dto.UserInfoLite{
-		ID:             ownerModel.ID,
+		ID:             ownerProfile.ID,
 		Username:       ownerProfile.Username,
 		ProfilePicture: ownerProfile.ProfilePicture,
 	}
@@ -207,7 +208,31 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 		})
 	}
 
-	// TODO: Add like/dislike properties
+	isLiked := false
+	if err := pr.db.Where("project_id = ? AND user_id = ?", project.ID, userID).First(&projectLike).Error; err == nil {
+		isLiked = true
+	}
+
+	isDisliked := false
+	if err := pr.db.Where("project_id = ? AND user_id = ?", project.ID, userID).First(&projectDislike).Error; err == nil {
+		isDisliked = true
+	}
+
+	var totalLikes int64
+	if err := pr.db.Model(&model.ProjectLikes{}).Where("project_id = ?", project.ID).Count(&totalLikes).Error; err != nil {
+		return nil, err
+	}
+
+	var totalDislikes int64
+	if err := pr.db.Model(&model.ProjectDislikes{}).Where("project_id = ?", project.ID).Count(&totalDislikes).Error; err != nil {
+		return nil, err
+	}
+
+	likeDislikeRatio := 0.0
+	if totalLikes+totalDislikes > 0 {
+		likeDislikeRatio = float64(totalLikes) / float64(totalLikes+totalDislikes)
+	}
+
 	projectInfo := &dto.ProjectInfo{
 		OwnerID:             owner.ID,
 		OwnerUsername:       owner.Username,
@@ -217,6 +242,11 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 		Content:             project.Content,
 		Budget:              project.Budget,
 		IsPublic:            isPublic,
+		IsLiked:             isLiked,
+		IsDisliked:          isDisliked,
+		TotalLikes:          int(totalLikes),
+		TotalDislikes:       int(totalDislikes),
+		LikeDislikeRatio:    likeDislikeRatio,
 		AllowedUsers:        allowedUserDTOs,
 	}
 

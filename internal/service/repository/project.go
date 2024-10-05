@@ -353,7 +353,7 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 		ProfilePicture: ownerProfile.ProfilePicture,
 	}
 
-	var allowedUserDTOs []dto.ProjectUserPermissions
+	allowedUserDTOs := []dto.ProjectUserPermissions{}
 	for _, userPerm := range allowedUsers {
 		userModel := &model.User{ID: userPerm.UserID}
 		userProfile, err := pr.userRepo.Get(userModel)
@@ -401,6 +401,10 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 	}
 
 	projectInfo := &dto.ProjectInfo{
+		ID:                  project.ID,
+		CreatedAt:           project.CreatedAt,
+		UpdatedAt:           project.UpdatedAt,
+		DeletedAt:           project.DeletedAt,
 		OwnerID:             owner.ID,
 		OwnerUsername:       owner.Username,
 		OwnerProfilePicture: owner.ProfilePicture,

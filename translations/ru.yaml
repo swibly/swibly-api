@@ -47,3 +47,4 @@ project_published: Проект успешно опубликован.
 project_unpublished: Проект успешно снят с публикации.
 project_missing_permissions: Недостаточно прав для выполнения этого действия.
 project_trashed: Проект перемещен в корзину.
+project_restored: Проект успешно восстановлен.

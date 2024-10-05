@@ -11,12 +11,22 @@ type ProjectCreation struct {
 	Name        string `validate:"required,min=3,max=32"    json:"name"`
 	Description string `validate:"omitempty,min=3,max=5000" json:"description"`
 
-	Content utils.JSON `validate:"omitempty" json:"content"`
-	Budget  int        `validate:"omitempty" json:"budget"`
+	Content any `validate:"omitempty" json:"content"`
+	Budget  int `validate:"omitempty" json:"budget"`
 
 	OwnerID uint `json:"-"` // Set using JWT
 
 	Public bool `json:"-"` // Set in an URL query param
+}
+
+type ProjectUpdate struct {
+	Name        *string `validate:"omitempty,min=3,max=32"    json:"name"`
+	Description *string `validate:"omitempty,min=3,max=5000" json:"description"`
+
+	Content *any `validate:"omitempty" json:"content"`
+	Budget  *int `validate:"omitempty" json:"budget"`
+
+	Published *bool `validate:"omitempty" json:"published"`
 }
 
 type AllowManage struct {

@@ -3,12 +3,14 @@ package repository
 import (
 	"encoding/json"
 	"errors"
+	"reflect"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/db"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/pagination"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type projectRepository struct {
@@ -19,6 +21,7 @@ type projectRepository struct {
 
 type ProjectRepository interface {
 	Create(createModel *dto.ProjectCreation) error
+	Update(uint, *dto.ProjectUpdate) error
 
 	Assign(userID uint, projectID uint, allowList *dto.Allow) error
 
@@ -45,7 +48,6 @@ func (pr *projectRepository) Create(createModel *dto.ProjectCreation) error {
 	project := &model.Project{
 		Name:        createModel.Name,
 		Description: createModel.Description,
-		Content:     createModel.Content,
 		Budget:      createModel.Budget,
 	}
 
@@ -73,6 +75,56 @@ func (pr *projectRepository) Create(createModel *dto.ProjectCreation) error {
 			tx.Rollback()
 			return err
 		}
+	}
+
+	return tx.Commit().Error
+}
+
+func (pr *projectRepository) Update(projectID uint, updateModel *dto.ProjectUpdate) error {
+	tx := pr.db.Begin()
+	updates := make(map[string]interface{})
+
+	v := reflect.ValueOf(updateModel).Elem()
+	t := v.Type()
+
+	ignoredFields := []string{"published"}
+
+	shouldIgnore := func(field string) bool {
+		for _, ignoredField := range ignoredFields {
+			if ignoredField == field {
+				return true
+			}
+		}
+		return false
+	}
+
+	for i := 0; i < v.NumField(); i++ {
+		field := t.Field(i)
+		fieldValue := v.Field(i)
+
+		if !fieldValue.IsNil() && !shouldIgnore(field.Tag.Get("json")) {
+			updates[field.Tag.Get("json")] = fieldValue.Elem().Interface()
+		}
+	}
+
+	if updateModel.Published != nil {
+		switch *updateModel.Published {
+		case true:
+			if err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&model.ProjectPublication{ProjectID: projectID}).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
+		case false:
+			if err := tx.Where("project_id = ?", projectID).Unscoped().Delete(&model.ProjectPublication{}).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
+		}
+	}
+
+	if err := tx.Model(&model.Project{}).Where("id = ?", projectID).Updates(updates).Error; err != nil {
+		tx.Rollback()
+		return err
 	}
 
 	return tx.Commit().Error

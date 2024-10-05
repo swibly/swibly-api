@@ -71,7 +71,7 @@ type ProjectUserPermission struct {
 	UpdatedAt time.Time
 
 	ProjectID uint `gorm:"index;not null;constraint:OnDelete:CASCADE;"`
-	UserID    uint `gorm:"index;not null"`
+	UserID    uint `gorm:"index;not null;constraint:OnDelete:CASCADE;"`
 
 	Allow dto.Allow `gorm:"embedded;embeddedPrefix:allow_"`
 }

@@ -106,3 +106,8 @@ func APIKeyHasEnabledUserActions(ctx *gin.Context) {
 	key := ctx.Keys["api_key"].(*dto.ReadAPIKey)
 	apiKeyHas(ctx, key.EnabledUserActions, "actions")
 }
+
+func APIKeyHasEnabledProjects(ctx *gin.Context) {
+	key := ctx.Keys["api_key"].(*dto.ReadAPIKey)
+	apiKeyHas(ctx, key.EnabledProjects, "query.project")
+}

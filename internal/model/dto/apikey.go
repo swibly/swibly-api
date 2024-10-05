@@ -22,6 +22,7 @@ type ReadAPIKey struct {
 	EnabledSearch      int `json:"enabled_search"`
 	EnabledUserFetch   int `json:"enabled_user_fetch"`
 	EnabledUserActions int `json:"enabled_user_actions"`
+	EnabledProjects    int `json:"enabled_projects"`
 
 	TimesUsed uint `json:"times_used"`
 	MaxUsage  uint `json:"max_usage"`

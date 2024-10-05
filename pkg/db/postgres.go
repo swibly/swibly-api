@@ -131,8 +131,10 @@ func Load() {
 			EnabledSearch:      1,
 			EnabledUserFetch:   1,
 			EnabledUserActions: 1,
+			EnabledProjects:    1,
 		}
 
+		log.Print("Created API key for the first time: ", key.Key)
 		db.Create(&key)
 	}
 

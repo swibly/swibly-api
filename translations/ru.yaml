@@ -50,3 +50,4 @@ project_trashed: Проект перемещен в корзину.
 project_restored: Проект успешно восстановлен.
 project_already_trashed: Проект уже находится в корзине.
 project_not_trashed: Проект не находится в корзине.
+trash_cleared: Корзина успешно очищена.

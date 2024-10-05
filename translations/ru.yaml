@@ -39,10 +39,10 @@ validator_min_chars: Минимум %s символов.
 validator_must_be_numerical_boolean: Значение должно быть -1, 0 или 1.
 validator_must_be_supported_language: Должен быть одним из следующих поддерживаемых языков (pt, en, ru).
 validator_required: Oбязательное поле.
-project_not_found: Проект не найден.
-project_created: Проект создан.
-project_updated: Проект обновлен.
-project_deleted: Проект удален.
-project_published: Проект опубликован.
-project_unpublished: Проект приватный.
-project_invalid: Неверный идентификатор проекта.
+project_not_found: Указанный проект не найден.
+project_created: Проект успешно создан.
+project_updated: Проект успешно обновлен.
+project_deleted: Проект успешно удалён.
+project_published: Проект успешно опубликован.
+project_unpublished: Проект успешно снят с публикации.
+project_missing_permissions: Недостаточно прав для выполнения этого действия.

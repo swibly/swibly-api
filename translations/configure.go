@@ -51,13 +51,14 @@ type Translation struct {
 	ValidatorMustBeSupportedLanguage string `yaml:"validator_must_be_supported_language"`
 	ValidatorRequired                string `yaml:"validator_required"`
 
-	ProjectNotFound    string `yaml:"project_not_found"`
-	ProjectCreated     string `yaml:"project_created"`
-	ProjectUpdated     string `yaml:"project_updated"`
-	ProjectDeleted     string `yaml:"project_deleted"`
-	ProjectPublished   string `yaml:"project_published"`
-	ProjectUnpublished string `yaml:"project_unpublished"`
-	ProjectInvalid     string `yaml:"project_invalid"`
+	ProjectNotFound           string `yaml:"project_not_found"`
+	ProjectCreated            string `yaml:"project_created"`
+	ProjectUpdated            string `yaml:"project_updated"`
+	ProjectDeleted            string `yaml:"project_deleted"`
+	ProjectPublished          string `yaml:"project_published"`
+	ProjectUnpublished        string `yaml:"project_unpublished"`
+	ProjectInvalid            string `yaml:"project_invalid"`
+	ProjectMissingPermissions string `yaml:"project_missing_permissions"`
 }
 
 var Translations = make(map[string]Translation)

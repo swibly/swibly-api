@@ -39,10 +39,11 @@ validator_min_chars: Mínimo de %s caracteres.
 validator_must_be_numerical_boolean: Valor deve ser -1, 0 ou 1.
 validator_must_be_supported_language: Deve ser uma das seguintes linguas suportadas (pt, en, ru).
 validator_required: Campo obrigatório.
-project_not_found: Projeto não encontrado.
-project_created: Projeto criado.
-project_updated: Projeto atualizado.
-project_deleted: Projeto excluído.
-project_published: Projeto publicado.
-project_unpublished: Projeto privado.
-project_invalid: ID de projeto inválido.
+project_not_found: O projeto especificado não pôde ser localizado.
+project_created: Projeto criado com sucesso.
+project_updated: Projeto atualizado com sucesso.
+project_deleted: Projeto excluído com sucesso.
+project_published: Projeto publicado com sucesso.
+project_unpublished: Projeto removido da publicação com sucesso.
+project_invalid: Identificador de projeto inválido fornecido.
+project_missing_permissions: Permissões insuficientes para realizar essa ação.

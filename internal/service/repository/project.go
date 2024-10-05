@@ -8,7 +8,6 @@ import (
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/db"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/pagination"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -447,28 +446,33 @@ func (pr *projectRepository) SearchByName(name string, page, perpage int) (*dto.
 }
 
 func (pr *projectRepository) GetContent(projectID uint) (any, error) {
-	var content any
+	var content string
 
-	result := pr.db.Model(&model.Project{ID: projectID}).Pluck("content", &content)
+	result := pr.db.Model(&model.Project{}).Select("content").Where("id = ?", projectID).Scan(&content)
 
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
-	return content, nil
+	var contentData any
+	if err := json.Unmarshal([]byte(content), &contentData); err != nil {
+		return nil, err
+	}
+
+	return contentData, nil
 }
 
 func (pr *projectRepository) SaveContent(projectID uint, content any) error {
-	var contentJSON utils.JSON
 	contentJSON, err := json.Marshal(content)
 	if err != nil {
 		return err
 	}
 
-	return pr.db.
-		Updates(&model.Project{Content: contentJSON}).
+	contentString := string(contentJSON)
+
+	return pr.db.Model(&model.Project{}).
 		Where("id = ?", projectID).
-		Select("content").
+		Update("content", contentString).
 		Error
 }
 

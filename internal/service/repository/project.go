@@ -45,6 +45,11 @@ type ProjectRepository interface {
 	UnsafeDelete(uint) error
 }
 
+var (
+	ErrProjectNotTrashed     = errors.New("project is not trashed")
+	ErrProjectAlreadyTrashed = errors.New("project is already trashed")
+)
+
 func NewProjectRepository(userRepo UserRepository) ProjectRepository {
 	return &projectRepository{db.Postgres, userRepo}
 }
@@ -550,11 +555,33 @@ func (pr *projectRepository) Dislike(projectID, userID uint) error {
 }
 
 func (pr *projectRepository) SafeDelete(id uint) error {
-	return pr.db.Delete(&model.Project{ID: id}).Error
+	var project model.Project
+
+	err := pr.db.Unscoped().Where("id = ?", id).First(&project).Error
+	if err != nil {
+		return err
+	}
+
+	if !project.DeletedAt.Valid {
+		return pr.db.Delete(&project).Error
+	}
+
+	return ErrProjectAlreadyTrashed
 }
 
 func (pr *projectRepository) Restore(id uint) error {
-	return pr.db.Unscoped().Model(&model.Project{ID: id}).Update("deleted_at", nil).Error
+	var project model.Project
+
+	err := pr.db.Unscoped().Where("id = ?", id).First(&project).Error
+	if err != nil {
+		return err
+	}
+
+	if project.DeletedAt.Valid {
+		return pr.db.Unscoped().Model(&project).Update("deleted_at", nil).Error
+	}
+
+	return ErrProjectNotTrashed
 }
 
 func (pr *projectRepository) UnsafeDelete(id uint) error {
@@ -569,5 +596,5 @@ func (pr *projectRepository) UnsafeDelete(id uint) error {
 		return pr.db.Unscoped().Delete(&project).Error
 	}
 
-	return errors.New("project is not trashed")
+	return ErrProjectNotTrashed
 }

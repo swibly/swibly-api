@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/language"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
 )
 
 type UserRegister struct {
@@ -103,4 +104,8 @@ type UserInfoLite struct {
 	ID             uint   `json:"id"`
 	Username       string `json:"username"`
 	ProfilePicture string `json:"pfp"`
+}
+
+func (u *UserProfile) HasPermissions(permissions ...string) bool {
+	return utils.HasPermissions(u.Permissions, permissions...)
 }

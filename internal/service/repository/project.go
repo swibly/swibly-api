@@ -325,7 +325,7 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 	var projectLike model.ProjectLikes
 	var projectDislike model.ProjectDislikes
 
-	if err := pr.db.Where("id = ?", projectModel.ID).First(&project).Error; err != nil {
+	if err := pr.db.Unscoped().Where("id = ?", projectModel.ID).First(&project).Error; err != nil {
 		return nil, err
 	}
 

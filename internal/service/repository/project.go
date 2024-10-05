@@ -43,6 +43,7 @@ type ProjectRepository interface {
 	SafeDelete(uint) error
 	Restore(uint) error
 	UnsafeDelete(uint) error
+	ClearTrash(uint) error
 }
 
 var (
@@ -459,13 +460,25 @@ func (pr *projectRepository) GetByOwnerDislikes(issuerID, userID uint, onlyPubli
 }
 
 func (pr *projectRepository) GetPublic(issuerID uint, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
-	query := pr.baseProjectQuery(issuerID).Where("EXISTS (SELECT 1 FROM project_publications pp WHERE pp.project_id = p.id)")
+	query := pr.baseProjectQuery(issuerID).Where("deleted_at IS NULL").Where("EXISTS (SELECT 1 FROM project_publications pp WHERE pp.project_id = p.id)")
 
 	return pr.paginateProjects(query, page, perPage)
 }
 
-func (pr *projectRepository) GetTrashed(ownerID uint, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
-	query := pr.baseProjectQuery(ownerID).Unscoped().Where("p.deleted_at IS NOT NULL")
+func (pr *projectRepository) GetTrashed(issuerID uint, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
+	query := pr.baseProjectQuery(issuerID).
+		Unscoped().
+		Where("p.deleted_at IS NOT NULL").
+		Where(`
+			u.id = ? OR 
+			EXISTS (
+				SELECT 1
+				FROM project_user_permissions pu
+				WHERE pu.project_id = p.id
+				AND pu.user_id = ?
+				AND pu.allow_delete = true
+			)
+		`, issuerID, issuerID)
 
 	return pr.paginateProjects(query, page, perPage)
 }
@@ -597,4 +610,31 @@ func (pr *projectRepository) UnsafeDelete(id uint) error {
 	}
 
 	return ErrProjectNotTrashed
+}
+
+func (pr *projectRepository) ClearTrash(userID uint) error {
+	err := pr.db.Unscoped().
+		Where("deleted_at IS NOT NULL").
+		Where(`
+			EXISTS (
+				SELECT 1
+				FROM project_owners po
+				WHERE po.project_id = projects.id
+				AND po.user_id = ?
+			)
+			OR EXISTS (
+				SELECT 1
+				FROM project_user_permissions pu
+				WHERE pu.project_id = projects.id
+				AND pu.user_id = ?
+				AND pu.allow_delete = true
+			)
+		`, userID, userID).
+		Delete(&model.Project{}).Error
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

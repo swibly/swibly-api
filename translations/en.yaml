@@ -45,3 +45,4 @@ project_published: Project has been successfully published.
 project_unpublished: Project has been successfully unpublished.
 project_invalid: Invalid project identifier provided.
 project_missing_permissions: Missing permissions to perform that action.
+project_trashed: Project has been moved to trash.

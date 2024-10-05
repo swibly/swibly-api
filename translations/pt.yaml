@@ -47,3 +47,4 @@ project_published: Projeto publicado com sucesso.
 project_unpublished: Projeto removido da publicação com sucesso.
 project_invalid: Identificador de projeto inválido fornecido.
 project_missing_permissions: Permissões insuficientes para realizar essa ação.
+project_trashed: Projeto movido para a lixeira.

@@ -7,6 +7,7 @@ var (
 	User       usecase.UserUseCase
 	Follow     usecase.FollowUseCase
 	Permission usecase.PermissionUseCase
+	Project    usecase.ProjectUseCase
 )
 
 func Init() {
@@ -14,4 +15,5 @@ func Init() {
 	User = usecase.NewUserUseCase()
 	Follow = usecase.NewFollowUseCase()
 	Permission = usecase.NewPermissionUseCase()
+	Project = usecase.NewProjectUseCase()
 }

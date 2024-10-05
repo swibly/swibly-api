@@ -49,3 +49,5 @@ project_invalid: Identificador de projeto inválido fornecido.
 project_missing_permissions: Permissões insuficientes para realizar essa ação.
 project_trashed: Projeto movido para a lixeira.
 project_restored: Projeto restaurado com sucesso.
+project_already_trashed: O projeto já está na lixeira.
+project_not_trashed: O projeto não está na lixeira.

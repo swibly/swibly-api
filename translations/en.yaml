@@ -47,3 +47,5 @@ project_invalid: Invalid project identifier provided.
 project_missing_permissions: Missing permissions to perform that action.
 project_trashed: Project has been moved to trash.
 project_restored: Project has been successfully restored.
+project_already_trashed: The project is already in the trash.
+project_not_trashed: The project is not in the trash.

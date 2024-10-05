@@ -61,6 +61,8 @@ type Translation struct {
 	ProjectMissingPermissions string `yaml:"project_missing_permissions"`
 	ProjectTrashed            string `yaml:"project_trashed"`
 	ProjectRestored           string `yaml:"project_restored"`
+	ProjectAlreadyTrashed     string `yaml:"project_already_trashed"`
+	ProjectNotTrashed         string `yaml:"project_not_trashed"`
 }
 
 var Translations = make(map[string]Translation)

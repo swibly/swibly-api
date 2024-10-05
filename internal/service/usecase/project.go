@@ -110,3 +110,7 @@ func (puc ProjectUseCase) Restore(id uint) error {
 func (puc ProjectUseCase) RemoveFromTrash(id uint) error {
 	return puc.pr.UnsafeDelete(id)
 }
+
+func (puc ProjectUseCase) ClearTrash(issuerID uint) error {
+	return puc.pr.ClearTrash(issuerID)
+}

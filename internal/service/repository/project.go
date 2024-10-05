@@ -28,6 +28,7 @@ type ProjectRepository interface {
 	Get(uint, *model.Project) (*dto.ProjectInfo, error)
 	GetByOwner(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
 	GetPublic(issuerID uint, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
+	GetTrashed(ownerID uint, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
 
 	SearchByName(issuerID uint, name string, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
 
@@ -35,6 +36,7 @@ type ProjectRepository interface {
 	SaveContent(uint, any) error
 
 	SafeDelete(uint) error
+	Restore(uint) error
 	UnsafeDelete(uint) error
 }
 
@@ -493,6 +495,85 @@ func convertToProjectInfo(jsonInfo *dto.ProjectInfoJSON) (dto.ProjectInfo, error
 	}, nil
 }
 
+func (pr *projectRepository) GetTrashed(ownerID uint, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
+	query := pr.db.Table("projects p").
+		Select(`
+			p.id AS id,
+			p.created_at AS created_at,
+			p.updated_at AS updated_at,
+			p.deleted_at AS deleted_at,
+			p.name AS name,
+			p.description AS description,
+			p.budget AS budget,
+			u.id AS owner_id,
+			u.username AS owner_username,
+			u.profile_picture AS owner_profile_picture,
+			COALESCE(pl.project_id IS NOT NULL, false) AS is_liked,
+			COALESCE(pd.project_id IS NOT NULL, false) AS is_disliked,
+			COALESCE(like_counts.total_likes, 0) AS total_likes,
+			COALESCE(dislike_counts.total_dislikes, 0) AS total_dislikes,
+			CASE
+				WHEN COALESCE(like_counts.total_likes, 0) + COALESCE(dislike_counts.total_dislikes, 0) = 0
+				THEN 0
+				ELSE COALESCE(like_counts.total_likes, 0) * 1.0 / (COALESCE(like_counts.total_likes, 0) + COALESCE(dislike_counts.total_dislikes, 0))
+			END AS like_dislike_ratio,
+			TRUE AS is_public,
+			(
+				SELECT json_agg(
+					json_build_object(
+						'id', pu.user_id,
+						'username', puu.username,
+						'profile_picture', puu.profile_picture,
+						'allow_view', pu.allow_view,
+						'allow_edit', pu.allow_edit,
+						'allow_delete', pu.allow_delete,
+						'allow_publish', pu.allow_publish,
+						'allow_share', pu.allow_share,
+						'allow_manage_users', pu.allow_manage_users,
+						'allow_manage_metadata', pu.allow_manage_metadata
+					)
+				)
+				FROM project_user_permissions pu
+				JOIN users puu ON pu.user_id = puu.id
+				WHERE pu.project_id = p.id
+			) AS allowed_users
+		`).
+		Joins("JOIN project_owners po ON po.project_id = p.id").
+		Joins("JOIN users u ON po.user_id = u.id").
+		Joins("JOIN project_publications pp ON pp.project_id = p.id").
+		Joins("LEFT JOIN project_likes pl ON pl.project_id = p.id AND pl.user_id = ?", ownerID).
+		Joins("LEFT JOIN project_dislikes pd ON pd.project_id = p.id AND pd.user_id = ?", ownerID).
+		Joins("LEFT JOIN (SELECT project_id, COUNT(*) AS total_likes FROM project_likes GROUP BY project_id) AS like_counts ON like_counts.project_id = p.id").
+		Joins("LEFT JOIN (SELECT project_id, COUNT(*) AS total_dislikes FROM project_dislikes GROUP BY project_id) AS dislike_counts ON dislike_counts.project_id = p.id").
+		Order("like_dislike_ratio DESC, total_likes DESC").
+		Unscoped().
+		Where("p.deleted_at IS NOT NULL")
+
+	var projectInfoList []*dto.ProjectInfo
+	paginationResult, err := pagination.Generate[dto.ProjectInfoJSON](query, page, perPage)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, projectInfoJSON := range paginationResult.Data {
+		projectInfo, err := convertToProjectInfo(projectInfoJSON)
+		if err != nil {
+			return nil, err
+		}
+
+		projectInfoList = append(projectInfoList, &projectInfo)
+	}
+
+	return &dto.Pagination[dto.ProjectInfo]{
+		Data:         projectInfoList,
+		TotalRecords: paginationResult.TotalRecords,
+		TotalPages:   paginationResult.TotalPages,
+		CurrentPage:  paginationResult.CurrentPage,
+		NextPage:     paginationResult.NextPage,
+		PreviousPage: paginationResult.PreviousPage,
+	}, nil
+}
+
 func (pr *projectRepository) SearchByName(issuerID uint, name string, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
 	query := pr.db.Table("projects p").
 		Select(`
@@ -608,6 +689,10 @@ func (pr *projectRepository) SaveContent(projectID uint, content any) error {
 
 func (pr *projectRepository) SafeDelete(id uint) error {
 	return pr.db.Delete(&model.Project{ID: id}).Error
+}
+
+func (pr *projectRepository) Restore(id uint) error {
+	return pr.db.Unscoped().Model(&model.Project{ID: id}).Update("deleted_at", nil).Error
 }
 
 func (pr *projectRepository) UnsafeDelete(id uint) error {

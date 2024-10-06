@@ -59,14 +59,6 @@ func (puc ProjectUseCase) GetByOwner(issuerID, userID uint, onlyPublic bool, pag
 	return puc.pr.GetByOwner(issuerID, userID, onlyPublic, page, perPage)
 }
 
-func (puc ProjectUseCase) GetByOwnerLikes(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
-	return puc.pr.GetByOwnerLikes(issuerID, userID, onlyPublic, page, perPage)
-}
-
-func (puc ProjectUseCase) GetByOwnerDislikes(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
-	return puc.pr.GetByOwnerDislikes(issuerID, userID, onlyPublic, page, perPage)
-}
-
 func (puc ProjectUseCase) GetPublic(issuerID uint, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
 	return puc.pr.GetPublic(issuerID, page, perPage)
 }
@@ -89,14 +81,6 @@ func (puc ProjectUseCase) SaveContent(projectID uint, content any) error {
 
 func (puc ProjectUseCase) ClearContent(projectID uint) error {
 	return puc.pr.SaveContent(projectID, nil)
-}
-
-func (puc ProjectUseCase) Like(projectID, userID uint) error {
-	return puc.pr.Like(projectID, userID)
-}
-
-func (puc ProjectUseCase) Dislike(projectID, userID uint) error {
-	return puc.pr.Dislike(projectID, userID)
 }
 
 func (puc ProjectUseCase) Trash(id uint) error {

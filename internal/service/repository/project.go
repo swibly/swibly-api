@@ -27,8 +27,6 @@ type ProjectRepository interface {
 
 	Get(uint, *model.Project) (*dto.ProjectInfo, error)
 	GetByOwner(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
-	GetByOwnerLikes(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
-	GetByOwnerDislikes(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
 	GetPublic(issuerID uint, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
 	GetTrashed(ownerID uint, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
 
@@ -36,9 +34,6 @@ type ProjectRepository interface {
 
 	GetContent(uint) (any, error)
 	SaveContent(uint, any) error
-
-	Like(uint, uint) error
-	Dislike(uint, uint) error
 
 	SafeDelete(uint) error
 	Restore(uint) error
@@ -69,15 +64,6 @@ func (pr *projectRepository) baseProjectQuery(issuerID uint) *gorm.DB {
 			u.id AS owner_id,
 			u.username AS owner_username,
 			u.profile_picture AS owner_profile_picture,
-			COALESCE(pl.project_id IS NOT NULL, false) AS is_liked,
-			COALESCE(pd.project_id IS NOT NULL, false) AS is_disliked,
-			COALESCE(like_counts.total_likes, 0) AS total_likes,
-			COALESCE(dislike_counts.total_dislikes, 0) AS total_dislikes,
-			CASE
-				WHEN COALESCE(like_counts.total_likes, 0) + COALESCE(dislike_counts.total_dislikes, 0) = 0
-				THEN 0
-				ELSE COALESCE(like_counts.total_likes, 0) * 1.0 / (COALESCE(like_counts.total_likes, 0) + COALESCE(dislike_counts.total_dislikes, 0))
-			END AS like_dislike_ratio,
 			EXISTS (
 				SELECT 1 
 				FROM project_publications pp 
@@ -104,11 +90,7 @@ func (pr *projectRepository) baseProjectQuery(issuerID uint) *gorm.DB {
 			), '[]') AS allowed_users
 		`).
 		Joins("JOIN project_owners po ON po.project_id = p.id").
-		Joins("JOIN users u ON po.user_id = u.id").
-		Joins("LEFT JOIN project_likes pl ON pl.project_id = p.id AND pl.user_id = ?", issuerID).
-		Joins("LEFT JOIN project_dislikes pd ON pd.project_id = p.id AND pd.user_id = ?", issuerID).
-		Joins("LEFT JOIN (SELECT project_id, COUNT(*) AS total_likes FROM project_likes GROUP BY project_id) AS like_counts ON like_counts.project_id = p.id").
-		Joins("LEFT JOIN (SELECT project_id, COUNT(*) AS total_dislikes FROM project_dislikes GROUP BY project_id) AS dislike_counts ON dislike_counts.project_id = p.id")
+		Joins("JOIN users u ON po.user_id = u.id")
 }
 
 func (pr *projectRepository) paginateProjects(query *gorm.DB, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
@@ -156,11 +138,6 @@ func convertToProjectInfo(jsonInfo *dto.ProjectInfoJSON) (dto.ProjectInfo, error
 		OwnerID:             jsonInfo.OwnerID,
 		OwnerUsername:       jsonInfo.OwnerUsername,
 		OwnerProfilePicture: jsonInfo.OwnerProfilePicture,
-		IsLiked:             jsonInfo.IsLiked,
-		IsDisliked:          jsonInfo.IsDisliked,
-		TotalLikes:          jsonInfo.TotalLikes,
-		TotalDislikes:       jsonInfo.TotalDislikes,
-		LikeDislikeRatio:    jsonInfo.LikeDislikeRatio,
 		AllowedUsers:        allowedUsers,
 	}, nil
 }
@@ -340,8 +317,6 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 	var projectOwner model.ProjectOwner
 	var projectPublication model.ProjectPublication
 	var allowedUsers []model.ProjectUserPermission
-	var projectLike model.ProjectLikes
-	var projectDislike model.ProjectDislikes
 
 	if err := pr.db.Unscoped().Where("id = ?", projectModel.ID).First(&project).Error; err != nil {
 		return nil, err
@@ -393,31 +368,6 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 		})
 	}
 
-	isLiked := false
-	if err := pr.db.Where("project_id = ? AND user_id = ?", project.ID, userID).First(&projectLike).Error; err == nil {
-		isLiked = true
-	}
-
-	isDisliked := false
-	if err := pr.db.Where("project_id = ? AND user_id = ?", project.ID, userID).First(&projectDislike).Error; err == nil {
-		isDisliked = true
-	}
-
-	var totalLikes int64
-	if err := pr.db.Model(&model.ProjectLikes{}).Where("project_id = ?", project.ID).Count(&totalLikes).Error; err != nil {
-		return nil, err
-	}
-
-	var totalDislikes int64
-	if err := pr.db.Model(&model.ProjectDislikes{}).Where("project_id = ?", project.ID).Count(&totalDislikes).Error; err != nil {
-		return nil, err
-	}
-
-	likeDislikeRatio := 0.0
-	if totalLikes+totalDislikes > 0 {
-		likeDislikeRatio = float64(totalLikes) / float64(totalLikes+totalDislikes)
-	}
-
 	projectInfo := &dto.ProjectInfo{
 		ID:                  project.ID,
 		CreatedAt:           project.CreatedAt,
@@ -430,11 +380,6 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 		Description:         project.Description,
 		Budget:              project.Budget,
 		IsPublic:            isPublic,
-		IsLiked:             isLiked,
-		IsDisliked:          isDisliked,
-		TotalLikes:          int(totalLikes),
-		TotalDislikes:       int(totalDislikes),
-		LikeDislikeRatio:    likeDislikeRatio,
 		AllowedUsers:        allowedUserDTOs,
 	}
 
@@ -446,26 +391,6 @@ func (pr *projectRepository) GetByOwner(issuerID, userID uint, onlyPublic bool, 
 
 	if onlyPublic {
 		query = query.Joins("JOIN project_publications pp ON pp.project_id = p.id")
-	}
-
-	return pr.paginateProjects(query, page, perPage)
-}
-
-func (pr *projectRepository) GetByOwnerLikes(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
-	query := pr.baseProjectQuery(issuerID).Joins("JOIN project_likes pl ON pl.project_id = p.id AND pl.user_id = ?", userID)
-
-	if onlyPublic {
-		query = query.Where("EXISTS (SELECT 1 FROM project_publications pp WHERE pp.project_id = p.id)")
-	}
-
-	return pr.paginateProjects(query, page, perPage)
-}
-
-func (pr *projectRepository) GetByOwnerDislikes(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
-	query := pr.baseProjectQuery(issuerID).Joins("JOIN project_dislikes pd ON pd.project_id = p.id AND pd.user_id = ?", userID)
-
-	if onlyPublic {
-		query = query.Where("EXISTS (SELECT 1 FROM project_publications pp WHERE pp.project_id = p.id)")
 	}
 
 	return pr.paginateProjects(query, page, perPage)
@@ -497,8 +422,7 @@ func (pr *projectRepository) GetTrashed(issuerID uint, page, perPage int) (*dto.
 
 func (pr *projectRepository) SearchByName(issuerID uint, name string, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
 	query := pr.baseProjectQuery(issuerID).
-		Where(`to_tsvector('simple', p.name || ' ' || p.description || ' ' || u.username) @@ plainto_tsquery('simple', ?)`, name).
-		Order("like_dislike_ratio DESC, total_likes DESC")
+		Where(`to_tsvector('simple', p.name || ' ' || p.description || ' ' || u.username) @@ plainto_tsquery('simple', ?)`, name)
 
 	return pr.paginateProjects(query, page, perPage)
 }
@@ -532,51 +456,6 @@ func (pr *projectRepository) SaveContent(projectID uint, content any) error {
 		Where("id = ?", projectID).
 		Update("content", contentString).
 		Error
-}
-
-func (pr *projectRepository) Like(projectID, userID uint) error {
-	if err := pr.db.Where("project_id = ? AND user_id = ?", projectID, userID).Delete(&model.ProjectDislikes{}).Error; err != nil {
-		return err
-	}
-
-	var existingLike model.ProjectLikes
-	if err := pr.db.Where("project_id = ? AND user_id = ?", projectID, userID).First(&existingLike).Error; err == nil {
-		return nil
-	}
-
-	newLike := model.ProjectLikes{
-		ProjectID: projectID,
-		UserID:    userID,
-	}
-
-	if err := pr.db.Create(&newLike).Error; err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (pr *projectRepository) Dislike(projectID, userID uint) error {
-	if err := pr.db.Where("project_id = ? AND user_id = ?", projectID, userID).Delete(&model.ProjectLikes{}).Error; err != nil {
-		return err
-	}
-
-	var existingDislike model.ProjectDislikes
-	if err := pr.db.Where("project_id = ? AND user_id = ?", projectID, userID).
-		First(&existingDislike).Error; err == nil {
-		return nil
-	}
-
-	newDislike := model.ProjectDislikes{
-		ProjectID: projectID,
-		UserID:    userID,
-	}
-
-	if err := pr.db.Create(&newDislike).Error; err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (pr *projectRepository) SafeDelete(id uint) error {

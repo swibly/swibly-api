@@ -73,12 +73,6 @@ type ProjectInfoJSON struct {
 	OwnerUsername       string `json:"owner_username"`
 	OwnerProfilePicture string `json:"owner_profile_picture"`
 
-	IsLiked          bool    `json:"is_liked"`
-	IsDisliked       bool    `json:"is_disliked"`
-	TotalLikes       int     `json:"total_likes"`
-	TotalDislikes    int     `json:"total_dislikes"`
-	LikeDislikeRatio float64 `json:"like_dislike_ratio"`
-
 	AllowedUsers utils.JSON `gorm:"type:jsonb" json:"allowed_users"`
 }
 
@@ -98,12 +92,6 @@ type ProjectInfo struct {
 	OwnerID             uint   `json:"owner_id"`
 	OwnerUsername       string `json:"owner_username"`
 	OwnerProfilePicture string `json:"owner_profile_picture"`
-
-	IsLiked          bool    `json:"is_liked"`
-	IsDisliked       bool    `json:"is_disliked"`
-	TotalLikes       int     `json:"total_likes"`
-	TotalDislikes    int     `json:"total_dislikes"`
-	LikeDislikeRatio float64 `json:"like_dislike_ratio"`
 
 	AllowedUsers []ProjectUserPermissions `json:"allowed_users"`
 }

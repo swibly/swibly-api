@@ -74,6 +74,9 @@ type ProjectInfoJSON struct {
 	OwnerProfilePicture string `json:"owner_profile_picture"`
 
 	AllowedUsers utils.JSON `gorm:"type:jsonb" json:"allowed_users"`
+
+	IsFavorited    bool `json:"is_favorited"`
+	TotalFavorites int  `json:"total_favorites"`
 }
 
 type ProjectInfo struct {
@@ -94,6 +97,9 @@ type ProjectInfo struct {
 	OwnerProfilePicture string `json:"owner_profile_picture"`
 
 	AllowedUsers []ProjectUserPermissions `json:"allowed_users"`
+
+	IsFavorited    bool `json:"is_favorited"`
+	TotalFavorites int  `json:"total_favorites"`
 }
 
 func (a Allow) IsEmpty() bool {

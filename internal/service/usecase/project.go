@@ -79,6 +79,14 @@ func (puc ProjectUseCase) SaveContent(projectID uint, content any) error {
 	return puc.pr.SaveContent(projectID, content)
 }
 
+func (puc ProjectUseCase) Favorite(projectID, userID uint) error {
+	return puc.pr.Favorite(projectID, userID)
+}
+
+func (puc ProjectUseCase) Unfavorite(projectID, userID uint) error {
+	return puc.pr.Unfavorite(projectID, userID)
+}
+
 func (puc ProjectUseCase) ClearContent(projectID uint) error {
 	return puc.pr.SaveContent(projectID, nil)
 }

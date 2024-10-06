@@ -35,6 +35,9 @@ type ProjectRepository interface {
 	GetContent(uint) (any, error)
 	SaveContent(uint, any) error
 
+	Favorite(uint, uint) error
+	Unfavorite(uint, uint) error
+
 	SafeDelete(uint) error
 	Restore(uint) error
 	UnsafeDelete(uint) error
@@ -42,9 +45,11 @@ type ProjectRepository interface {
 }
 
 var (
-	ErrProjectTrashed        = errors.New("project is trashed")
-	ErrProjectNotTrashed     = errors.New("project is not trashed")
-	ErrProjectAlreadyTrashed = errors.New("project is already trashed")
+	ErrProjectTrashed          = errors.New("project is trashed")
+	ErrProjectNotTrashed       = errors.New("project is not trashed")
+	ErrProjectAlreadyTrashed   = errors.New("project is already trashed")
+	ErrProjectAlreadyFavorited = errors.New("project is already favorited by the user")
+	ErrProjectNotFavorited     = errors.New("cannot unfavorite a project that is not favorited")
 )
 
 func NewProjectRepository(userRepo UserRepository) ProjectRepository {
@@ -87,10 +92,23 @@ func (pr *projectRepository) baseProjectQuery(issuerID uint) *gorm.DB {
 				FROM project_user_permissions pu
 				JOIN users puu ON pu.user_id = puu.id
 				WHERE pu.project_id = p.id
-			), '[]') AS allowed_users
-		`).
+			), '[]') AS allowed_users,
+			COALESCE((
+				SELECT true
+				FROM project_user_favorites f
+				WHERE f.project_id = p.id
+				AND f.user_id = ?
+				LIMIT 1
+			), false) AS is_favorited,
+			(
+				SELECT COUNT(*)
+				FROM project_user_favorites f
+				WHERE f.project_id = p.id
+			) AS total_favorites
+		`, issuerID).
 		Joins("JOIN project_owners po ON po.project_id = p.id").
-		Joins("JOIN users u ON po.user_id = u.id")
+		Joins("JOIN users u ON po.user_id = u.id").
+		Order("total_favorites DESC")
 }
 
 func (pr *projectRepository) paginateProjects(query *gorm.DB, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
@@ -138,6 +156,8 @@ func convertToProjectInfo(jsonInfo *dto.ProjectInfoJSON) (dto.ProjectInfo, error
 		OwnerID:             jsonInfo.OwnerID,
 		OwnerUsername:       jsonInfo.OwnerUsername,
 		OwnerProfilePicture: jsonInfo.OwnerProfilePicture,
+		IsFavorited:         jsonInfo.IsFavorited,
+		TotalFavorites:      jsonInfo.TotalFavorites,
 		AllowedUsers:        allowedUsers,
 	}, nil
 }
@@ -368,6 +388,16 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 		})
 	}
 
+	isFavorited := false
+	if err := pr.db.Where("project_id = ? AND user_id = ?", project.ID, userID).First(&model.ProjectUserFavorite{}).Error; err == nil {
+		isFavorited = true
+	}
+
+	var totalFavorites int64
+	if err := pr.db.Model(&model.ProjectUserFavorite{}).Where("project_id = ?", project.ID).Count(&totalFavorites).Error; err != nil {
+		return nil, err
+	}
+
 	projectInfo := &dto.ProjectInfo{
 		ID:                  project.ID,
 		CreatedAt:           project.CreatedAt,
@@ -380,6 +410,8 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 		Description:         project.Description,
 		Budget:              project.Budget,
 		IsPublic:            isPublic,
+		IsFavorited:         isFavorited,
+		TotalFavorites:      int(totalFavorites),
 		AllowedUsers:        allowedUserDTOs,
 	}
 
@@ -456,6 +488,35 @@ func (pr *projectRepository) SaveContent(projectID uint, content any) error {
 		Where("id = ?", projectID).
 		Update("content", contentString).
 		Error
+}
+
+func (pr *projectRepository) Favorite(projectID, userID uint) error {
+	var favorite model.ProjectUserFavorite
+	err := pr.db.Where("project_id = ? AND user_id = ?", projectID, userID).First(&favorite).Error
+
+	if err == nil {
+		return ErrProjectAlreadyFavorited
+	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err
+	}
+
+	return pr.db.Create(&model.ProjectUserFavorite{
+		ProjectID: projectID,
+		UserID:    userID,
+	}).Error
+}
+
+func (pr *projectRepository) Unfavorite(projectID, userID uint) error {
+	var favorite model.ProjectUserFavorite
+	err := pr.db.Where("project_id = ? AND user_id = ?", projectID, userID).First(&favorite).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return ErrProjectNotFavorited
+	} else if err != nil {
+		return err
+	}
+
+	return pr.db.Delete(&favorite).Error
 }
 
 func (pr *projectRepository) SafeDelete(id uint) error {

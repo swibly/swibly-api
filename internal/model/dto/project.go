@@ -17,6 +17,8 @@ type ProjectCreation struct {
 	OwnerID uint `json:"-"` // Set using JWT
 
 	Public bool `json:"-"` // Set in an URL query param
+
+	Fork *uint `validate:"omitempty" json:"-"`
 }
 
 type ProjectUpdate struct {
@@ -67,7 +69,8 @@ type ProjectInfoJSON struct {
 
 	Budget int `json:"budget"`
 
-	IsPublic bool `json:"is_public"`
+	IsPublic bool  `json:"is_public"`
+	Fork     *uint `json:"fork"`
 
 	OwnerID             uint   `json:"owner_id"`
 	OwnerUsername       string `json:"owner_username"`
@@ -90,7 +93,8 @@ type ProjectInfo struct {
 
 	Budget int `json:"budget"`
 
-	IsPublic bool `json:"is_public"`
+	IsPublic bool  `json:"is_public"`
+	Fork     *uint `json:"fork"`
 
 	OwnerID             uint   `json:"owner_id"`
 	OwnerUsername       string `json:"owner_username"`

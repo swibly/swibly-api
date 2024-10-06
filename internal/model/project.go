@@ -18,6 +18,8 @@ type Project struct {
 
 	Content any `gorm:"type:jsonb;not null;default:'{}'"`
 	Budget  int `gorm:"default:0"`
+
+	Fork *uint `gorm:"index"`
 }
 
 type ProjectOwner struct {

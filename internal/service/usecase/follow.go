@@ -13,7 +13,7 @@ func NewFollowUseCase() FollowUseCase {
 	return FollowUseCase{fr: repository.NewFollowRepository()}
 }
 
-func (f FollowUseCase) FollowUser(followingID, followerID uint) error {
+func (f FollowUseCase) Follow(followingID, followerID uint) error {
 	if err := f.fr.Follow(followingID, followerID); err != nil {
 		return err
 	}
@@ -21,7 +21,7 @@ func (f FollowUseCase) FollowUser(followingID, followerID uint) error {
 	return nil
 }
 
-func (f FollowUseCase) UnfollowUser(followingID, followerID uint) error {
+func (f FollowUseCase) Unfollow(followingID, followerID uint) error {
 	if err := f.fr.Unfollow(followingID, followerID); err != nil {
 		return err
 	}
@@ -37,8 +37,8 @@ func (f FollowUseCase) GetFollowing(userID uint, page, perpage int) (*dto.Pagina
 	return f.fr.GetFollowing(userID, page, perpage)
 }
 
-func (f FollowUseCase) GetFollowersCount(userID uint, page int, perpage int) (*dto.Pagination[dto.Follower], error) {
-	return f.fr.GetFollowers(userID, page, perpage)
+func (f FollowUseCase) GetFollowersCount(userID uint) (int64, error) {
+	return f.fr.GetFollowersCount(userID)
 }
 
 func (f FollowUseCase) GetFollowingCount(userID uint) (int64, error) {

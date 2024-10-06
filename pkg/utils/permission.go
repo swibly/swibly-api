@@ -4,7 +4,6 @@ import (
 	"slices"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
-	"github.com/gin-gonic/gin"
 )
 
 // There is no need to pass anything to check for admin roles
@@ -24,9 +23,4 @@ func HasPermissions(list []string, lookup ...string) bool {
 	}
 
 	return true
-}
-
-// WARN: must have the GetPermissionsMiddleware in the route before using
-func HasPermissionsByContext(ctx *gin.Context, lookup ...string) bool {
-	return HasPermissions(ctx.Keys["permissions"].([]string), lookup...)
 }

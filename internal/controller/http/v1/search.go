@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/middleware"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/translations"
@@ -17,7 +18,7 @@ import (
 
 func newSearchRoutes(handler *gin.RouterGroup) {
 	h := handler.Group("/search")
-	h.Use(middleware.APIKeyHasEnabledSearch)
+	h.Use(middleware.APIKeyHasEnabledSearch, middleware.Auth)
 	{
 		h.GET("/user", SearchUserByNameHandler)
 		h.GET("/project", SearchProjectByNameHandler)
@@ -47,7 +48,7 @@ func SearchUserByNameHandler(ctx *gin.Context) {
 		perpage = i
 	}
 
-	users, err := service.User.GetBySimilarName(name, page, perpage)
+	users, err := service.User.SearchByName(name, page, perpage)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": dict.SearchNoResults})
@@ -72,6 +73,8 @@ func SearchProjectByNameHandler(ctx *gin.Context) {
 		return
 	}
 
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
+
 	var (
 		page    int = 1
 		perpage int = 10
@@ -85,7 +88,7 @@ func SearchProjectByNameHandler(ctx *gin.Context) {
 		perpage = i
 	}
 
-	projects, err := service.Project.GetBySimilarName(name, page, perpage)
+	projects, err := service.Project.SearchByName(issuer.ID, name, page, perpage)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": dict.SearchNoResults})

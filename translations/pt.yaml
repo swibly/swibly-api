@@ -8,11 +8,11 @@ hello: Olá!
 internal_server_error: Erro interno de servidor. Por favor, tente novamente mais tarde.
 invalid_api_key: Chave de API inválida.
 invalid_body:
-  Formato de corpo de solicitação inválido. Certifique-se de que a estrutura JSON esteja correta
-  e que todos os campos obrigatórios estejam presentes.
+    Formato de corpo de solicitação inválido. Certifique-se de que a estrutura JSON esteja correta
+    e que todos os campos obrigatórios estejam presentes.
 maximum_api_key:
-  Chave de API chegou em seu limite máximo permitido. Contate o suporte ou obtenha uma
-  nova chave.
+    Chave de API chegou em seu limite máximo permitido. Contate o suporte ou obtenha uma
+    nova chave.
 no_api_key_found: Nenhuma chave de API encontrada com este ID.
 require_permission_api_key: 'Esta chave de API não tem a permissão de: %s'
 search_incorrect: As pesquisas não podem ser compostas apenas por espaços ou caracteres especiais.
@@ -29,20 +29,39 @@ user_following_stopped: Usuário parou de seguir %s.
 user_not_found: Usuário não encontrado; você tem certeza de que este é o nome de usuário?
 validator_incorrect_email_format: Formato de email incorreto.
 validator_incorrect_password_format:
-  A senha deve ter no mínimo 8, e no máximo caracteres, conter pelo menos uma letra
-  maiúscula, uma letra minúscula, um caractere especial e um numeral.
+    A senha deve ter no mínimo 8, e no máximo caracteres, conter pelo menos uma letra
+    maiúscula, uma letra minúscula, um caractere especial e um numeral.
 validator_incorrect_username_format:
-  Os nomes de usuário devem consistir apenas de caracteres alfanuméricos
-  minúsculos (a-z e 0-9).
-validator_max_chars: '%s deve ter no máximo %s caracteres.'
-validator_min_chars: '%s deve ter no mínimo %s caracteres.'
+    Os nomes de usuário devem consistir apenas de caracteres alfanuméricos
+    minúsculos (a-z e 0-9).
+validator_max_chars: Máximo de %s caracteres.
+validator_min_chars: Mínimo de %s caracteres.
 validator_must_be_numerical_boolean: Valor deve ser -1, 0 ou 1.
-validator_must_be_supported_language: '%s deve ser uma das seguintes linguas suportadas: %s.'
-validator_required: '%s é um campo obrigatório.'
-project_not_found: Projeto não encontrado.
-project_created: Projeto criado.
-project_updated: Projeto atualizado.
-project_deleted: Projeto excluído.
-project_published: Projeto publicado.
-project_unpublished: Projeto privado.
-project_invalid: ID de projeto inválido.
+validator_must_be_supported_language: Deve ser uma das seguintes linguas suportadas (pt, en, ru).
+validator_required: Campo obrigatório.
+project_not_found: O projeto especificado não pôde ser localizado.
+project_created: Projeto criado com sucesso.
+project_updated: Projeto atualizado com sucesso.
+project_deleted: Projeto excluído com sucesso.
+project_published: Projeto publicado com sucesso.
+project_unpublished: Projeto removido da publicação com sucesso.
+project_invalid: Identificador de projeto inválido fornecido.
+project_missing_permissions: Permissões insuficientes para realizar essa ação.
+project_trashed: Projeto movido para a lixeira.
+project_restored: Projeto restaurado com sucesso.
+project_already_trashed: O projeto já está na lixeira.
+project_not_trashed: O projeto não está na lixeira.
+project_favorite: Projeto adicionado aos favoritos.
+project_unfavorite: Projeto removido dos favoritos.
+project_already_favorite: O projeto já está nos favoritos.
+project_not_favorite: O projeto não está nos favoritos.
+project_forked: Projeto foi bifurcado com sucesso.
+project_is_not_a_fork: O projeto não é uma bifurcação.
+project_unlinked: O projeto foi desvinculado com sucesso.
+project_assigned_user: Usuário atribuído ao projeto com sucesso.
+project_unassigned_user: Usuário removido do projeto com sucesso.
+project_empty_assign: O usuário não pode ter todos os campos vazios. Se deseja removê-lo do projeto, tente desatribuir.
+project_user_not_assigned: O usuário não está atribuído ao projeto.
+project_cannot_assign_owner: O proprietário do projeto não pode ser reatribuído.
+upstream_not_public: O projeto upstream não é público.
+trash_cleared: Lixeira limpa com sucesso.

@@ -4,14 +4,15 @@ import (
 	"time"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/language"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
 )
 
 type UserRegister struct {
-	FirstName string `validate:"required,min=3"    json:"firstname"`
-	LastName  string `validate:"required,min=3"    json:"lastname"`
-	Username  string `validate:"required,username" json:"username"`
-	Email     string `validate:"required,email"    json:"email"`
-	Password  string `validate:"required,password" json:"password"`
+	FirstName string `validate:"required,min=3"                 json:"firstname"`
+	LastName  string `validate:"required,min=3"                 json:"lastname"`
+	Username  string `validate:"required,min=3,max=32,username" json:"username"`
+	Email     string `validate:"required,email"                 json:"email"`
+	Password  string `validate:"required,password"              json:"password"`
 }
 
 type UserLogin struct {
@@ -27,8 +28,6 @@ type UserUpdate struct {
 
 	Bio      string `validate:"omitempty,max=480" json:"bio"`
 	Verified bool   `validate:"omitempty"         json:"verified"`
-
-	// NOTE: XP and Arkhoins doesn't make sense to update here
 
 	Email    string `validate:"omitempty,email"    json:"email"`
 	Password string `validate:"omitempty,password" json:"password"`
@@ -49,7 +48,7 @@ type UserUpdate struct {
 		Following  int `validate:"omitempty,mustbenumericalboolean" json:"following"`
 		Inventory  int `validate:"omitempty,mustbenumericalboolean" json:"inventory"`
 		Formations int `validate:"omitempty,mustbenumericalboolean" json:"formations"`
-  } `validate:"omitempty" json:"show" gorm:"embedded;embeddedPrefix:show_"`
+	} `validate:"omitempty" json:"show" gorm:"embedded;embeddedPrefix:show_"`
 
 	Country string `validate:"omitempty" json:"country"`
 
@@ -64,6 +63,7 @@ type UserProfile struct {
 	FirstName string `json:"firstname"`
 	LastName  string `json:"lastname"`
 	Username  string `json:"username"`
+	Email     string `json:"email"`
 
 	Bio      string `json:"bio"`
 	Verified bool   `json:"verified"`
@@ -96,4 +96,16 @@ type UserProfile struct {
 	Language string `json:"language"`
 
 	Permissions []string `gorm:"-" json:"permissions"`
+
+	ProfilePicture string `json:"pfp"`
+}
+
+type UserInfoLite struct {
+	ID             uint   `json:"id"`
+	Username       string `json:"username"`
+	ProfilePicture string `json:"pfp"`
+}
+
+func (u *UserProfile) HasPermissions(permissions ...string) bool {
+	return utils.HasPermissions(u.Permissions, permissions...)
 }

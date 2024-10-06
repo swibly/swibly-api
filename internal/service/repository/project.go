@@ -24,7 +24,7 @@ type ProjectRepository interface {
 	Update(projectID uint, updateModel *dto.ProjectUpdate) error
 	Unlink(projectID uint) error
 
-	Assign(userID uint, projectID uint, allowList *dto.Allow) error
+	Assign(userID uint, projectID uint, allowList *dto.ProjectAssign) error
 
 	Get(issuerID uint, projectModel *model.Project) (*dto.ProjectInfo, error)
 	GetByOwner(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
@@ -54,6 +54,8 @@ var (
 	ErrProjectNotFavorited     = errors.New("cannot unfavorite a project that is not favorited")
 	ErrProjectIsNotAFork       = errors.New("project is not a fork")
 	ErrUpstreamNotPublic       = errors.New("cannot publish this project because the upstream project is not public")
+	ErrCannotAssignOwner       = errors.New("cannot assign owner")
+	ErrUserNotAssigned         = errors.New("user is not assigned to the project")
 )
 
 func NewProjectRepository(userRepo UserRepository) ProjectRepository {
@@ -298,16 +300,16 @@ func (pr *projectRepository) Unlink(projectID uint) error {
 	return pr.db.Model(&model.Project{}).Where("id = ?", projectID).Update("fork", nil).Error
 }
 
-func (pr *projectRepository) Assign(userID uint, projectID uint, allowList *dto.Allow) error {
+func (pr *projectRepository) Assign(userID uint, projectID uint, allowList *dto.ProjectAssign) error {
 	if allowList.IsEmpty() {
 		return pr.removePermissions(userID, projectID)
 	}
 
 	var count int64
-	pr.db.Select(&model.ProjectOwner{ID: userID, ProjectID: projectID}).Count(&count)
+	pr.db.Model(&model.ProjectOwner{}).Where("user_id = ? AND project_id = ?", userID, projectID).Count(&count)
 
 	if count >= 1 {
-		return errors.New("cannot assign owner")
+		return ErrCannotAssignOwner
 	}
 
 	return pr.upsertPermissions(userID, projectID, allowList)
@@ -319,6 +321,8 @@ func (pr *projectRepository) removePermissions(userID uint, projectID uint) erro
 
 		if err := tx.Where("user_id = ? AND project_id = ?", userID, projectID).First(&userPermission).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
+		} else if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrUserNotAssigned
 		}
 
 		if err := tx.Delete(&userPermission).Error; err != nil {
@@ -329,36 +333,71 @@ func (pr *projectRepository) removePermissions(userID uint, projectID uint) erro
 	})
 }
 
-func (pr *projectRepository) upsertPermissions(userID uint, projectID uint, allowList *dto.Allow) error {
+func (pr *projectRepository) upsertPermissions(userID uint, projectID uint, allowList *dto.ProjectAssign) error {
 	return pr.db.Transaction(func(tx *gorm.DB) error {
 		var userPermission model.ProjectUserPermission
 
-		if err := tx.Where("user_id = ? AND project_id = ?", userID, projectID).First(&userPermission).Error; err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				userPermission = model.ProjectUserPermission{
-					UserID:    userID,
-					ProjectID: projectID,
-					Allow:     *allowList,
-				}
-
-				if err := tx.Create(&userPermission).Error; err != nil {
-					return err
-				}
-
-				return nil
+		err := tx.Where("user_id = ? AND project_id = ?", userID, projectID).First(&userPermission).Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			userPermission = model.ProjectUserPermission{
+				UserID:    userID,
+				ProjectID: projectID,
+				Allow:     dto.Allow{},
 			}
 
+			if allowList.View != nil {
+				userPermission.Allow.View = *allowList.View
+			}
+			if allowList.Edit != nil {
+				userPermission.Allow.Edit = *allowList.Edit
+			}
+			if allowList.Delete != nil {
+				userPermission.Allow.Delete = *allowList.Delete
+			}
+			if allowList.Publish != nil {
+				userPermission.Allow.Publish = *allowList.Publish
+			}
+			if allowList.Share != nil {
+				userPermission.Allow.Share = *allowList.Share
+			}
+			if allowList.ManageUsers != nil {
+				userPermission.Allow.Manage.Users = *allowList.ManageUsers
+			}
+			if allowList.ManageMetadata != nil {
+				userPermission.Allow.Manage.Metadata = *allowList.ManageMetadata
+			}
+
+			if err := tx.Create(&userPermission).Error; err != nil {
+				return err
+			}
+
+			return nil
+		} else if err != nil {
 			return err
 		}
 
-		updates := map[string]bool{
-			"allow_view":            allowList.View,
-			"allow_edit":            allowList.Edit,
-			"allow_delete":          allowList.Delete,
-			"allow_publish":         allowList.Publish,
-			"allow_share":           allowList.Share,
-			"allow_manage_users":    allowList.Manage.Users,
-			"allow_manage_metadata": allowList.Manage.Metadata,
+		updates := make(map[string]interface{})
+
+		if allowList.View != nil {
+			updates["allow_view"] = *allowList.View
+		}
+		if allowList.Edit != nil {
+			updates["allow_edit"] = *allowList.Edit
+		}
+		if allowList.Delete != nil {
+			updates["allow_delete"] = *allowList.Delete
+		}
+		if allowList.Publish != nil {
+			updates["allow_publish"] = *allowList.Publish
+		}
+		if allowList.Share != nil {
+			updates["allow_share"] = *allowList.Share
+		}
+		if allowList.ManageUsers != nil {
+			updates["allow_manage_users"] = *allowList.ManageUsers
+		}
+		if allowList.ManageMetadata != nil {
+			updates["allow_manage_metadata"] = *allowList.ManageMetadata
 		}
 
 		if err := tx.Model(&userPermission).Updates(updates).Error; err != nil {

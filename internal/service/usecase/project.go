@@ -61,7 +61,7 @@ func (puc ProjectUseCase) Unpublish(projectID uint) error {
 	return puc.pr.Update(projectID, &dto.ProjectUpdate{Published: utils.ToPtr(false)})
 }
 
-func (puc ProjectUseCase) Assign(userID uint, projectID uint, allowList *dto.Allow) error {
+func (puc ProjectUseCase) Assign(userID uint, projectID uint, allowList *dto.ProjectAssign) error {
 	return puc.pr.Assign(userID, projectID, allowList)
 }
 

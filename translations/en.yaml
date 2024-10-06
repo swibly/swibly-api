@@ -56,5 +56,9 @@ project_not_favorite: The project is not in favorites.
 project_forked: Project has been successfully forked.
 project_is_not_a_fork: The project is not a fork.
 project_unlinked: The project has been successfully unlinked.
+project_assigned_user: User has been successfully assigned to the project.
+project_unassigned_user: User has been successfully unassigned from the project.
+project_empty_assign: The user cannot have all fields empty. If you want to remove them from the project, try unassigning.
+project_user_not_assigned: The user is not assigned to the project.
 upstream_not_public: The upstream project is not public.
 trash_cleared: Trash has been successfully cleared.

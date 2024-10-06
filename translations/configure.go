@@ -70,6 +70,10 @@ type Translation struct {
 	ProjectForked             string `yaml:"project_forked"`
 	ProjectIsNotAFork         string `yaml:"project_is_not_a_fork"`
 	ProjectUnlinked           string `yaml:"project_unlinked"`
+	ProjectAssignedUser       string `yaml:"project_assigned_user"`
+	ProjectUnassignedUser     string `yaml:"project_unassigned_user"`
+	ProjectEmptyAssign        string `yaml:"project_empty_assign"`
+	ProjectUserNotAssigned    string `yaml:"project_user_not_assigned"`
 
 	UpstreamNotPublic string `yaml:"upstream_not_public"`
 	TrashCleared      string `yaml:"trash_cleared"`

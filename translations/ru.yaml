@@ -57,5 +57,9 @@ project_not_favorite: Проект не находится в избранном
 project_forked: Проект успешно форкнут.
 project_is_not_a_fork: Проект не является форком.
 project_unlinked: Проект успешно отвязан.
+project_assigned_user: Пользователь успешно назначен на проект.
+project_unassigned_user: Пользователь успешно снят с проекта.
+project_empty_assign: Нельзя оставить все поля пользователя пустыми. Если вы хотите удалить его из проекта, попробуйте снять назначение.
+project_user_not_assigned: Пользователь не назначен на проект.
 upstream_not_public: Внешний проект не является публичным.
 trash_cleared: Корзина успешно очищена.

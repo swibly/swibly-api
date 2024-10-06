@@ -3,12 +3,12 @@ package repository
 import (
 	"encoding/json"
 	"errors"
-	"reflect"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/db"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/pagination"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -47,6 +47,7 @@ type ProjectRepository interface {
 }
 
 var (
+	ErrProjectTrashed        = errors.New("project is trashed")
 	ErrProjectNotTrashed     = errors.New("project is not trashed")
 	ErrProjectAlreadyTrashed = errors.New("project is already trashed")
 )
@@ -167,10 +168,21 @@ func convertToProjectInfo(jsonInfo *dto.ProjectInfoJSON) (dto.ProjectInfo, error
 func (pr *projectRepository) Create(createModel *dto.ProjectCreation) error {
 	tx := pr.db.Begin()
 
+	var contentJSON utils.JSON
+	var err error
+	if createModel.Content != nil {
+		contentJSON, err = json.Marshal(createModel.Content)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
 	project := &model.Project{
 		Name:        createModel.Name,
 		Description: createModel.Description,
 		Budget:      createModel.Budget,
+		Content:     string(contentJSON),
 	}
 
 	if err := tx.Create(&project).Error; err != nil {
@@ -203,31 +215,11 @@ func (pr *projectRepository) Create(createModel *dto.ProjectCreation) error {
 }
 
 func (pr *projectRepository) Update(projectID uint, updateModel *dto.ProjectUpdate) error {
+	if pr.db.Where("id = ?", projectID).First(&model.Project{}).Error == gorm.ErrRecordNotFound {
+		return ErrProjectTrashed
+	}
+
 	tx := pr.db.Begin()
-	updates := make(map[string]interface{})
-
-	v := reflect.ValueOf(updateModel).Elem()
-	t := v.Type()
-
-	ignoredFields := []string{"published"}
-
-	shouldIgnore := func(field string) bool {
-		for _, ignoredField := range ignoredFields {
-			if ignoredField == field {
-				return true
-			}
-		}
-		return false
-	}
-
-	for i := 0; i < v.NumField(); i++ {
-		field := t.Field(i)
-		fieldValue := v.Field(i)
-
-		if !fieldValue.IsNil() && !shouldIgnore(field.Tag.Get("json")) {
-			updates[field.Tag.Get("json")] = fieldValue.Elem().Interface()
-		}
-	}
 
 	if updateModel.Published != nil {
 		switch *updateModel.Published {
@@ -242,6 +234,26 @@ func (pr *projectRepository) Update(projectID uint, updateModel *dto.ProjectUpda
 				return err
 			}
 		}
+	}
+
+	updates := make(map[string]interface{})
+
+	if updateModel.Name != nil {
+		updates["name"] = *updateModel.Name
+	}
+	if updateModel.Description != nil {
+		updates["description"] = *updateModel.Description
+	}
+	if updateModel.Content != nil {
+		contentJSON, err := json.Marshal(updateModel.Content)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+		updates["content"] = string(contentJSON)
+	}
+	if updateModel.Budget != nil {
+		updates["budget"] = *updateModel.Budget
 	}
 
 	if err := tx.Model(&model.Project{}).Where("id = ?", projectID).Updates(updates).Error; err != nil {

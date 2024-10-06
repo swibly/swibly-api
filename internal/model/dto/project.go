@@ -20,13 +20,13 @@ type ProjectCreation struct {
 }
 
 type ProjectUpdate struct {
-	Name        *string `validate:"omitempty,min=3,max=32"    json:"name"`
-	Description *string `validate:"omitempty,min=3,max=5000" json:"description"`
+	Name        *string `validate:"omitempty,min=3,max=32" json:"name"`
+	Description *string `validate:"omitempty,max=5000"     json:"description"`
 
-	Content *any `validate:"omitempty" json:"content"`
+	Content any  `validate:"omitempty" json:"content"`
 	Budget  *int `validate:"omitempty" json:"budget"`
 
-	Published *bool `validate:"omitempty" json:"published"`
+	Published *bool `gorm:"-" validate:"omitempty" json:"-"`
 }
 
 type AllowManage struct {

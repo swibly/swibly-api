@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -17,8 +16,8 @@ type Project struct {
 	Name        string `gorm:"not null"`
 	Description string `gorm:"default:''"`
 
-	Content utils.JSON `gorm:"type:jsonb;not null;default:'{}'"`
-	Budget  int        `gorm:"default:0"`
+	Content any `gorm:"type:jsonb;not null;default:'{}'"`
+	Budget  int `gorm:"default:0"`
 }
 
 type ProjectOwner struct {

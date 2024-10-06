@@ -14,7 +14,6 @@ import (
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/translations"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 func newProjectRoutes(handler *gin.RouterGroup) {
@@ -219,30 +218,7 @@ func GetFavoriteProjectsByUserHandler(ctx *gin.Context) {
 }
 
 func GetProjectHandler(ctx *gin.Context) {
-	dict := translations.GetTranslation(ctx)
-
-	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
-
-	projectID, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
-	if err != nil {
-		log.Print(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": dict.ProjectInvalid})
-		return
-	}
-
-	project, err := service.Project.GetByID(issuer.ID, uint(projectID))
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": dict.ProjectNotFound})
-			return
-		}
-
-		log.Print(err)
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
-		return
-	}
-
-	ctx.JSON(http.StatusOK, project)
+	ctx.JSON(http.StatusOK, ctx.Keys["project_lookup"].(*dto.ProjectInfo))
 }
 
 func GetProjectContentHandler(ctx *gin.Context) {

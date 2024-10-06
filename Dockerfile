@@ -11,12 +11,7 @@ RUN cd cmd/api && CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o mai
 FROM alpine:latest
 RUN apk add --no-cache ca-certificates
 
-ENV POSTGRES_HOST=localhost
-ENV POSTGRES_DB=swibly-db
-ENV POSTGRES_USER=swibly-db_owner
-ENV POSTGRES_PASSWORD=swibly
-ENV POSTGRES_SSLMODE=disable
-ENV POSTGRES_PORT=5432
+ENV POSTGRES_CONNECTION_STRING=constr
 ENV JWT_SECRET=jwtsecret
 
 WORKDIR /root/

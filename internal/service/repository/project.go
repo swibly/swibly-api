@@ -21,11 +21,12 @@ type projectRepository struct {
 
 type ProjectRepository interface {
 	Create(createModel *dto.ProjectCreation) error
-	Update(uint, *dto.ProjectUpdate) error
+	Update(projectID uint, updateModel *dto.ProjectUpdate) error
+	Unlink(projectID uint) error
 
 	Assign(userID uint, projectID uint, allowList *dto.Allow) error
 
-	Get(uint, *model.Project) (*dto.ProjectInfo, error)
+	Get(issuerID uint, projectModel *model.Project) (*dto.ProjectInfo, error)
 	GetByOwner(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
 	GetPublic(issuerID uint, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
 	GetFavorited(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
@@ -33,16 +34,16 @@ type ProjectRepository interface {
 
 	SearchByName(issuerID uint, name string, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
 
-	GetContent(uint) (any, error)
-	SaveContent(uint, any) error
+	GetContent(projectID uint) (any, error)
+	SaveContent(projectID uint, content any) error
 
-	Favorite(uint, uint) error
-	Unfavorite(uint, uint) error
+	Favorite(projectID, userID uint) error
+	Unfavorite(projectID, userID uint) error
 
-	SafeDelete(uint) error
-	Restore(uint) error
-	UnsafeDelete(uint) error
-	ClearTrash(uint) error
+	SafeDelete(projectID uint) error
+	Restore(projectID uint) error
+	UnsafeDelete(projectID uint) error
+	ClearTrash(userID uint) error
 }
 
 var (
@@ -51,6 +52,8 @@ var (
 	ErrProjectAlreadyTrashed   = errors.New("project is already trashed")
 	ErrProjectAlreadyFavorited = errors.New("project is already favorited by the user")
 	ErrProjectNotFavorited     = errors.New("cannot unfavorite a project that is not favorited")
+	ErrProjectIsNotAFork       = errors.New("project is not a fork")
+	ErrUpstreamNotPublic       = errors.New("cannot publish this project because the upstream project is not public")
 )
 
 func NewProjectRepository(userRepo UserRepository) ProjectRepository {
@@ -67,6 +70,7 @@ func (pr *projectRepository) baseProjectQuery(issuerID uint) *gorm.DB {
 			p.name as name,
 			p.description as description,
 			p.budget as budget,
+			p.fork as fork,
 			u.id AS owner_id,
 			u.username AS owner_username,
 			u.profile_picture AS owner_profile_picture,
@@ -181,6 +185,7 @@ func (pr *projectRepository) Create(createModel *dto.ProjectCreation) error {
 		Description: createModel.Description,
 		Budget:      createModel.Budget,
 		Content:     string(contentJSON),
+		Fork:        createModel.Fork,
 	}
 
 	if err := tx.Create(&project).Error; err != nil {
@@ -198,7 +203,7 @@ func (pr *projectRepository) Create(createModel *dto.ProjectCreation) error {
 		return err
 	}
 
-	if createModel.Public {
+	if createModel.Public && createModel.Fork == nil {
 		projectPublication := &model.ProjectPublication{
 			ProjectID: project.ID,
 		}
@@ -222,6 +227,29 @@ func (pr *projectRepository) Update(projectID uint, updateModel *dto.ProjectUpda
 	if updateModel.Published != nil {
 		switch *updateModel.Published {
 		case true:
+			var project model.Project
+			if err := tx.Where("id = ?", projectID).First(&project).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
+
+			if project.Fork != nil {
+				var upstreamProject model.Project
+				if err := tx.Where("id = ?", *project.Fork).First(&upstreamProject).Error; err != nil {
+					tx.Rollback()
+					return err
+				}
+
+				var upstreamPublication model.ProjectPublication
+				if err := tx.Where("project_id = ?", upstreamProject.ID).First(&upstreamPublication).Error; err != nil {
+					if errors.Is(err, gorm.ErrRecordNotFound) {
+						tx.Rollback()
+						return ErrUpstreamNotPublic
+					}
+					return err
+				}
+			}
+
 			if err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&model.ProjectPublication{ProjectID: projectID}).Error; err != nil {
 				tx.Rollback()
 				return err
@@ -260,6 +288,14 @@ func (pr *projectRepository) Update(projectID uint, updateModel *dto.ProjectUpda
 	}
 
 	return tx.Commit().Error
+}
+
+func (pr *projectRepository) Unlink(projectID uint) error {
+	if pr.db.Where("id = ? AND fork IS NOT NULL", projectID).First(&model.Project{}).Error == gorm.ErrRecordNotFound {
+		return ErrProjectIsNotAFork
+	}
+
+	return pr.db.Model(&model.Project{}).Where("id = ?", projectID).Update("fork", nil).Error
 }
 
 func (pr *projectRepository) Assign(userID uint, projectID uint, allowList *dto.Allow) error {
@@ -411,6 +447,7 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 		Description:         project.Description,
 		Budget:              project.Budget,
 		IsPublic:            isPublic,
+		Fork:                project.Fork,
 		IsFavorited:         isFavorited,
 		TotalFavorites:      int(totalFavorites),
 		AllowedUsers:        allowedUserDTOs,

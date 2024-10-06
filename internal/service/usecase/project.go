@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"log"
+
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/repository"
@@ -19,20 +21,32 @@ func (puc ProjectUseCase) Create(createModel *dto.ProjectCreation) error {
 	return puc.pr.Create(createModel)
 }
 
-func (puc ProjectUseCase) Clone(fromId uint, createModel *dto.ProjectCreation) error {
-	content, err := puc.pr.GetContent(fromId)
+func (puc ProjectUseCase) Fork(projectID, issuerID uint) error {
+	content, err := puc.pr.GetContent(projectID)
 	if err != nil {
 		return err
 	}
 
+	project, err := puc.pr.Get(issuerID, &model.Project{ID: projectID})
+	if err != nil {
+		return err
+	}
+
+	log.Print(projectID)
+
 	return puc.pr.Create(&dto.ProjectCreation{
-		Name:        createModel.Name,
-		Description: createModel.Description,
-		Budget:      createModel.Budget,
-		OwnerID:     createModel.OwnerID,
-		Public:      createModel.Public,
+		Name:        project.Name,
+		Description: project.Description,
+		Budget:      project.Budget,
+		OwnerID:     issuerID,
+		Public:      false,
 		Content:     content,
+		Fork:        &project.ID,
 	})
+}
+
+func (puc ProjectUseCase) Unlink(id uint) error {
+	return puc.pr.Unlink(id)
 }
 
 func (puc ProjectUseCase) Update(projectID uint, updateModel *dto.ProjectUpdate) error {

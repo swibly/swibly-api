@@ -31,6 +31,16 @@ type ProjectUpdate struct {
 	Published *bool `gorm:"-" validate:"omitempty" json:"-"`
 }
 
+type ProjectAssign struct {
+	View           *bool `validate:"omitempty" json:"view"`
+	Edit           *bool `validate:"omitempty" json:"edit"`
+	Delete         *bool `validate:"omitempty" json:"delete"`
+	Publish        *bool `validate:"omitempty" json:"publish"`
+	Share          *bool `validate:"omitempty" json:"share"`
+	ManageUsers    *bool `validate:"omitempty" json:"manage_users"`
+	ManageMetadata *bool `validate:"omitempty" json:"manage_metadata"`
+}
+
 type AllowManage struct {
 	Users    bool `gorm:"not null;default:false"`
 	Metadata bool `gorm:"not null;default:false"`
@@ -108,4 +118,14 @@ type ProjectInfo struct {
 
 func (a Allow) IsEmpty() bool {
 	return !a.View && !a.Edit && !a.Delete && !a.Publish && !a.Share && !a.Manage.Users && !a.Manage.Metadata
+}
+
+func (a ProjectAssign) IsEmpty() bool {
+	return ((a.View != nil && !*a.View) || a.View == nil) &&
+		((a.Edit != nil && !*a.Edit) || a.Edit == nil) &&
+		((a.Delete != nil && !*a.Delete) || a.Delete == nil) &&
+		((a.Publish != nil && !*a.Publish) || a.Publish == nil) &&
+		((a.Share != nil && !*a.Share) || a.Share == nil) &&
+		((a.ManageUsers != nil && !*a.ManageUsers) || a.ManageUsers == nil) &&
+		((a.ManageMetadata != nil && !*a.ManageMetadata) || a.ManageMetadata == nil)
 }

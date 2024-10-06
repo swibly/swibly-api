@@ -67,8 +67,12 @@ type Translation struct {
 	ProjectUnfavorited        string `yaml:"project_unfavorite"`
 	ProjectAlreadyFavorited   string `yaml:"project_already_favorite"`
 	ProjectNotFavorited       string `yaml:"project_not_favorite"`
+	ProjectForked             string `yaml:"project_forked"`
+	ProjectIsNotAFork         string `yaml:"project_is_not_a_fork"`
+	ProjectUnlinked           string `yaml:"project_unlinked"`
 
-	TrashCleared string `yaml:"trash_cleared"`
+	UpstreamNotPublic string `yaml:"upstream_not_public"`
+	TrashCleared      string `yaml:"trash_cleared"`
 }
 
 var Translations = make(map[string]Translation)

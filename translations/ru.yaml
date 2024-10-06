@@ -54,4 +54,8 @@ project_favorite: Проект добавлен в избранное.
 project_unfavorite: Проект удалён из избранного.
 project_already_favorite: Проект уже находится в избранном.
 project_not_favorite: Проект не находится в избранном.
+project_forked: Проект успешно форкнут.
+project_is_not_a_fork: Проект не является форком.
+project_unlinked: Проект успешно отвязан.
+upstream_not_public: Внешний проект не является публичным.
 trash_cleared: Корзина успешно очищена.

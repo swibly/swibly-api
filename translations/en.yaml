@@ -53,4 +53,8 @@ project_favorite: Project has been added to favorites.
 project_unfavorite: Project has been removed from favorites.
 project_already_favorite: The project is already in favorites.
 project_not_favorite: The project is not in favorites.
+project_forked: Project has been successfully forked.
+project_is_not_a_fork: The project is not a fork.
+project_unlinked: The project has been successfully unlinked.
+upstream_not_public: The upstream project is not public.
 trash_cleared: Trash has been successfully cleared.

@@ -28,6 +28,7 @@ type ProjectRepository interface {
 	Get(uint, *model.Project) (*dto.ProjectInfo, error)
 	GetByOwner(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
 	GetPublic(issuerID uint, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
+	GetFavorited(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
 	GetTrashed(ownerID uint, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
 
 	SearchByName(issuerID uint, name string, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
@@ -430,6 +431,16 @@ func (pr *projectRepository) GetByOwner(issuerID, userID uint, onlyPublic bool, 
 
 func (pr *projectRepository) GetPublic(issuerID uint, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
 	query := pr.baseProjectQuery(issuerID).Where("deleted_at IS NULL").Where("EXISTS (SELECT 1 FROM project_publications pp WHERE pp.project_id = p.id)")
+
+	return pr.paginateProjects(query, page, perPage)
+}
+
+func (pr *projectRepository) GetFavorited(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
+	query := pr.baseProjectQuery(issuerID).Joins("JOIN project_user_favorites f ON f.project_id = p.id AND f.user_id = ?", userID)
+
+	if onlyPublic {
+		query = query.Joins("JOIN project_publications pp ON pp.project_id = p.id")
+	}
 
 	return pr.paginateProjects(query, page, perPage)
 }

@@ -31,6 +31,7 @@ func newProjectRoutes(handler *gin.RouterGroup) {
 		byUser := h.Group("/user/:username", middleware.UserLookup)
 		{
 			byUser.GET("", GetProjectsByUserHandler)
+			byUser.GET("/favorite", GetFavoriteProjectsByUserHandler)
 		}
 	}
 
@@ -172,6 +173,33 @@ func GetProjectsByUserHandler(ctx *gin.Context) {
 	}
 
 	projects, err := service.Project.GetByOwner(issuer.ID, user.ID, issuer.ID != user.ID, page, perPage)
+	if err != nil {
+		log.Print(err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, projects)
+}
+
+func GetFavoriteProjectsByUserHandler(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
+	user := ctx.Keys["user_lookup"].(*dto.UserProfile)
+
+	page := 1
+	perPage := 10
+
+	if i, e := strconv.Atoi(ctx.Query("page")); e == nil && ctx.Query("page") != "" {
+		page = i
+	}
+
+	if i, e := strconv.Atoi(ctx.Query("perpage")); e == nil && ctx.Query("perpage") != "" {
+		perPage = i
+	}
+
+	projects, err := service.Project.GetFavorited(issuer.ID, user.ID, issuer.ID != user.ID, page, perPage)
 	if err != nil {
 		log.Print(err)
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})

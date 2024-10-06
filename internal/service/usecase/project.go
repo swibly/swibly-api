@@ -63,6 +63,10 @@ func (puc ProjectUseCase) GetPublic(issuerID uint, page, perPage int) (*dto.Pagi
 	return puc.pr.GetPublic(issuerID, page, perPage)
 }
 
+func (puc ProjectUseCase) GetFavorited(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
+	return puc.pr.GetFavorited(issuerID, userID, onlyPublic, page, perPage)
+}
+
 func (puc ProjectUseCase) GetTrashed(ownerID uint, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
 	return puc.pr.GetTrashed(ownerID, page, perPage)
 }

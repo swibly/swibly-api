@@ -60,6 +60,12 @@ func newProjectRoutes(handler *gin.RouterGroup) {
 			trashActions.DELETE("", middleware.ProjectIsAllowed(dto.Allow{Delete: true}), DeleteProjectHandler)
 			trashActions.DELETE("/force", middleware.ProjectIsAllowed(dto.Allow{Delete: true}), DeleteProjectForceHandler)
 		}
+
+		assignActions := specific.Group("/assign/:username", middleware.UserLookup)
+		{
+			assignActions.PUT("", middleware.ProjectIsAllowed(dto.Allow{Manage: dto.AllowManage{Users: true}}), AssignProjectHandler)
+			assignActions.DELETE("", middleware.ProjectIsAllowed(dto.Allow{Manage: dto.AllowManage{Users: true}}), UnassignProjectHandler)
+		}
 	}
 }
 
@@ -493,4 +499,70 @@ func DeleteProjectForceHandler(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectDeleted})
+}
+
+func AssignProjectHandler(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	project := ctx.Keys["project_lookup"].(*dto.ProjectInfo)
+	user := ctx.Keys["user_lookup"].(*dto.UserProfile)
+
+	var body dto.ProjectAssign
+
+	if err := ctx.BindJSON(&body); err != nil {
+		log.Print(err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": dict.InvalidBody})
+		return
+	}
+
+	if errs := utils.ValidateStruct(body); errs != nil {
+		err := utils.ValidateErrorMessage(ctx, errs[0])
+
+		log.Print(err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": gin.H{err.Param: err.Message}})
+		return
+	}
+
+	allowList := &dto.ProjectAssign{
+		View:           body.View,
+		Edit:           body.Edit,
+		Delete:         body.Delete,
+		Publish:        body.Publish,
+		Share:          body.Share,
+		ManageUsers:    body.ManageUsers,
+		ManageMetadata: body.ManageMetadata,
+	}
+
+	if allowList.IsEmpty() {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": dict.ProjectEmptyAssign})
+		return
+	}
+
+	if err := service.Project.Assign(user.ID, project.ID, allowList); err != nil {
+		log.Print(err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectAssignedUser})
+}
+
+func UnassignProjectHandler(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	project := ctx.Keys["project_lookup"].(*dto.ProjectInfo)
+	user := ctx.Keys["user_lookup"].(*dto.UserProfile)
+
+	if err := service.Project.Assign(user.ID, project.ID, &dto.ProjectAssign{}); err != nil {
+		if errors.Is(err, repository.ErrUserNotAssigned) {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": dict.ProjectUserNotAssigned})
+			return
+		}
+
+		log.Print(err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectUnassignedUser})
 }

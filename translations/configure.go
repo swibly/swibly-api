@@ -64,6 +64,10 @@ type Translation struct {
 	ProjectRestored           string `yaml:"project_restored"`
 	ProjectAlreadyTrashed     string `yaml:"project_already_trashed"`
 	ProjectNotTrashed         string `yaml:"project_not_trashed"`
+	ProjectFavorited          string `yaml:"project_favorite"`
+	ProjectUnfavorited        string `yaml:"project_unfavorite"`
+	ProjectAlreadyFavorited   string `yaml:"project_already_favorite"`
+	ProjectNotFavorited       string `yaml:"project_not_favorite"`
 
 	TrashCleared string `yaml:"trash_cleared"`
 }

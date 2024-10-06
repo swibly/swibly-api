@@ -50,4 +50,8 @@ project_trashed: Project has been moved to trash.
 project_restored: Project has been successfully restored.
 project_already_trashed: The project is already in the trash.
 project_not_trashed: The project is not in the trash.
+project_favorite: Project has been added to favorites.
+project_unfavorite: Project has been removed from favorites.
+project_already_favorite: The project is already in favorites.
+project_not_favorite: The project is not in favorites.
 trash_cleared: Trash has been successfully cleared.

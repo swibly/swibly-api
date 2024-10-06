@@ -51,4 +51,8 @@ project_trashed: Проект перемещен в корзину.
 project_restored: Проект успешно восстановлен.
 project_already_trashed: Проект уже находится в корзине.
 project_not_trashed: Проект не находится в корзине.
+project_favorite: Проект добавлен в избранное.
+project_unfavorite: Проект удалён из избранного.
+project_already_favorite: Проект уже находится в избранном.
+project_not_favorite: Проект не находится в избранном.
 trash_cleared: Корзина успешно очищена.

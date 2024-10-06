@@ -52,4 +52,8 @@ project_trashed: Projeto movido para a lixeira.
 project_restored: Projeto restaurado com sucesso.
 project_already_trashed: O projeto já está na lixeira.
 project_not_trashed: O projeto não está na lixeira.
+project_favorite: Projeto adicionado aos favoritos.
+project_unfavorite: Projeto removido dos favoritos.
+project_already_favorite: O projeto já está nos favoritos.
+project_not_favorite: O projeto não está nos favoritos.
 trash_cleared: Lixeira limpa com sucesso.

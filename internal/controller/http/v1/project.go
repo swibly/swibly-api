@@ -24,7 +24,7 @@ func newProjectRoutes(handler *gin.RouterGroup) {
 		h.GET("", GetPublicProjectsHandler)
 		h.GET("/trash", GetTrashProjectsHandler)
 
-		h.POST("", CreateProjectHandler) // TODO: Fix content not being added
+		h.POST("", CreateProjectHandler)
 
 		h.DELETE("/trash", DeleteTrashProjectsHandler)
 
@@ -44,8 +44,10 @@ func newProjectRoutes(handler *gin.RouterGroup) {
 
 		specific.PATCH("/update", middleware.ProjectIsAllowed(dto.Allow{Manage: dto.AllowManage{Metadata: true}}), UpdateProjectHandler)
 		specific.PATCH("/publish", middleware.ProjectIsAllowed(dto.Allow{Publish: true}), PublishProjectHandler)
+		specific.PATCH("/favorite", middleware.ProjectIsAllowed(dto.Allow{View: true}), FavoriteProjectHandler)
 
 		specific.DELETE("/unpublish", middleware.ProjectIsAllowed(dto.Allow{Publish: true}), UnpublishProjectHandler)
+		specific.DELETE("/unfavorite", middleware.ProjectIsAllowed(dto.Allow{View: true}), UnfavoriteProjectHandler)
 
 		trashActions := specific.Group("/trash")
 		{
@@ -324,6 +326,46 @@ func UnpublishProjectHandler(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectUnpublished})
+}
+
+func FavoriteProjectHandler(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	project := ctx.Keys["project_lookup"].(*dto.ProjectInfo)
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
+
+	if err := service.Project.Favorite(project.ID, issuer.ID); err != nil {
+		if errors.Is(err, repository.ErrProjectAlreadyFavorited) {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": dict.ProjectAlreadyFavorited})
+			return
+		}
+
+		log.Print(err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectFavorited})
+}
+
+func UnfavoriteProjectHandler(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	project := ctx.Keys["project_lookup"].(*dto.ProjectInfo)
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
+
+	if err := service.Project.Unfavorite(project.ID, issuer.ID); err != nil {
+		if errors.Is(err, repository.ErrProjectNotFavorited) {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": dict.ProjectNotFavorited})
+			return
+		}
+
+		log.Print(err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectUnfavorited})
 }
 
 func DeleteProjectHandler(ctx *gin.Context) {

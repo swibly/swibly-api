@@ -539,6 +539,11 @@ func AssignProjectHandler(ctx *gin.Context) {
 	}
 
 	if err := service.Project.Assign(user.ID, project.ID, allowList); err != nil {
+		if errors.Is(err, repository.ErrCannotAssignOwner) {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": dict.ProjectCannotAssignOwner})
+			return
+		}
+
 		log.Print(err)
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return

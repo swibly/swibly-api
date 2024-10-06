@@ -62,5 +62,6 @@ project_assigned_user: Usuário atribuído ao projeto com sucesso.
 project_unassigned_user: Usuário removido do projeto com sucesso.
 project_empty_assign: O usuário não pode ter todos os campos vazios. Se deseja removê-lo do projeto, tente desatribuir.
 project_user_not_assigned: O usuário não está atribuído ao projeto.
+project_cannot_assign_owner: O proprietário do projeto não pode ser reatribuído.
 upstream_not_public: O projeto upstream não é público.
 trash_cleared: Lixeira limpa com sucesso.

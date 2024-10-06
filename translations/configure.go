@@ -74,6 +74,7 @@ type Translation struct {
 	ProjectUnassignedUser     string `yaml:"project_unassigned_user"`
 	ProjectEmptyAssign        string `yaml:"project_empty_assign"`
 	ProjectUserNotAssigned    string `yaml:"project_user_not_assigned"`
+	ProjectCannotAssignOwner  string `yaml:"project_cannot_assign_owner"`
 
 	UpstreamNotPublic string `yaml:"upstream_not_public"`
 	TrashCleared      string `yaml:"trash_cleared"`

@@ -40,6 +40,8 @@ func newProjectRoutes(handler *gin.RouterGroup) {
 		specific.GET("", middleware.ProjectIsAllowed(dto.Allow{View: true}), GetProjectHandler)
 		specific.GET("/content", middleware.ProjectIsAllowed(dto.Allow{View: true}), GetProjectContentHandler)
 
+		specific.POST("/fork", middleware.ProjectIsAllowed(dto.Allow{View: true}), ForkProjectHandler)
+
 		specific.PUT("/content", middleware.ProjectIsAllowed(dto.Allow{Edit: true}), UpdateProjectContentHandler)
 		specific.PUT("/content/clear", middleware.ProjectIsAllowed(dto.Allow{Edit: true}), ClearProjectContentHandler)
 
@@ -49,6 +51,7 @@ func newProjectRoutes(handler *gin.RouterGroup) {
 
 		specific.DELETE("/unpublish", middleware.ProjectIsAllowed(dto.Allow{Publish: true}), UnpublishProjectHandler)
 		specific.DELETE("/unfavorite", middleware.ProjectIsAllowed(dto.Allow{View: true}), UnfavoriteProjectHandler)
+		specific.DELETE("/fork", middleware.ProjectIsAllowed(dto.Allow{Manage: dto.AllowManage{Metadata: true}}), UnlinkProjectHandler)
 
 		trashActions := specific.Group("/trash")
 		{
@@ -247,6 +250,45 @@ func GetProjectContentHandler(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, content)
+}
+
+func ForkProjectHandler(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
+	project := ctx.Keys["project_lookup"].(*dto.ProjectInfo)
+
+	if err := service.Project.Fork(project.ID, issuer.ID); err != nil {
+		if errors.Is(err, repository.ErrUpstreamNotPublic) {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": dict.UpstreamNotPublic})
+			return
+		}
+
+		log.Print(err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectForked})
+}
+
+func UnlinkProjectHandler(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	project := ctx.Keys["project_lookup"].(*dto.ProjectInfo)
+
+	if err := service.Project.Unlink(project.ID); err != nil {
+		if errors.Is(err, repository.ErrProjectIsNotAFork) {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": dict.ProjectIsNotAFork})
+			return
+		}
+
+		log.Print(err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectUnlinked})
 }
 
 func UpdateProjectContentHandler(ctx *gin.Context) {

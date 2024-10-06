@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"reflect"
@@ -9,6 +10,7 @@ import (
 	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
 	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/language"
+	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -31,10 +33,35 @@ func typeCheckAndCreate(db *gorm.DB, typeName string, values []string) error {
 	return nil
 }
 
+func dropUnusedColumns(db *gorm.DB, dsts ...interface{}) {
+	for _, dst := range dsts {
+		stmt := &gorm.Statement{DB: db}
+		stmt.Parse(dst)
+		fields := stmt.Schema.Fields
+		columns, _ := db.Debug().Migrator().ColumnTypes(dst)
+
+		for i := range columns {
+			found := false
+
+			for j := range fields {
+				if columns[i].Name() == fields[j].DBName {
+					found = true
+					break
+				}
+			}
+
+			if !found {
+				db.Migrator().DropColumn(dst, columns[i].Name())
+			}
+		}
+	}
+}
+
 func Load() {
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", config.Postgres.Host, config.Postgres.User, config.Postgres.Password, config.Postgres.DB, config.Postgres.Port, config.Postgres.SSLMode)
+	log.Print("WAIT: Loading database")
+
 	db, err := gorm.Open(postgres.New(postgres.Config{
-		DSN:                  dsn,
+		DSN:                  config.Postgres.ConnectionString,
 		PreferSimpleProtocol: true,
 	}), &gorm.Config{
 		PrepareStmt: false,
@@ -48,25 +75,33 @@ func Load() {
 
 	Postgres = db
 
-	log.Print("Loaded Database")
+	log.Print("DONE: Loaded database")
+
+	log.Print("WAIT: Loading migrations")
 
 	if err := typeCheckAndCreate(db, "enum_language", language.ArrayString); err != nil {
 		log.Fatal(err)
 	}
 
-	log.Print("Loaded migrations")
-
-	if err := db.AutoMigrate(
+	models := []any{
 		&model.APIKey{},
 		&model.User{},
 		&model.Follower{},
 		&model.Permission{},
 		&model.UserPermission{},
+
 		&model.Project{},
-		&model.ProjectFavorite{},
-	); err != nil {
+		&model.ProjectOwner{},
+		&model.ProjectPublication{},
+		&model.ProjectUserFavorite{},
+		&model.ProjectUserPermission{},
+	}
+
+	if err := db.AutoMigrate(models...); err != nil {
 		log.Fatal(err)
 	}
+
+	dropUnusedColumns(db, models...)
 
 	var permissions []model.Permission
 	v := reflect.ValueOf(config.Permissions)
@@ -80,4 +115,26 @@ func Load() {
 	}).Create(&permissions).Error; err != nil {
 		log.Println(err)
 	}
+
+	log.Print("DONE: Loaded migrations")
+
+	log.Print("WAIT: Validating API keys")
+
+	var apikey model.APIKey
+	if err := db.First(&apikey).Error; err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		key := &model.APIKey{
+			Key:                uuid.New().String(),
+			EnabledKeyManage:   1,
+			EnabledAuth:        1,
+			EnabledSearch:      1,
+			EnabledUserFetch:   1,
+			EnabledUserActions: 1,
+			EnabledProjects:    1,
+		}
+
+		log.Print("Created API key for the first time: ", key.Key)
+		db.Create(&key)
+	}
+
+	log.Print("DONE: Validated API keys")
 }

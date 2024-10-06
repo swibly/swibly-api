@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func AuthMiddleware(ctx *gin.Context) {
+func Auth(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
 	tokenString := strings.TrimPrefix(ctx.GetHeader("Authorization"), "Bearer ")
@@ -52,7 +52,7 @@ func AuthMiddleware(ctx *gin.Context) {
 	ctx.Next()
 }
 
-func OptionalAuthMiddleware(ctx *gin.Context) {
+func OptionalAuth(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 	tokenString := strings.TrimPrefix(ctx.GetHeader("Authorization"), "Bearer ")
 

@@ -18,15 +18,17 @@ import (
 )
 
 func newUserRoutes(handler *gin.RouterGroup) {
-	h := handler.Group("/user")
+	h := handler.Group("/user/:username", middleware.APIKeyHasEnabledUserFetch, middleware.OptionalAuth)
 	{
-		h.GET("/:username/profile", middleware.APIKeyHasEnabledUserFetch, middleware.OptionalAuthMiddleware, middleware.GetPermissionsMiddleware, GetProfileHandler)
+		h.GET("/profile", GetProfileHandler)
+		h.GET("/followers", GetFollowersHandler)
+		h.GET("/following", GetFollowingHandler)
+	}
 
-		h.GET("/:username/followers", middleware.APIKeyHasEnabledUserFetch, middleware.OptionalAuthMiddleware, middleware.GetPermissionsMiddleware, GetFollowersHandler)
-		h.GET("/:username/following", middleware.APIKeyHasEnabledUserFetch, middleware.OptionalAuthMiddleware, middleware.GetPermissionsMiddleware, GetFollowingHandler)
-
-		h.POST("/:username/follow", middleware.APIKeyHasEnabledUserActions, middleware.AuthMiddleware, FollowUserHandler)
-		h.POST("/:username/unfollow", middleware.APIKeyHasEnabledUserActions, middleware.AuthMiddleware, UnfollowUserHandler)
+	actions := h.Group("", middleware.APIKeyHasEnabledUserActions, middleware.Auth)
+	{
+		actions.POST("/follow", FollowUserHandler)
+		actions.POST("/unfollow", UnfollowUserHandler)
 	}
 }
 
@@ -41,7 +43,7 @@ func GetProfileHandler(ctx *gin.Context) {
 	username := ctx.Param("username")
 	user, err := service.User.GetByUsername(username)
 	if err == nil {
-		if !utils.HasPermissionsByContext(ctx, config.Permissions.ManageUser) {
+		if !utils.HasPermissions(user.Permissions, config.Permissions.ManageUser) {
 			if user.Show.Profile == -1 && (issuer == nil || issuer.ID != user.ID) {
 				ctx.JSON(http.StatusForbidden, gin.H{"error": dict.UserDisabledProfile})
 				return
@@ -71,8 +73,7 @@ func GetFollowersHandler(ctx *gin.Context) {
 		issuer = p.(*dto.UserProfile)
 	}
 
-	username := ctx.Param("username")
-	user, err := service.User.GetByUsername(username)
+	user, err := service.User.GetByUsername(ctx.Param("username"))
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": dict.UserNotFound})
@@ -84,7 +85,7 @@ func GetFollowersHandler(ctx *gin.Context) {
 		return
 	}
 
-	if !utils.HasPermissionsByContext(ctx, config.Permissions.ManageUser) {
+	if !utils.HasPermissions(user.Permissions, config.Permissions.ManageUser) {
 		if user.Show.Profile == -1 && (issuer == nil || issuer.ID != user.ID) {
 			ctx.JSON(http.StatusForbidden, gin.H{"error": dict.UserDisabledProfile})
 			return
@@ -127,8 +128,7 @@ func GetFollowingHandler(ctx *gin.Context) {
 		issuer = p.(*dto.UserProfile)
 	}
 
-	username := ctx.Param("username")
-	user, err := service.User.GetByUsername(username)
+	user, err := service.User.GetByUsername(ctx.Param("username"))
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": dict.UserNotFound})
@@ -140,7 +140,7 @@ func GetFollowingHandler(ctx *gin.Context) {
 		return
 	}
 
-	if !utils.HasPermissionsByContext(ctx, config.Permissions.ManageUser) {
+	if !utils.HasPermissions(user.Permissions, config.Permissions.ManageUser) {
 		if user.Show.Profile == -1 && (issuer == nil || issuer.ID != user.ID) {
 			ctx.JSON(http.StatusForbidden, gin.H{"error": dict.UserDisabledProfile})
 			return
@@ -201,7 +201,7 @@ func FollowUserHandler(ctx *gin.Context) {
 		return
 	}
 
-	if err := service.Follow.FollowUser(receiver.ID, issuer.ID); err != nil {
+	if err := service.Follow.Follow(receiver.ID, issuer.ID); err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
@@ -236,7 +236,7 @@ func UnfollowUserHandler(ctx *gin.Context) {
 		return
 	}
 
-	if err := service.Follow.UnfollowUser(receiver.ID, issuer.ID); err != nil {
+	if err := service.Follow.Unfollow(receiver.ID, issuer.ID); err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return

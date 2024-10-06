@@ -1,36 +1,28 @@
 package middleware
 
 import (
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
+	"net/http"
+
+	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
+	"github.com/devkcud/arkhon-foundation/arkhon-api/translations"
 	"github.com/gin-gonic/gin"
 )
 
-// GetPermissionsMiddleware must be after OptionalAuthMiddleware or AuthMiddleware
-func GetPermissionsMiddleware(ctx *gin.Context) {
-	var issuer *dto.UserProfile = nil
-	p, exists := ctx.Get("auth_user")
+func HasPermissions(permissions ...string) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		dict := translations.GetTranslation(ctx)
 
-	if !exists {
-		ctx.Set("permissions", []string{}) // Set to an empty string so it can be queried anyway
+		list, exists := ctx.Get("permissions")
+		if !exists {
+			ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": dict.Unauthorized})
+			return
+		}
+
+		if !utils.HasPermissions(list.([]string), permissions...) {
+			ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": dict.Unauthorized})
+			return
+		}
+
 		ctx.Next()
-		return
 	}
-
-	issuer = p.(*dto.UserProfile)
-
-	permissions, err := service.Permission.GetPermissions(issuer.ID)
-	if err != nil {
-		ctx.Set("permissions", []string{})
-		ctx.Next()
-		return
-	}
-
-	var list []string
-
-	for _, permission := range permissions {
-		list = append(list, permission.Name)
-	}
-
-	ctx.Set("permissions", list)
 }

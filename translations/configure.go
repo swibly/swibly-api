@@ -51,13 +51,32 @@ type Translation struct {
 	ValidatorMustBeSupportedLanguage string `yaml:"validator_must_be_supported_language"`
 	ValidatorRequired                string `yaml:"validator_required"`
 
-	ProjectNotFound    string `yaml:"project_not_found"`
-	ProjectCreated     string `yaml:"project_created"`
-	ProjectUpdated     string `yaml:"project_updated"`
-	ProjectDeleted     string `yaml:"project_deleted"`
-	ProjectPublished   string `yaml:"project_published"`
-	ProjectUnpublished string `yaml:"project_unpublished"`
-	ProjectInvalid     string `yaml:"project_invalid"`
+	ProjectNotFound           string `yaml:"project_not_found"`
+	ProjectCreated            string `yaml:"project_created"`
+	ProjectUpdated            string `yaml:"project_updated"`
+	ProjectDeleted            string `yaml:"project_deleted"`
+	ProjectPublished          string `yaml:"project_published"`
+	ProjectUnpublished        string `yaml:"project_unpublished"`
+	ProjectInvalid            string `yaml:"project_invalid"`
+	ProjectMissingPermissions string `yaml:"project_missing_permissions"`
+	ProjectTrashed            string `yaml:"project_trashed"`
+	ProjectRestored           string `yaml:"project_restored"`
+	ProjectAlreadyTrashed     string `yaml:"project_already_trashed"`
+	ProjectNotTrashed         string `yaml:"project_not_trashed"`
+	ProjectFavorited          string `yaml:"project_favorite"`
+	ProjectUnfavorited        string `yaml:"project_unfavorite"`
+	ProjectAlreadyFavorited   string `yaml:"project_already_favorite"`
+	ProjectNotFavorited       string `yaml:"project_not_favorite"`
+	ProjectForked             string `yaml:"project_forked"`
+	ProjectIsNotAFork         string `yaml:"project_is_not_a_fork"`
+	ProjectUnlinked           string `yaml:"project_unlinked"`
+	ProjectAssignedUser       string `yaml:"project_assigned_user"`
+	ProjectUnassignedUser     string `yaml:"project_unassigned_user"`
+	ProjectEmptyAssign        string `yaml:"project_empty_assign"`
+	ProjectUserNotAssigned    string `yaml:"project_user_not_assigned"`
+
+	UpstreamNotPublic string `yaml:"upstream_not_public"`
+	TrashCleared      string `yaml:"trash_cleared"`
 }
 
 var Translations = make(map[string]Translation)

@@ -17,11 +17,15 @@ type userRepository struct {
 }
 
 type UserRepository interface {
-	Store(*model.User) error
+	Create(*model.User) error
+
 	Update(uint, *dto.UserUpdate) error
-	UnsafeFind(*model.User) (*model.User, error)
-	Find(*model.User) (*dto.UserProfile, error)
-	SearchLikeName(name string, page, perpage int) (*dto.Pagination[dto.UserProfile], error)
+
+	UnsafeGet(*model.User) (*model.User, error)
+	Get(*model.User) (*dto.UserProfile, error)
+
+	SearchByName(name string, page, perpage int) (*dto.Pagination[dto.UserProfile], error)
+
 	Delete(uint) error
 }
 
@@ -29,7 +33,7 @@ func NewUserRepository() UserRepository {
 	return userRepository{db: db.Postgres}
 }
 
-func (u userRepository) Store(createModel *model.User) error {
+func (u userRepository) Create(createModel *model.User) error {
 	return u.db.Create(&createModel).Error
 }
 
@@ -37,7 +41,7 @@ func (u userRepository) Update(id uint, updateModel *dto.UserUpdate) error {
 	return u.db.Model(&model.User{}).Where("id = ?", id).Updates(&updateModel).Error
 }
 
-func (u userRepository) UnsafeFind(searchModel *model.User) (*model.User, error) {
+func (u userRepository) UnsafeGet(searchModel *model.User) (*model.User, error) {
 	var user *model.User
 
 	if err := u.db.First(&user, searchModel).Error; err != nil {
@@ -47,7 +51,7 @@ func (u userRepository) UnsafeFind(searchModel *model.User) (*model.User, error)
 	return user, nil
 }
 
-func (u userRepository) Find(searchModel *model.User) (*dto.UserProfile, error) {
+func (u userRepository) Get(searchModel *model.User) (*dto.UserProfile, error) {
 	var user *dto.UserProfile
 
 	if err := u.db.Model(&model.User{}).First(&user, searchModel).Error; err != nil {
@@ -74,7 +78,7 @@ func (u userRepository) Find(searchModel *model.User) (*dto.UserProfile, error) 
 		user.Following = count
 	}
 
-	if permissions, err := tempPermissionRepo.GetPermissions(user.ID); err != nil {
+	if permissions, err := tempPermissionRepo.GetByUser(user.ID); err != nil {
 		return nil, err
 	} else {
 		for _, permission := range permissions {
@@ -85,7 +89,7 @@ func (u userRepository) Find(searchModel *model.User) (*dto.UserProfile, error) 
 	return user, nil
 }
 
-func (u userRepository) SearchLikeName(name string, page, perPage int) (*dto.Pagination[dto.UserProfile], error) {
+func (u userRepository) SearchByName(name string, page, perPage int) (*dto.Pagination[dto.UserProfile], error) {
 	terms := strings.Fields(name)
 
 	var query = u.db.Model(&model.User{})

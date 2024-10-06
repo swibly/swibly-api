@@ -42,14 +42,6 @@ func newValidator() *validator.Validate {
 	})
 
 	vv.RegisterValidation("username", func(fl validator.FieldLevel) bool {
-		if fl.Field().Len() > 32 {
-			return false
-		}
-
-		if fl.Field().Len() < 3 {
-			return false
-		}
-
 		return regexp.MustCompile(`^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$`).Match([]byte(fl.Field().String()))
 	})
 
@@ -105,14 +97,14 @@ func ValidateErrorMessage(ctx *gin.Context, fe validator.FieldError) ParamError 
 	if fe.Tag() == "min" {
 		return ParamError{
 			Param:   field,
-			Message: fmt.Sprintf(dict.ValidatorMinChars, field, fe.Param()),
+			Message: fmt.Sprintf(dict.ValidatorMinChars, fe.Param()),
 		}
 	}
 
 	if fe.Tag() == "max" {
 		return ParamError{
 			Param:   field,
-			Message: fmt.Sprintf(dict.ValidatorMaxChars, field, fe.Param()),
+			Message: fmt.Sprintf(dict.ValidatorMaxChars, fe.Param()),
 		}
 	}
 
@@ -120,12 +112,12 @@ func ValidateErrorMessage(ctx *gin.Context, fe validator.FieldError) ParamError 
 	case "required":
 		return ParamError{
 			Param:   field,
-			Message: fmt.Sprintf(dict.ValidatorRequired, field),
+			Message: dict.ValidatorRequired,
 		}
 	case "mustbesupportedlanguage":
 		return ParamError{
 			Param:   field,
-			Message: fmt.Sprintf(dict.ValidatorMustBeSupportedLanguage, field, strings.Join(language.ArrayString, ", ")),
+			Message: dict.ValidatorMustBeSupportedLanguage,
 		}
 	case "mustbenumericalboolean":
 		return ParamError{

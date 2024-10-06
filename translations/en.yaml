@@ -8,8 +8,8 @@ hello: Hello!
 internal_server_error: Internal server error. Please, try again later.
 invalid_api_key: Invalid API key.
 invalid_body:
-  Invalid request body format. Please ensure the JSON structure is correct and all required
-  fields are present.
+    Invalid request body format. Please ensure the JSON structure is correct and all required
+    fields are present.
 maximum_api_key: API key has reached its maximum allowed usage. Contact support or obtain a new key.
 no_api_key_found: No API key found with that ID.
 require_permission_api_key: 'This API key does not have permission to: %s'
@@ -27,20 +27,38 @@ user_following_stopped: User stopped following %s.
 user_not_found: User not found; are you sure this is their username?
 validator_incorrect_email_format: Email format is incorrect.
 validator_incorrect_password_format:
-  The password should have a minimum of 8, maximum of 48 characters, contain at least
-  one uppercase letter, one lowercase letter, one special character, and one numeral.
+    The password should have a minimum of 8, maximum of 48 characters, contain at least
+    one uppercase letter, one lowercase letter, one special character, and one numeral.
 validator_incorrect_username_format:
-  Usernames must consist only of lowercase alphanumeric (a-z & 0-9)
-  characters.
-validator_max_chars: '%s must have a maximum of %s characters.'
-validator_min_chars: '%s must have at least %s characters.'
+    Usernames must consist only of lowercase alphanumeric (a-z & 0-9)
+    characters.
+validator_max_chars: Maximum of %s characters.
+validator_min_chars: Minimum of %s characters.
 validator_must_be_numerical_boolean: Value must be -1, 0 or 1.
-validator_must_be_supported_language: '%s must be one of the following supported languages: %s.'
-validator_required: '%s is a required field.'
-project_not_found: Project not found.
-project_created: Project created.
-project_updated: Project updated.
-project_deleted: Project deleted.
-project_published: Project published.
-project_unpublished: Project unpublished.
-project_invalid: Invalid project ID.
+validator_must_be_supported_language: Must be one of the following supported languages (pt, en, ru).
+validator_required: Required field.
+project_not_found: The specified project could not be located.
+project_created: Project successfully created.
+project_updated: Project updated successfully.
+project_deleted: Project has been successfully deleted.
+project_published: Project has been successfully published.
+project_unpublished: Project has been successfully unpublished.
+project_invalid: Invalid project identifier provided.
+project_missing_permissions: Missing permissions to perform that action.
+project_trashed: Project has been moved to trash.
+project_restored: Project has been successfully restored.
+project_already_trashed: The project is already in the trash.
+project_not_trashed: The project is not in the trash.
+project_favorite: Project has been added to favorites.
+project_unfavorite: Project has been removed from favorites.
+project_already_favorite: The project is already in favorites.
+project_not_favorite: The project is not in favorites.
+project_forked: Project has been successfully forked.
+project_is_not_a_fork: The project is not a fork.
+project_unlinked: The project has been successfully unlinked.
+project_assigned_user: User has been successfully assigned to the project.
+project_unassigned_user: User has been successfully unassigned from the project.
+project_empty_assign: The user cannot have all fields empty. If you want to remove them from the project, try unassigning.
+project_user_not_assigned: The user is not assigned to the project.
+upstream_not_public: The upstream project is not public.
+trash_cleared: Trash has been successfully cleared.

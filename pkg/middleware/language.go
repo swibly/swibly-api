@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func DetectLanguage(ctx *gin.Context) {
+func GetLanguage(ctx *gin.Context) {
 	xlang := strings.ToLower(strings.TrimSpace(ctx.GetHeader("X-Lang")))
 
 	if !slices.Contains(language.ArrayString, xlang) {

@@ -37,8 +37,8 @@ func main() {
 		}),
 		gin.Logger(),
 		gin.Recovery(),
-		middleware.DisableCaching,
-		middleware.DetectLanguage,
+		middleware.DisableCache,
+		middleware.GetLanguage,
 		middleware.GetAPIKey,
 	)
 

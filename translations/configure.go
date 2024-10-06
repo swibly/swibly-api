@@ -15,7 +15,6 @@ type Translation struct {
 	InvalidAPIKey           string `yaml:"invalid_api_key"`
 	MaximumAPIKey           string `yaml:"maximum_api_key"`
 	RequirePermissionAPIKey string `yaml:"require_permission_api_key"`
-	Clone                   string `yaml:"clone"`
 
 	InternalServerError string `yaml:"internal_server_error"`
 	Unauthorized        string `yaml:"unauthorized"`

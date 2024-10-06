@@ -5,7 +5,6 @@ auth_user_deleted: User deleted.
 auth_user_updated: User updated.
 auth_wrong_credentials: Email, username or password are incorrect or don't exist.
 hello: Hello!
-clone: Clone
 internal_server_error: Internal server error. Please, try again later.
 invalid_api_key: Invalid API key.
 invalid_body:

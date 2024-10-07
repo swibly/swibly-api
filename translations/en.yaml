@@ -63,3 +63,23 @@ project_user_not_assigned: The user is not assigned to the project.
 project_cannot_assign_owner: The project owner cannot be reassigned.
 upstream_not_public: The upstream project is not public.
 trash_cleared: Trash has been successfully cleared.
+insufficient_arkhoins: Insufficient Arkhoins to complete the transaction.
+component_created: Component successfully created.
+component_updated: Component updated successfully.
+component_invalid: Invalid component identifier provided.
+component_not_found: The specified component could not be located.
+component_published: The component has been successfully published.
+component_already_trashed: The component is already in the trash.
+component_already_owned: The component is already owned.
+component_bought: The component has been successfully bought.
+component_sold: The component has been successfully sold.
+component_not_owned: The component is not owned.
+component_already_public: The component is already public.
+component_not_public: The component is not public.
+component_unpublished: The component has been successfully unpublished.
+component_trashed: The component has been moved to trash.
+component_not_trashed: The component is not in the trash.
+component_deleted: Component has been successfully deleted.
+component_restored: The component has been successfully restored.
+component_owner_cannot_buy: The owner cannot buy their own component.
+component_owner_cannot_sell: The owner cannot sell their own component.

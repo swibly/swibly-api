@@ -1,6 +1,6 @@
 package service
 
-import "github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/usecase"
+import "github.com/swibly/swibly-api/internal/service/usecase"
 
 var (
 	APIKey     usecase.APIKeyUseCase

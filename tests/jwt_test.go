@@ -3,7 +3,7 @@ package tests
 import (
 	"testing"
 
-	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
+	"github.com/swibly/swibly-api/pkg/utils"
 )
 
 func TestJWT_Multi_Success(t *testing.T) {

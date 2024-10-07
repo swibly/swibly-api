@@ -1,8 +1,8 @@
 package usecase
 
 import (
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service/repository"
+	"github.com/swibly/swibly-api/internal/model/dto"
+	"github.com/swibly/swibly-api/internal/service/repository"
 )
 
 type FollowUseCase struct {

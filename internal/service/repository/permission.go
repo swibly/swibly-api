@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/db"
+	"github.com/swibly/swibly-api/internal/model"
+	"github.com/swibly/swibly-api/pkg/db"
 	"gorm.io/gorm"
 )
 

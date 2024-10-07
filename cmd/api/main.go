@@ -7,12 +7,12 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
-	v1 "github.com/devkcud/arkhon-foundation/arkhon-api/internal/controller/http/v1"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/db"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/middleware"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/translations"
+	"github.com/swibly/swibly-api/config"
+	v1 "github.com/swibly/swibly-api/internal/controller/http/v1"
+	"github.com/swibly/swibly-api/internal/service"
+	"github.com/swibly/swibly-api/pkg/db"
+	"github.com/swibly/swibly-api/pkg/middleware"
+	"github.com/swibly/swibly-api/translations"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )

@@ -7,9 +7,9 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/language"
+	"github.com/swibly/swibly-api/config"
+	"github.com/swibly/swibly-api/internal/model"
+	"github.com/swibly/swibly-api/pkg/language"
 	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

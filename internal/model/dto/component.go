@@ -3,7 +3,7 @@ package dto
 import (
 	"time"
 
-	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
+	"github.com/swibly/swibly-api/pkg/utils"
 	"gorm.io/gorm"
 )
 

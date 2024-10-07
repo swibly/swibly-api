@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
+	"github.com/swibly/swibly-api/internal/model/dto"
 	"gorm.io/gorm"
 )
 

@@ -65,3 +65,23 @@ project_user_not_assigned: O usuário não está atribuído ao projeto.
 project_cannot_assign_owner: O proprietário do projeto não pode ser reatribuído.
 upstream_not_public: O projeto upstream não é público.
 trash_cleared: Lixeira limpa com sucesso.
+insufficient_arkhoins: Arkhoins insuficientes para completar a transação.
+component_created: Componente criado com sucesso.
+component_updated: Componente atualizado com sucesso.
+component_invalid: Identificador de componente inválido fornecido.
+component_not_found: O componente especificado não pôde ser localizado.
+component_published: O componente foi publicado com sucesso.
+component_already_trashed: O componente já está na lixeira.
+component_already_owned: O componente já está em posse.
+component_bought: O componente foi comprado com sucesso.
+component_sold: O componente foi vendido com sucesso.
+component_not_owned: O componente não está em posse.
+component_already_public: O componente já é público.
+component_not_public: O componente não é público.
+component_unpublished: O componente foi removido da publicação com sucesso.
+component_trashed: O componente foi movido para a lixeira.
+component_not_trashed: O componente não está na lixeira.
+component_deleted: Componente excluído com sucesso.
+component_restored: O componente foi restaurado com sucesso.
+component_owner_cannot_buy: O proprietário não pode comprar seu próprio componente.
+component_owner_cannot_sell: O proprietário não pode vender seu próprio componente.

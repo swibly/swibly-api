@@ -5,14 +5,14 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/swibly/swibly-api/config"
 	"github.com/swibly/swibly-api/internal/model/dto"
 	"github.com/swibly/swibly-api/internal/service"
 	"github.com/swibly/swibly-api/pkg/middleware"
 	"github.com/swibly/swibly-api/pkg/utils"
 	"github.com/swibly/swibly-api/translations"
-	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5/pgconn"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -27,6 +27,12 @@ func newAuthRoutes(handler *gin.RouterGroup) {
 
 		h.PATCH("/update", middleware.APIKeyHasEnabledUserActions, middleware.Auth, UpdateUserHandler)
 		h.DELETE("/delete", middleware.APIKeyHasEnabledUserActions, middleware.Auth, DeleteUserHandler)
+	}
+
+	password := h.Group("/password")
+	{
+		password.POST("/reset", RequestPasswordResetHandler)
+		password.POST("/reset/:key", PasswordResetHandler)
 	}
 }
 
@@ -206,4 +212,74 @@ func DeleteUserHandler(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.AuthUserDeleted})
+}
+
+func RequestPasswordResetHandler(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	var body dto.RequestPasswordReset
+
+	if err := ctx.BindJSON(&body); err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.InvalidBody})
+		return
+	}
+
+	if errs := utils.ValidateStruct(&body); errs != nil {
+		err := utils.ValidateErrorMessage(ctx, errs[0])
+
+		log.Print(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": gin.H{err.Param: err.Message}})
+		return
+	}
+
+	if err := service.PasswordReset.Request(dict, body.Email); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Print(err)
+			ctx.JSON(http.StatusForbidden, gin.H{"error": dict.UserNotFound})
+			return
+		}
+
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, gin.H{"message": dict.PasswordResetRequest})
+}
+
+func PasswordResetHandler(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	key := ctx.Param("key")
+
+	var body dto.PasswordReset
+
+	if err := ctx.BindJSON(&body); err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.InvalidBody})
+		return
+	}
+
+	if errs := utils.ValidateStruct(&body); errs != nil {
+		err := utils.ValidateErrorMessage(ctx, errs[0])
+
+		log.Print(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": gin.H{err.Param: err.Message}})
+		return
+	}
+
+	if err := service.PasswordReset.Reset(key, body.Password); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Print(err)
+			ctx.JSON(http.StatusForbidden, gin.H{"error": dict.InvalidPasswordResetKey})
+			return
+		}
+
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": dict.PasswordResetSuccess})
 }

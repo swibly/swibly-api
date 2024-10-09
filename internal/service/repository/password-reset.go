@@ -82,11 +82,23 @@ func (prr *passwordResetRepository) Reset(key, newPassword string) error {
 
 	password := newPassword
 
-	if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), config.Security.BcryptCost); err != nil {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), config.Security.BcryptCost)
+	if err != nil {
 		return err
-	} else {
-		password = string(hashedPassword) // Set the hash
+	}
+	password = string(hashedPassword)
+
+	tx := prr.db.Begin()
+
+	if err := tx.Model(&model.User{}).Where("id = ?", passwordReset.UserID).Update("password", password).Error; err != nil {
+		tx.Rollback()
+		return err
 	}
 
-	return prr.db.Model(&model.User{}).Where("id = ?", passwordReset.UserID).Update("password", password).Error
+	if err := tx.Where("key = ?", key).Delete(&model.PasswordResetKey{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
 }

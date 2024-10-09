@@ -80,25 +80,31 @@ type Translation struct {
 	TrashCleared         string `yaml:"trash_cleared"`
 	InsufficientArkhoins string `yaml:"insufficient_arkhoins"`
 
-	ComponentCreated        string `yaml:"component_created"`
-	ComponentUpdated        string `yaml:"component_updated"`
-	ComponentPublished      string `yaml:"component_published"`
-	ComponentUnpublished    string `yaml:"component_unpublished"`
-	ComponentBought         string `yaml:"component_bought"`
-	ComponentSold           string `yaml:"component_sold"`
-	ComponentTrashed        string `yaml:"component_trashed"`
-	ComponentRestored       string `yaml:"component_restored"`
-	ComponentDeleted        string `yaml:"component_deleted"`
-	ComponentInvalid        string `yaml:"component_invalid"`
-	ComponentNotFound       string `yaml:"component_not_found"`
-	ComponentAlreadyTrashed string `yaml:"component_already_trashed"`
-	ComponentNotTrashed     string `yaml:"component_not_trashed"`
-	ComponentAlreadyOwned   string `yaml:"component_already_owned"`
-	ComponentNotOwned       string `yaml:"component_not_owned"`
-	ComponentAlreadyPublic  string `yaml:"component_already_public"`
-	ComponentNotPublic      string `yaml:"yaml:component_not_public"`
-  ComponentOwnerCannotBuy string `yaml:"component_owner_cannot_buy"`
-  ComponentOwnerCannotSell string `yaml:"component_owner_cannot_sell"`
+	ComponentCreated         string `yaml:"component_created"`
+	ComponentUpdated         string `yaml:"component_updated"`
+	ComponentPublished       string `yaml:"component_published"`
+	ComponentUnpublished     string `yaml:"component_unpublished"`
+	ComponentBought          string `yaml:"component_bought"`
+	ComponentSold            string `yaml:"component_sold"`
+	ComponentTrashed         string `yaml:"component_trashed"`
+	ComponentRestored        string `yaml:"component_restored"`
+	ComponentDeleted         string `yaml:"component_deleted"`
+	ComponentInvalid         string `yaml:"component_invalid"`
+	ComponentNotFound        string `yaml:"component_not_found"`
+	ComponentAlreadyTrashed  string `yaml:"component_already_trashed"`
+	ComponentNotTrashed      string `yaml:"component_not_trashed"`
+	ComponentAlreadyOwned    string `yaml:"component_already_owned"`
+	ComponentNotOwned        string `yaml:"component_not_owned"`
+	ComponentAlreadyPublic   string `yaml:"component_already_public"`
+	ComponentNotPublic       string `yaml:"yaml:component_not_public"`
+	ComponentOwnerCannotBuy  string `yaml:"component_owner_cannot_buy"`
+	ComponentOwnerCannotSell string `yaml:"component_owner_cannot_sell"`
+
+	PasswordResetRequest       string `yaml:"password_reset_request"`
+	PasswordResetSuccess       string `yaml:"password_reset_success"`
+	PasswordResetEmailSubject  string `yaml:"password_reset_email_subject"`
+	PasswordResetEmailTemplate string `yaml:"password_reset_email_template"`
+	InvalidPasswordResetKey    string `yaml:"invalid_password_reset_key"`
 }
 
 var Translations = make(map[string]Translation)

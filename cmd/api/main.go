@@ -7,14 +7,15 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	"github.com/swibly/swibly-api/config"
 	v1 "github.com/swibly/swibly-api/internal/controller/http/v1"
 	"github.com/swibly/swibly-api/internal/service"
 	"github.com/swibly/swibly-api/pkg/db"
 	"github.com/swibly/swibly-api/pkg/middleware"
+	"github.com/swibly/swibly-api/pkg/sender"
 	"github.com/swibly/swibly-api/translations"
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -23,6 +24,8 @@ func main() {
 
 	service.Init()
 	translations.Init("./translations")
+
+	sender.Init()
 
 	gin.SetMode(config.Router.GinMode)
 

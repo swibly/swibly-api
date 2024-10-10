@@ -1,0 +1,5 @@
+host: $SMTP_HOST
+port: $SMTP_PORT
+username: $SMTP_USERNAME
+email: $SMTP_EMAIL
+password: $SMTP_PASSWORD

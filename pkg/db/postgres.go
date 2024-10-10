@@ -7,10 +7,10 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/swibly/swibly-api/config"
 	"github.com/swibly/swibly-api/internal/model"
 	"github.com/swibly/swibly-api/pkg/language"
-	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -89,6 +89,7 @@ func Load() {
 		&model.Follower{},
 		&model.Permission{},
 		&model.UserPermission{},
+		&model.PasswordResetKey{},
 
 		&model.Project{},
 		&model.ProjectOwner{},
@@ -96,10 +97,10 @@ func Load() {
 		&model.ProjectUserFavorite{},
 		&model.ProjectUserPermission{},
 
-    &model.Component{},
-    &model.ComponentOwner{},
-    &model.ComponentHolder{},
-    &model.ComponentPublication{},
+		&model.Component{},
+		&model.ComponentOwner{},
+		&model.ComponentHolder{},
+		&model.ComponentPublication{},
 	}
 
 	if err := db.AutoMigrate(models...); err != nil {

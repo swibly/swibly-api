@@ -3,12 +3,13 @@ package service
 import "github.com/swibly/swibly-api/internal/service/usecase"
 
 var (
-	APIKey     usecase.APIKeyUseCase
-	User       usecase.UserUseCase
-	Follow     usecase.FollowUseCase
-	Permission usecase.PermissionUseCase
-	Project    usecase.ProjectUseCase
-	Component  usecase.ComponentUseCase
+	APIKey        usecase.APIKeyUseCase
+	User          usecase.UserUseCase
+	Follow        usecase.FollowUseCase
+	Permission    usecase.PermissionUseCase
+	Project       usecase.ProjectUseCase
+	Component     usecase.ComponentUseCase
+	PasswordReset usecase.PasswordResetUseCase
 )
 
 func Init() {
@@ -18,4 +19,5 @@ func Init() {
 	Permission = usecase.NewPermissionUseCase()
 	Project = usecase.NewProjectUseCase()
 	Component = usecase.NewComponentUseCase()
+	PasswordReset = usecase.NewPasswordResetUseCase()
 }

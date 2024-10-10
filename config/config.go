@@ -26,6 +26,14 @@ var (
 		JWTSecret  string `yaml:"jwt_secret"`
 	}
 
+	SMTP struct {
+		Host     string `yaml:"host"`
+		Port     string `yaml:"port"`
+		Username string `yaml:"username"`
+		Email    string `yaml:"email"`
+		Password string `yaml:"password"`
+	}
+
 	Permissions struct {
 		Admin             string `yaml:"admin"`
 		ManageAPIKey      string `yaml:"manage_api_key"`
@@ -40,6 +48,11 @@ func Parse() {
 	if missingVars := checkEnvVars(
 		"POSTGRES_CONNECTION_STRING",
 		"JWT_SECRET",
+		"SMTP_HOST",
+		"SMTP_PORT",
+		"SMTP_USERNAME",
+		"SMTP_EMAIL",
+		"SMTP_PASSWORD",
 	); len(missingVars) > 0 {
 		log.Println("You can override the following env variables to get rid of this error:")
 		log.Println(strings.Join(missingVars, ", "))
@@ -58,6 +71,10 @@ func Parse() {
 	}
 
 	if err := yaml.Unmarshal(read("security.yaml"), &Security); err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	if err := yaml.Unmarshal(read("smtp.yaml"), &SMTP); err != nil {
 		log.Fatalf("error: %v", err)
 	}
 

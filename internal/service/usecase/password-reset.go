@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"text/template"
 
+	"github.com/swibly/swibly-api/internal/model/dto"
 	"github.com/swibly/swibly-api/internal/service/repository"
 	"github.com/swibly/swibly-api/pkg/sender"
 	"github.com/swibly/swibly-api/translations"
@@ -36,7 +37,7 @@ func (pruc *PasswordResetUseCase) Request(dict translations.Translation, email s
 
 	mapping := map[string]string{
 		"user": user.FirstName,
-		"url":  fmt.Sprintf("https://www.swibly.com.br/reset-password?key=%s", url.QueryEscape(data.Key.String())),
+		"url":  fmt.Sprintf("https://www.swibly.com.br/reset/%s", url.QueryEscape(data.Key.String())),
 	}
 
 	var body bytes.Buffer
@@ -54,6 +55,6 @@ func (pruc *PasswordResetUseCase) Reset(key, newPassword string) error {
 	return pruc.prr.Reset(key, newPassword)
 }
 
-func (pruc *PasswordResetUseCase) IsKeyValid(key string) (bool, error) {
+func (pruc *PasswordResetUseCase) IsKeyValid(key string) (*dto.PasswordResetInfo, bool, error) {
 	return pruc.prr.IsKeyValid(key)
 }

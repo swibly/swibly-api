@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/swibly/swibly-api/config"
 	"github.com/swibly/swibly-api/internal/model"
+	"github.com/swibly/swibly-api/internal/model/dto"
 	"github.com/swibly/swibly-api/pkg/db"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -20,7 +21,7 @@ type passwordResetRepository struct {
 type PasswordResetRepository interface {
 	Request(email string) (*model.PasswordResetKey, error)
 	Reset(key, newPassword string) error
-	IsKeyValid(key string) (bool, error)
+	IsKeyValid(key string) (*dto.PasswordResetInfo, bool, error)
 }
 
 func NewPasswordResetRepository() PasswordResetRepository {
@@ -104,20 +105,33 @@ func (prr *passwordResetRepository) Reset(key, newPassword string) error {
 	return tx.Commit().Error
 }
 
-func (prr *passwordResetRepository) IsKeyValid(key string) (bool, error) {
+func (prr *passwordResetRepository) IsKeyValid(key string) (*dto.PasswordResetInfo, bool, error) {
 	passwordReset := model.PasswordResetKey{}
 
 	if err := prr.db.Model(&model.PasswordResetKey{}).Where("key = ?", key).Scan(&passwordReset).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return false, nil
+			return nil, false, nil
 		}
-
-		return false, err
+		return nil, false, err
 	}
 
 	if passwordReset.ExpiresAt.Before(time.Now()) {
-		return false, nil
+		return nil, false, nil
 	}
 
-	return true, nil
+	user := model.User{}
+	if err := prr.db.Model(&model.User{}).Where("id = ?", passwordReset.UserID).Scan(&user).Error; err != nil {
+		return nil, false, err
+	}
+
+	passwordResetInfo := &dto.PasswordResetInfo{
+		FirstName:      user.FirstName,
+		LastName:       user.LastName,
+		Username:       user.Username,
+		ProfilePicture: user.ProfilePicture,
+		Lang:           string(user.Language),
+		ExpiresAt:      passwordReset.ExpiresAt,
+	}
+
+	return passwordResetInfo, true, nil
 }

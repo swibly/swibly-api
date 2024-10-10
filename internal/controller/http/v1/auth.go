@@ -287,12 +287,20 @@ func PasswordResetHandler(ctx *gin.Context) {
 }
 
 func ValidatePasswordResetHandler(ctx *gin.Context) {
-	status, _ := service.PasswordReset.IsKeyValid(ctx.Param("key"))
+	dict := translations.GetTranslation(ctx)
 
-	if status == true {
-		ctx.JSON(http.StatusAccepted, gin.H{"message": status})
+	key := ctx.Param("key")
+
+	passwordResetInfo, isValid, err := service.PasswordReset.IsKeyValid(key)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
 
-	ctx.JSON(http.StatusNotAcceptable, gin.H{"message": status})
+	if isValid {
+		ctx.JSON(http.StatusAccepted, passwordResetInfo)
+		return
+	}
+
+	ctx.JSON(http.StatusNotAcceptable, gin.H{"message": dict.InvalidPasswordResetKey})
 }

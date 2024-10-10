@@ -19,6 +19,8 @@ type smtpSender struct {
 
 func (s *smtpSender) Send(to string, subject string, body string) {
 	go func() {
+		log.Print("INFO: Trying to send an email to `" + to + "` with the subject `" + subject + "`")
+
 		from := mail.Address{Name: s.username, Address: s.email}
 		recipient := mail.Address{Address: to}
 

@@ -33,6 +33,8 @@ func newAuthRoutes(handler *gin.RouterGroup) {
 	{
 		password.POST("/reset", RequestPasswordResetHandler)
 		password.POST("/reset/:key", PasswordResetHandler)
+
+		password.OPTIONS("/reset/:key", ValidatePasswordResetHandler)
 	}
 }
 
@@ -282,4 +284,15 @@ func PasswordResetHandler(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.PasswordResetSuccess})
+}
+
+func ValidatePasswordResetHandler(ctx *gin.Context) {
+	status, _ := service.PasswordReset.IsKeyValid(ctx.Param("key"))
+
+	if status == true {
+		ctx.JSON(http.StatusAccepted, gin.H{"message": status})
+		return
+	}
+
+	ctx.JSON(http.StatusNotAcceptable, gin.H{"message": status})
 }

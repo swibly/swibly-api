@@ -20,6 +20,7 @@ type passwordResetRepository struct {
 type PasswordResetRepository interface {
 	Request(email string) (*model.PasswordResetKey, error)
 	Reset(key, newPassword string) error
+	IsKeyValid(key string) (bool, error)
 }
 
 func NewPasswordResetRepository() PasswordResetRepository {
@@ -101,4 +102,22 @@ func (prr *passwordResetRepository) Reset(key, newPassword string) error {
 	}
 
 	return tx.Commit().Error
+}
+
+func (prr *passwordResetRepository) IsKeyValid(key string) (bool, error) {
+	passwordReset := model.PasswordResetKey{}
+
+	if err := prr.db.Model(&model.PasswordResetKey{}).Where("key = ?", key).Scan(&passwordReset).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	if passwordReset.ExpiresAt.Before(time.Now()) {
+		return false, nil
+	}
+
+	return true, nil
 }

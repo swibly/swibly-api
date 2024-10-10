@@ -53,3 +53,7 @@ func (pruc *PasswordResetUseCase) Request(dict translations.Translation, email s
 func (pruc *PasswordResetUseCase) Reset(key, newPassword string) error {
 	return pruc.prr.Reset(key, newPassword)
 }
+
+func (pruc *PasswordResetUseCase) IsKeyValid(key string) (bool, error) {
+	return pruc.prr.IsKeyValid(key)
+}

@@ -3,7 +3,7 @@ package model
 import (
 	"time"
 
-	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/language"
+	"github.com/swibly/swibly-api/pkg/language"
 )
 
 type User struct {

@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/language"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/translations"
+	"github.com/swibly/swibly-api/pkg/language"
+	"github.com/swibly/swibly-api/translations"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )

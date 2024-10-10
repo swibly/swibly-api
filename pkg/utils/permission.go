@@ -3,7 +3,7 @@ package utils
 import (
 	"slices"
 
-	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
+	"github.com/swibly/swibly-api/config"
 )
 
 // There is no need to pass anything to check for admin roles

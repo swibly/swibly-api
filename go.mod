@@ -1,4 +1,4 @@
-module github.com/devkcud/arkhon-foundation/arkhon-api
+module github.com/swibly/swibly-api
 
 go 1.22.1
 

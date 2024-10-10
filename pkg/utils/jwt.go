@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/devkcud/arkhon-foundation/arkhon-api/config"
+	"github.com/swibly/swibly-api/config"
 	"github.com/golang-jwt/jwt"
 )
 

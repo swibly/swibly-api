@@ -8,13 +8,13 @@ hello: Olá!
 internal_server_error: Erro interno de servidor. Por favor, tente novamente mais tarde.
 invalid_api_key: Chave de API inválida.
 invalid_body:
-    Formato de corpo de solicitação inválido. Certifique-se de que a estrutura JSON esteja correta
-    e que todos os campos obrigatórios estejam presentes.
+  Formato de corpo de solicitação inválido. Certifique-se de que a estrutura JSON esteja correta
+  e que todos os campos obrigatórios estejam presentes.
 maximum_api_key:
-    Chave de API chegou em seu limite máximo permitido. Contate o suporte ou obtenha uma
-    nova chave.
+  Chave de API chegou em seu limite máximo permitido. Contate o suporte ou obtenha uma
+  nova chave.
 no_api_key_found: Nenhuma chave de API encontrada com este ID.
-require_permission_api_key: 'Esta chave de API não tem a permissão de: %s'
+require_permission_api_key: "Esta chave de API não tem a permissão de: %s"
 search_incorrect: As pesquisas não podem ser compostas apenas por espaços ou caracteres especiais.
 search_no_results: Nada encontrado com esse critério de pesquisa.
 unauthorized: Não autorizado. Não há bearer ou o token é inválido?
@@ -29,11 +29,11 @@ user_following_stopped: Usuário parou de seguir %s.
 user_not_found: Usuário não encontrado; você tem certeza de que este é o nome de usuário?
 validator_incorrect_email_format: Formato de email incorreto.
 validator_incorrect_password_format:
-    A senha deve ter no mínimo 8, e no máximo caracteres, conter pelo menos uma letra
-    maiúscula, uma letra minúscula, um caractere especial e um numeral.
+  A senha deve ter no mínimo 8, e no máximo caracteres, conter pelo menos uma letra
+  maiúscula, uma letra minúscula, um caractere especial e um numeral.
 validator_incorrect_username_format:
-    Os nomes de usuário devem consistir apenas de caracteres alfanuméricos
-    minúsculos (a-z e 0-9).
+  Os nomes de usuário devem consistir apenas de caracteres alfanuméricos
+  minúsculos (a-z e 0-9).
 validator_max_chars: Máximo de %s caracteres.
 validator_min_chars: Mínimo de %s caracteres.
 validator_must_be_numerical_boolean: Valor deve ser -1, 0 ou 1.
@@ -85,3 +85,20 @@ component_deleted: Componente excluído com sucesso.
 component_restored: O componente foi restaurado com sucesso.
 component_owner_cannot_buy: O proprietário não pode comprar seu próprio componente.
 component_owner_cannot_sell: O proprietário não pode vender seu próprio componente.
+password_reset_request: Uma solicitação de redefinição de senha foi enviada para você. Por favor, verifique seu e-mail para mais instruções.
+password_reset_success: Sua senha foi redefinida com sucesso.
+password_reset_email_subject: Solicitação de Redefinição de Senha
+password_reset_email_template: |
+  Olá {{.user}},
+
+  Recebemos uma solicitação para redefinir a senha da sua conta associada a este endereço de e-mail. Se você não fez esta solicitação, desconsidere este e-mail. Caso contrário, você pode redefinir sua senha usando o link abaixo:
+
+  {{.url}}
+
+  Este link expirará em 24 horas, então certifique-se de concluir o processo antes desse prazo.
+
+  Se encontrar algum problema, sinta-se à vontade para entrar em contato com nossa equipe de suporte em service@swibly.com.br ou respondendo a este e-mail.
+
+  Obrigado,
+  Equipe Swibly
+invalid_password_reset_key: A chave de redefinição de senha é inválida ou expirou.

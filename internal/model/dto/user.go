@@ -3,8 +3,8 @@ package dto
 import (
 	"time"
 
-	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/language"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/utils"
+	"github.com/swibly/swibly-api/pkg/language"
+	"github.com/swibly/swibly-api/pkg/utils"
 )
 
 type UserRegister struct {

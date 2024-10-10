@@ -8,10 +8,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/service"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/middleware"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/translations"
+	"github.com/swibly/swibly-api/internal/model/dto"
+	"github.com/swibly/swibly-api/internal/service"
+	"github.com/swibly/swibly-api/pkg/middleware"
+	"github.com/swibly/swibly-api/translations"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/internal/model/dto"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/db"
-	"github.com/devkcud/arkhon-foundation/arkhon-api/pkg/pagination"
+	"github.com/swibly/swibly-api/internal/model"
+	"github.com/swibly/swibly-api/internal/model/dto"
+	"github.com/swibly/swibly-api/pkg/db"
+	"github.com/swibly/swibly-api/pkg/pagination"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )

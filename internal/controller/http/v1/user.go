@@ -7,28 +7,30 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gin-gonic/gin"
 	"github.com/swibly/swibly-api/config"
 	"github.com/swibly/swibly-api/internal/model/dto"
 	"github.com/swibly/swibly-api/internal/service"
 	"github.com/swibly/swibly-api/pkg/middleware"
 	"github.com/swibly/swibly-api/pkg/utils"
 	"github.com/swibly/swibly-api/translations"
-	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
 func newUserRoutes(handler *gin.RouterGroup) {
-	h := handler.Group("/user/:username", middleware.APIKeyHasEnabledUserFetch, middleware.OptionalAuth)
+	h := handler.Group("/user/:username", middleware.APIKeyHasEnabledUserFetch, middleware.Auth)
 	{
 		h.GET("/profile", GetProfileHandler)
 		h.GET("/followers", GetFollowersHandler)
 		h.GET("/following", GetFollowingHandler)
 	}
 
-	actions := h.Group("", middleware.APIKeyHasEnabledUserActions, middleware.Auth)
+	actions := h.Group("", middleware.APIKeyHasEnabledUserActions)
 	{
 		actions.POST("/follow", FollowUserHandler)
 		actions.POST("/unfollow", UnfollowUserHandler)
+
+		actions.GET("/amifollowing", IsFollowingHandler)
 	}
 }
 
@@ -243,4 +245,36 @@ func UnfollowUserHandler(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf(dict.UserFollowingStopped, receiver.Username)})
+}
+
+func IsFollowingHandler(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
+
+	receiver, err := service.User.GetByUsername(ctx.Param("username"))
+	if err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UserNotFound})
+		return
+	}
+
+	if issuer.ID == receiver.ID {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UserErrorFollowItself})
+		return
+	}
+
+	exists, err := service.Follow.Exists(receiver.ID, issuer.ID)
+	if err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
+
+	switch exists {
+	case true:
+		ctx.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf(dict.UserFollowingAlready, receiver.Username)})
+	case false:
+		ctx.JSON(http.StatusNotFound, gin.H{"message": fmt.Sprintf(dict.UserFollowingNot, receiver.Username)})
+	}
 }

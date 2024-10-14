@@ -62,16 +62,56 @@ func ProjectIsAllowed(requiredPermissions dto.Allow) gin.HandlerFunc {
 
 			for _, allowedUser := range project.AllowedUsers {
 				if allowedUser.Username == issuer.Username {
-					if (!requiredPermissions.View || allowedUser.View || project.IsPublic) &&
-						(!requiredPermissions.Edit || allowedUser.Edit) &&
-						(!requiredPermissions.Delete || allowedUser.Delete) &&
-						(!requiredPermissions.Publish || allowedUser.Publish) &&
-						(!requiredPermissions.Share || allowedUser.Share) &&
-						(!requiredPermissions.Manage.Users || allowedUser.ManageUsers || project.IsPublic) &&
-						(!requiredPermissions.Manage.Metadata || allowedUser.ManageMetadata) {
-						isAllowed = true
-						continue
+					if requiredPermissions.View {
+						if !allowedUser.View && !project.IsPublic {
+							isAllowed = false
+							break
+						}
 					}
+
+					if requiredPermissions.Edit {
+						if !allowedUser.Edit {
+							isAllowed = false
+							break
+						}
+					}
+
+					if requiredPermissions.Delete {
+						if !allowedUser.Delete {
+							isAllowed = false
+							break
+						}
+					}
+
+					if requiredPermissions.Publish {
+						if !allowedUser.Publish {
+							isAllowed = false
+							break
+						}
+					}
+
+					if requiredPermissions.Share {
+						if !allowedUser.Share && !project.IsPublic {
+							isAllowed = false
+							break
+						}
+					}
+
+					if requiredPermissions.Manage.Users {
+						if !allowedUser.ManageUsers {
+							isAllowed = false
+							break
+						}
+					}
+
+					if requiredPermissions.Manage.Metadata {
+						if !allowedUser.ManageMetadata {
+							isAllowed = false
+							break
+						}
+					}
+
+					isAllowed = true
 				}
 			}
 

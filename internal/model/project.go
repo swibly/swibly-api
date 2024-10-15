@@ -16,6 +16,9 @@ type Project struct {
 	Name        string `gorm:"not null"`
 	Description string `gorm:"default:''"`
 
+	Width  int `gorm:"not null;default:30"`
+	Height int `gorm:"not null;default:30"`
+
 	Content any `gorm:"type:jsonb;not null;default:'{}'"`
 	Budget  int `gorm:"default:0"`
 

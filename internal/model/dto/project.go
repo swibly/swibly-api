@@ -14,6 +14,9 @@ type ProjectCreation struct {
 	Content any `validate:"omitempty" json:"content"`
 	Budget  int `validate:"omitempty" json:"budget"`
 
+	Width  int `gorm:"not null;default:30"`
+	Height int `gorm:"not null;default:30"`
+
 	OwnerID uint `json:"-"` // Set using JWT
 
 	Public bool `json:"-"` // Set in an URL query param
@@ -79,6 +82,9 @@ type ProjectInfoJSON struct {
 
 	Budget int `json:"budget"`
 
+	Width  int `json:"width"`
+	Height int `json:"height"`
+
 	IsPublic bool  `json:"is_public"`
 	Fork     *uint `json:"fork"`
 
@@ -102,6 +108,9 @@ type ProjectInfo struct {
 	Description string `json:"description"`
 
 	Budget int `json:"budget"`
+
+	Width  int `json:"width"`
+	Height int `json:"height"`
 
 	IsPublic bool  `json:"is_public"`
 	Fork     *uint `json:"fork"`

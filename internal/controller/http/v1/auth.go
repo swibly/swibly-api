@@ -171,14 +171,14 @@ func UpdateUserHandler(ctx *gin.Context) {
 		return
 	}
 
-	if body.Username != "" {
+	if body.Username != "" && body.Username != issuer.Username {
 		if profile, err := service.User.GetByUsername(body.Username); profile != nil && err == nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.AuthDuplicatedUser})
 			return
 		}
 	}
 
-	if body.Email != "" {
+	if body.Email != "" && body.Email != issuer.Email {
 		if profile, err := service.User.GetByEmail(body.Email); profile != nil && err == nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.AuthDuplicatedUser})
 			return

@@ -1,28 +1,24 @@
 package v1
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/swibly/swibly-api/config"
 	"github.com/swibly/swibly-api/internal/model/dto"
 	"github.com/swibly/swibly-api/internal/service"
 	"github.com/swibly/swibly-api/pkg/middleware"
-	"github.com/swibly/swibly-api/pkg/utils"
 	"github.com/swibly/swibly-api/translations"
-	"gorm.io/gorm"
 )
 
 func newUserRoutes(handler *gin.RouterGroup) {
-	h := handler.Group("/user/:username", middleware.APIKeyHasEnabledUserFetch, middleware.Auth)
+	h := handler.Group("/user/:username", middleware.APIKeyHasEnabledUserFetch, middleware.Auth, middleware.UserLookup)
 	{
-		h.GET("/profile", GetProfileHandler)
-		h.GET("/followers", GetFollowersHandler)
-		h.GET("/following", GetFollowingHandler)
+		h.GET("/profile", middleware.UserPrivacy(dto.UserShow{Profile: true}), GetProfileHandler)
+		h.GET("/followers", middleware.UserPrivacy(dto.UserShow{Profile: true, Followers: true}), GetFollowersHandler)
+		h.GET("/following", middleware.UserPrivacy(dto.UserShow{Profile: true, Following: true}), GetFollowingHandler)
 	}
 
 	actions := h.Group("", middleware.APIKeyHasEnabledUserActions)
@@ -35,69 +31,13 @@ func newUserRoutes(handler *gin.RouterGroup) {
 }
 
 func GetProfileHandler(ctx *gin.Context) {
-	dict := translations.GetTranslation(ctx)
-
-	var issuer *dto.UserProfile = nil
-	if p, exists := ctx.Get("auth_user"); exists {
-		issuer = p.(*dto.UserProfile)
-	}
-
-	username := ctx.Param("username")
-	user, err := service.User.GetByUsername(username)
-	if err == nil {
-		if !utils.HasPermissions(user.Permissions, config.Permissions.ManageUser) {
-			if user.Show.Profile == false && (issuer == nil || issuer.ID != user.ID) {
-				ctx.JSON(http.StatusForbidden, gin.H{"error": dict.UserDisabledProfile})
-				return
-			}
-		}
-
-		ctx.JSON(http.StatusOK, user)
-
-		return
-	}
-
-	log.Print(err)
-
-	if err == gorm.ErrRecordNotFound {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": dict.UserNotFound})
-		return
-	}
-
-	ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+	ctx.JSON(http.StatusOK, ctx.Keys["user_lookup"])
 }
 
 func GetFollowersHandler(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
-	var issuer *dto.UserProfile = nil
-	if p, exists := ctx.Get("auth_user"); exists {
-		issuer = p.(*dto.UserProfile)
-	}
-
-	user, err := service.User.GetByUsername(ctx.Param("username"))
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": dict.UserNotFound})
-			return
-		}
-
-		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
-		return
-	}
-
-	if !utils.HasPermissions(user.Permissions, config.Permissions.ManageUser) {
-		if user.Show.Profile == false && (issuer == nil || issuer.ID != user.ID) {
-			ctx.JSON(http.StatusForbidden, gin.H{"error": dict.UserDisabledProfile})
-			return
-		}
-
-		if user.Show.Followers == false && (issuer == nil || issuer.ID != user.ID) {
-			ctx.JSON(http.StatusForbidden, gin.H{"error": dict.UserDisabledFollowers})
-			return
-		}
-	}
+	user := ctx.Keys["user_lookup"].(*dto.UserProfile)
 
 	var (
 		page    int = 1
@@ -125,34 +65,7 @@ func GetFollowersHandler(ctx *gin.Context) {
 func GetFollowingHandler(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
-	var issuer *dto.UserProfile = nil
-	if p, exists := ctx.Get("auth_user"); exists {
-		issuer = p.(*dto.UserProfile)
-	}
-
-	user, err := service.User.GetByUsername(ctx.Param("username"))
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": dict.UserNotFound})
-			return
-		}
-
-		log.Print(err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
-		return
-	}
-
-	if !utils.HasPermissions(user.Permissions, config.Permissions.ManageUser) {
-		if user.Show.Profile == false && (issuer == nil || issuer.ID != user.ID) {
-			ctx.JSON(http.StatusForbidden, gin.H{"error": dict.UserDisabledProfile})
-			return
-		}
-
-		if user.Show.Following == false && (issuer == nil || issuer.ID != user.ID) {
-			ctx.JSON(http.StatusForbidden, gin.H{"error": dict.UserDisabledFollowers})
-			return
-		}
-	}
+	user := ctx.Keys["user_lookup"].(*dto.UserProfile)
 
 	var (
 		page    int = 1
@@ -181,13 +94,7 @@ func FollowUserHandler(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
 	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
-
-	receiver, err := service.User.GetByUsername(ctx.Param("username"))
-	if err != nil {
-		log.Print(err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UserNotFound})
-		return
-	}
+	receiver := ctx.Keys["user_lookup"].(*dto.UserProfile)
 
 	if issuer.ID == receiver.ID {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UserErrorFollowItself})
@@ -216,13 +123,7 @@ func UnfollowUserHandler(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
 	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
-
-	receiver, err := service.User.GetByUsername(ctx.Param("username"))
-	if err != nil {
-		log.Print(err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UserNotFound})
-		return
-	}
+	receiver := ctx.Keys["user_lookup"].(*dto.UserProfile)
 
 	if issuer.ID == receiver.ID {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UserErrorFollowItself})
@@ -251,13 +152,7 @@ func IsFollowingHandler(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
 	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
-
-	receiver, err := service.User.GetByUsername(ctx.Param("username"))
-	if err != nil {
-		log.Print(err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UserNotFound})
-		return
-	}
+	receiver := ctx.Keys["user_lookup"].(*dto.UserProfile)
 
 	if issuer.ID == receiver.ID {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UserErrorFollowItself})

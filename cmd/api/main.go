@@ -12,6 +12,7 @@ import (
 	"github.com/swibly/swibly-api/config"
 	v1 "github.com/swibly/swibly-api/internal/controller/http/v1"
 	"github.com/swibly/swibly-api/internal/service"
+	"github.com/swibly/swibly-api/pkg/aws"
 	"github.com/swibly/swibly-api/pkg/db"
 	"github.com/swibly/swibly-api/pkg/middleware"
 	"github.com/swibly/swibly-api/pkg/sender"
@@ -21,6 +22,10 @@ import (
 func main() {
 	config.Parse()
 	db.Load()
+
+	if err := aws.NewAWSService(); err != nil {
+		log.Fatal(err)
+	}
 
 	service.Init()
 	translations.Init("./translations")

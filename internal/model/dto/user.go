@@ -50,7 +50,7 @@ type UserUpdate struct {
 		Formations int `validate:"omitempty,mustbenumericalboolean" json:"formations"`
 	} `validate:"omitempty" json:"show" gorm:"embedded;embeddedPrefix:show_"`
 
-	Country *string `validate:"omitempty" json:"country"`
+	Country *string `validate:"omitempty,max=40" json:"country"`
 
 	Language *language.Language `validate:"omitempty,mustbesupportedlanguage" json:"language"`
 }

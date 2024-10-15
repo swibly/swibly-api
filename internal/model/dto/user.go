@@ -106,6 +106,19 @@ type UserInfoLite struct {
 	ProfilePicture string `json:"pfp"`
 }
 
+type UserShow struct {
+	Profile    bool
+	Image      bool
+	Comments   bool
+	Favorites  bool
+	Projects   bool
+	Components bool
+	Followers  bool
+	Following  bool
+	Inventory  bool
+	Formations bool
+}
+
 func (u *UserProfile) HasPermissions(permissions ...string) bool {
 	return utils.HasPermissions(u.Permissions, permissions...)
 }

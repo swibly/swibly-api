@@ -7,13 +7,13 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/swibly/swibly-api/internal/model/dto"
 	"github.com/swibly/swibly-api/internal/service"
 	"github.com/swibly/swibly-api/internal/service/repository"
 	"github.com/swibly/swibly-api/pkg/middleware"
 	"github.com/swibly/swibly-api/pkg/utils"
 	"github.com/swibly/swibly-api/translations"
-	"github.com/gin-gonic/gin"
 )
 
 func newProjectRoutes(handler *gin.RouterGroup) {
@@ -29,8 +29,8 @@ func newProjectRoutes(handler *gin.RouterGroup) {
 
 		byUser := h.Group("/user/:username", middleware.UserLookup)
 		{
-			byUser.GET("", GetProjectsByUserHandler)
-			byUser.GET("/favorite", GetFavoriteProjectsByUserHandler)
+			byUser.GET("", middleware.UserPrivacy(dto.UserShow{Projects: true}), GetProjectsByUserHandler)
+			byUser.GET("/favorite", middleware.UserPrivacy(dto.UserShow{Favorites: true}), GetFavoriteProjectsByUserHandler)
 		}
 	}
 

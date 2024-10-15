@@ -36,7 +36,6 @@ validator_incorrect_username_format:
   символов (a-z и 0-9).
 validator_max_chars: Максимум %s символов.
 validator_min_chars: Минимум %s символов.
-validator_must_be_numerical_boolean: Значение должно быть -1, 0 или 1.
 validator_must_be_supported_language: Должен быть одним из следующих поддерживаемых языков (pt, en, ru).
 validator_required: Oбязательное поле.
 project_not_found: Указанный проект не найден.

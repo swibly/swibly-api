@@ -33,21 +33,21 @@ type UserUpdate struct {
 	Password *string `validate:"omitempty,password" json:"password"`
 
 	Notification struct {
-		InApp int `validate:"omitempty,mustbenumericalboolean" json:"inapp"`
-		Email int `validate:"omitempty,mustbenumericalboolean" json:"email"`
+		InApp *bool `validate:"omitempty" json:"inapp"`
+		Email *bool `validate:"omitempty" json:"email"`
 	} `validate:"omitempty" json:"notify" gorm:"embedded;embeddedPrefix:notify_"`
 
 	Show struct {
-		Profile    int `validate:"omitempty,mustbenumericalboolean" json:"profile"`
-		Image      int `validate:"omitempty,mustbenumericalboolean" json:"image"`
-		Comments   int `validate:"omitempty,mustbenumericalboolean" json:"comments"`
-		Favorites  int `validate:"omitempty,mustbenumericalboolean" json:"favorites"`
-		Projects   int `validate:"omitempty,mustbenumericalboolean" json:"projects"`
-		Components int `validate:"omitempty,mustbenumericalboolean" json:"components"`
-		Followers  int `validate:"omitempty,mustbenumericalboolean" json:"followers"`
-		Following  int `validate:"omitempty,mustbenumericalboolean" json:"following"`
-		Inventory  int `validate:"omitempty,mustbenumericalboolean" json:"inventory"`
-		Formations int `validate:"omitempty,mustbenumericalboolean" json:"formations"`
+		Profile    *bool `validate:"omitempty" json:"profile"`
+		Image      *bool `validate:"omitempty" json:"image"`
+		Comments   *bool `validate:"omitempty" json:"comments"`
+		Favorites  *bool `validate:"omitempty" json:"favorites"`
+		Projects   *bool `validate:"omitempty" json:"projects"`
+		Components *bool `validate:"omitempty" json:"components"`
+		Followers  *bool `validate:"omitempty" json:"followers"`
+		Following  *bool `validate:"omitempty" json:"following"`
+		Inventory  *bool `validate:"omitempty" json:"inventory"`
+		Formations *bool `validate:"omitempty" json:"formations"`
 	} `validate:"omitempty" json:"show" gorm:"embedded;embeddedPrefix:show_"`
 
 	Country *string `validate:"omitempty,max=40" json:"country"`
@@ -75,21 +75,21 @@ type UserProfile struct {
 	Following int64 `gorm:"-" json:"following"`
 
 	Notification struct {
-		InApp int `json:"inapp"`
-		Email int `json:"email"`
+		InApp bool `json:"inapp"`
+		Email bool `json:"email"`
 	} `gorm:"embedded;embeddedPrefix:notify_" json:"notification"`
 
 	Show struct {
-		Profile    int `json:"profile"`
-		Image      int `json:"image"`
-		Comments   int `json:"comments"`
-		Favorites  int `json:"favorites"`
-		Projects   int `json:"projects"`
-		Components int `json:"components"`
-		Followers  int `json:"followers"`
-		Following  int `json:"following"`
-		Inventory  int `json:"inventory"`
-		Formations int `json:"formations"`
+		Profile    bool `json:"profile"`
+		Image      bool `json:"image"`
+		Comments   bool `json:"comments"`
+		Favorites  bool `json:"favorites"`
+		Projects   bool `json:"projects"`
+		Components bool `json:"components"`
+		Followers  bool `json:"followers"`
+		Following  bool `json:"following"`
+		Inventory  bool `json:"inventory"`
+		Formations bool `json:"formations"`
 	} `gorm:"embedded;embeddedPrefix:show_" json:"show"`
 
 	Country  string `json:"country"`

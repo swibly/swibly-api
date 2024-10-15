@@ -24,21 +24,21 @@ type User struct {
 	Arkhoin uint64 `gorm:"default:1000"`
 
 	Notification struct {
-		InApp int `gorm:"default:1"`
-		Email int `gorm:"default:-1"`
+		InApp bool `gorm:"default:true"`
+		Email bool `gorm:"default:false"`
 	} `gorm:"embedded;embeddedPrefix:notify_"`
 
 	Show struct {
-		Profile    int `gorm:"default:1"`
-		Image      int `gorm:"default:1"`
-		Comments   int `gorm:"default:1"`
-		Favorites  int `gorm:"default:1"`
-		Projects   int `gorm:"default:1"`
-		Components int `gorm:"default:1"`
-		Followers  int `gorm:"default:1"`
-		Following  int `gorm:"default:1"`
-		Inventory  int `gorm:"default:-1"`
-		Formations int `gorm:"default:1"`
+		Profile    bool `gorm:"default:true"`
+		Image      bool `gorm:"default:true"`
+		Comments   bool `gorm:"default:true"`
+		Favorites  bool `gorm:"default:true"`
+		Projects   bool `gorm:"default:true"`
+		Components bool `gorm:"default:true"`
+		Followers  bool `gorm:"default:true"`
+		Following  bool `gorm:"default:true"`
+		Inventory  bool `gorm:"default:false"`
+		Formations bool `gorm:"default:true"`
 	} `gorm:"embedded;embeddedPrefix:show_"`
 
 	Country string

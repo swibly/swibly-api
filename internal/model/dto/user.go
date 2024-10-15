@@ -24,7 +24,7 @@ type UserLogin struct {
 type UserUpdate struct {
 	FirstName *string `validate:"omitempty,min=3"    json:"firstname"`
 	LastName  *string `validate:"omitempty,min=3"    json:"lastname"`
-	Username  *string `validate:"omitempty,username" json:"username"`
+	Username  *string `validate:"omitempty,min=3,max=32,username" json:"username"`
 
 	Bio      *string `validate:"omitempty,max=480" json:"bio"`
 	Verified *bool   `validate:"omitempty"         json:"verified"`

@@ -47,7 +47,6 @@ type Translation struct {
 	ValidatorIncorrectUsernameFormat string `yaml:"validator_incorrect_username_format"`
 	ValidatorMaxChars                string `yaml:"validator_max_chars"`
 	ValidatorMinChars                string `yaml:"validator_min_chars"`
-	ValidatorMustBeNumericalBoolean  string `yaml:"validator_must_be_numerical_boolean"`
 	ValidatorMustBeSupportedLanguage string `yaml:"validator_must_be_supported_language"`
 	ValidatorRequired                string `yaml:"validator_required"`
 

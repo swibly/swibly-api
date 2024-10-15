@@ -119,11 +119,6 @@ func ValidateErrorMessage(ctx *gin.Context, fe validator.FieldError) ParamError 
 			Param:   field,
 			Message: dict.ValidatorMustBeSupportedLanguage,
 		}
-	case "mustbenumericalboolean":
-		return ParamError{
-			Param:   field,
-			Message: dict.ValidatorMustBeNumericalBoolean,
-		}
 	case "username":
 		return ParamError{
 			Param:   field,

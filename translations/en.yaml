@@ -34,7 +34,6 @@ validator_incorrect_username_format:
   characters.
 validator_max_chars: Maximum of %s characters.
 validator_min_chars: Minimum of %s characters.
-validator_must_be_numerical_boolean: Value must be -1, 0 or 1.
 validator_must_be_supported_language: Must be one of the following supported languages (pt, en, ru).
 validator_required: Required field.
 project_not_found: The specified project could not be located.

@@ -14,8 +14,8 @@ type ProjectCreation struct {
 	Content any `validate:"omitempty" json:"content"`
 	Budget  int `validate:"omitempty" json:"budget"`
 
-	Width  int `gorm:"not null;default:30"`
-	Height int `gorm:"not null;default:30"`
+	Width  int `validate:"omitempty,min=1,max=1000" json:"width"`
+	Height int `validate:"omitempty,min=1,max=1000" json:"height"`
 
 	OwnerID uint `json:"-"` // Set using JWT
 

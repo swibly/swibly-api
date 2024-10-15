@@ -19,43 +19,43 @@ func UserPrivacy(requiredShow dto.UserShow) gin.HandlerFunc {
 		if user.Username != issuer.Username {
 			isAllowed := true
 
-			if requiredShow.Profile == true && !issuer.HasPermissions(config.Permissions.ManageUser) {
+			if requiredShow.Profile == true && !user.Show.Profile && !issuer.HasPermissions(config.Permissions.ManageUser) {
 				isAllowed = false
 			}
 
-			if requiredShow.Image == true && !issuer.HasPermissions(config.Permissions.ManageUser) {
+			if requiredShow.Image == true && !user.Show.Image && !issuer.HasPermissions(config.Permissions.ManageUser) {
 				isAllowed = false
 			}
 
-			if requiredShow.Comments == true && !issuer.HasPermissions(config.Permissions.ManageUser) {
+			if requiredShow.Comments == true && !user.Show.Comments && !issuer.HasPermissions(config.Permissions.ManageUser) {
 				isAllowed = false
 			}
 
-			if requiredShow.Favorites == true && !issuer.HasPermissions(config.Permissions.ManageProjects) {
+			if requiredShow.Favorites == true && !user.Show.Favorites && !issuer.HasPermissions(config.Permissions.ManageProjects) {
 				isAllowed = false
 			}
 
-			if requiredShow.Projects == true && !issuer.HasPermissions(config.Permissions.ManageProjects) {
+			if requiredShow.Projects == true && !user.Show.Favorites && !issuer.HasPermissions(config.Permissions.ManageProjects) {
 				isAllowed = false
 			}
 
-			if requiredShow.Components == true && !issuer.HasPermissions(config.Permissions.ManageProjects) {
+			if requiredShow.Components == true && !user.Show.Components && !issuer.HasPermissions(config.Permissions.ManageProjects) {
 				isAllowed = false
 			}
 
-			if requiredShow.Followers == true && !issuer.HasPermissions(config.Permissions.ManageUser) {
+			if requiredShow.Followers == true && !user.Show.Followers && !issuer.HasPermissions(config.Permissions.ManageUser) {
 				isAllowed = false
 			}
 
-			if requiredShow.Following == true && !issuer.HasPermissions(config.Permissions.ManageUser) {
+			if requiredShow.Following == true && !user.Show.Following && !issuer.HasPermissions(config.Permissions.ManageUser) {
 				isAllowed = false
 			}
 
-			if requiredShow.Inventory == true && !issuer.HasPermissions(config.Permissions.ManageUser) {
+			if requiredShow.Inventory == true && !user.Show.Inventory && !issuer.HasPermissions(config.Permissions.ManageUser) {
 				isAllowed = false
 			}
 
-			if requiredShow.Formations == true && !issuer.HasPermissions(config.Permissions.ManageUser) {
+			if requiredShow.Formations == true && !user.Show.Formations && !issuer.HasPermissions(config.Permissions.ManageUser) {
 				isAllowed = false
 			}
 

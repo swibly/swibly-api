@@ -32,15 +32,16 @@ type Translation struct {
 	SearchIncorrect string `yaml:"search_incorrect"`
 	SearchNoResults string `yaml:"search_no_results"`
 
-	UserDisabledFollowers string `yaml:"user_disabled_followers"`
-	UserDisabledFollowing string `yaml:"user_disabled_following"`
-	UserDisabledProfile   string `yaml:"user_disabled_profile"`
-	UserErrorFollowItself string `yaml:"user_error_follow_itself"`
-	UserNotFound          string `yaml:"user_not_found"`
-	UserFollowingAlready  string `yaml:"user_following_already"`
-	UserFollowingNot      string `yaml:"user_following_not"`
-	UserFollowingStarted  string `yaml:"user_following_started"`
-	UserFollowingStopped  string `yaml:"user_following_stopped"`
+	UserDisabledFollowers  string `yaml:"user_disabled_followers"`
+	UserDisabledFollowing  string `yaml:"user_disabled_following"`
+	UserDisabledProfile    string `yaml:"user_disabled_profile"`
+	UserErrorFollowItself  string `yaml:"user_error_follow_itself"`
+	UserMissingPermissions string `yaml:"user_missing_permissions"`
+	UserNotFound           string `yaml:"user_not_found"`
+	UserFollowingAlready   string `yaml:"user_following_already"`
+	UserFollowingNot       string `yaml:"user_following_not"`
+	UserFollowingStarted   string `yaml:"user_following_started"`
+	UserFollowingStopped   string `yaml:"user_following_stopped"`
 
 	ValidatorIncorrectEmailFormat    string `yaml:"validator_incorrect_email_format"`
 	ValidatorIncorrectPasswordFormat string `yaml:"validator_incorrect_password_format"`

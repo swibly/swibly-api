@@ -60,7 +60,7 @@ func UserPrivacy(requiredShow dto.UserShow) gin.HandlerFunc {
 			}
 
 			if !isAllowed {
-				ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": dict.ProjectMissingPermissions})
+				ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": dict.UserMissingPermissions})
 				return
 			}
 		}

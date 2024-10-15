@@ -18,6 +18,7 @@ require_permission_api_key: "Esta chave de API não tem a permissão de: %s"
 search_incorrect: As pesquisas não podem ser compostas apenas por espaços ou caracteres especiais.
 search_no_results: Nada encontrado com esse critério de pesquisa.
 unauthorized: Não autorizado. Não há bearer ou o token é inválido?
+user_missing_permissions: O usuário não tem as permissões necessárias para realizar esta ação.
 user_disabled_followers: Usuário desativou a visualização de seus seguidores.
 user_disabled_following: Usuário desativou a visualização de quem o está seguindo.
 user_disabled_profile: Usuário desativou a visualização de seu perfil.

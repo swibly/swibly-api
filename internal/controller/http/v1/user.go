@@ -17,8 +17,8 @@ func newUserRoutes(handler *gin.RouterGroup) {
 	h := handler.Group("/user/:username", middleware.APIKeyHasEnabledUserFetch, middleware.Auth, middleware.UserLookup)
 	{
 		h.GET("/profile", middleware.UserPrivacy(dto.UserShow{Profile: true}), GetProfileHandler)
-		h.GET("/followers", middleware.UserPrivacy(dto.UserShow{Profile: true, Followers: true}), GetFollowersHandler)
-		h.GET("/following", middleware.UserPrivacy(dto.UserShow{Profile: true, Following: true}), GetFollowingHandler)
+		h.GET("/followers", middleware.UserPrivacy(dto.UserShow{Followers: true}), GetFollowersHandler)
+		h.GET("/following", middleware.UserPrivacy(dto.UserShow{Following: true}), GetFollowingHandler)
 	}
 
 	actions := h.Group("", middleware.APIKeyHasEnabledUserActions)

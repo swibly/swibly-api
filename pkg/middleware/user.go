@@ -19,7 +19,8 @@ func UserPrivacy(requiredShow dto.UserShow) gin.HandlerFunc {
 		if user.Username != issuer.Username {
 			isAllowed := true
 
-			if requiredShow.Profile == true && !user.Show.Profile && !issuer.HasPermissions(config.Permissions.ManageUser) {
+      // Disable all user profile
+			if !user.Show.Profile && !issuer.HasPermissions(config.Permissions.ManageUser) {
 				isAllowed = false
 			}
 

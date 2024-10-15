@@ -8,8 +8,8 @@ import (
 )
 
 type UserRegister struct {
-	FirstName string `validate:"required,min=3"                 json:"firstname"`
-	LastName  string `validate:"required,min=3"                 json:"lastname"`
+	FirstName string `validate:"required,min=3,max=32"          json:"firstname"`
+	LastName  string `validate:"required,min=3,max=32"          json:"lastname"`
 	Username  string `validate:"required,min=3,max=32,username" json:"username"`
 	Email     string `validate:"required,email"                 json:"email"`
 	Password  string `validate:"required,password"              json:"password"`
@@ -22,8 +22,8 @@ type UserLogin struct {
 }
 
 type UserUpdate struct {
-	FirstName *string `validate:"omitempty,min=3"    json:"firstname"`
-	LastName  *string `validate:"omitempty,min=3"    json:"lastname"`
+	FirstName *string `validate:"omitempty,min=3,max=32"          json:"firstname"`
+	LastName  *string `validate:"omitempty,min=3,max=32"          json:"lastname"`
 	Username  *string `validate:"omitempty,min=3,max=32,username" json:"username"`
 
 	Bio      *string `validate:"omitempty,max=480" json:"bio"`

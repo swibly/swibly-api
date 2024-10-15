@@ -22,15 +22,15 @@ type UserLogin struct {
 }
 
 type UserUpdate struct {
-	FirstName string `validate:"omitempty,min=3"    json:"firstname"`
-	LastName  string `validate:"omitempty,min=3"    json:"lastname"`
-	Username  string `validate:"omitempty,username" json:"username"`
+	FirstName *string `validate:"omitempty,min=3"    json:"firstname"`
+	LastName  *string `validate:"omitempty,min=3"    json:"lastname"`
+	Username  *string `validate:"omitempty,username" json:"username"`
 
-	Bio      string `validate:"omitempty,max=480" json:"bio"`
-	Verified bool   `validate:"omitempty"         json:"verified"`
+	Bio      *string `validate:"omitempty,max=480" json:"bio"`
+	Verified *bool   `validate:"omitempty"         json:"verified"`
 
-	Email    string `validate:"omitempty,email"    json:"email"`
-	Password string `validate:"omitempty,password" json:"password"`
+	Email    *string `validate:"omitempty,email"    json:"email"`
+	Password *string `validate:"omitempty,password" json:"password"`
 
 	Notification struct {
 		InApp int `validate:"omitempty,mustbenumericalboolean" json:"inapp"`
@@ -50,9 +50,9 @@ type UserUpdate struct {
 		Formations int `validate:"omitempty,mustbenumericalboolean" json:"formations"`
 	} `validate:"omitempty" json:"show" gorm:"embedded;embeddedPrefix:show_"`
 
-	Country string `validate:"omitempty" json:"country"`
+	Country *string `validate:"omitempty" json:"country"`
 
-	Language language.Language `validate:"omitempty,mustbesupportedlanguage" json:"language"`
+	Language *language.Language `validate:"omitempty,mustbesupportedlanguage" json:"language"`
 }
 
 type UserProfile struct {

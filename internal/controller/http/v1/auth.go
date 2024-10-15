@@ -171,25 +171,25 @@ func UpdateUserHandler(ctx *gin.Context) {
 		return
 	}
 
-	if body.Username != "" && body.Username != issuer.Username {
-		if profile, err := service.User.GetByUsername(body.Username); profile != nil && err == nil {
+	if body.Username != nil && *body.Username != "" && *body.Username != issuer.Username {
+		if profile, err := service.User.GetByUsername(*body.Username); profile != nil && err == nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.AuthDuplicatedUser})
 			return
 		}
 	}
 
-	if body.Email != "" && body.Email != issuer.Email {
-		if profile, err := service.User.GetByEmail(body.Email); profile != nil && err == nil {
+	if body.Email != nil && *body.Email != "" && *body.Email != issuer.Email {
+		if profile, err := service.User.GetByEmail(*body.Email); profile != nil && err == nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.AuthDuplicatedUser})
 			return
 		}
 	}
 
-	if body.Password != "" {
-		if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), config.Security.BcryptCost); err != nil {
+	if body.Password != nil && *body.Password != "" {
+		if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*body.Password), config.Security.BcryptCost); err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		} else {
-			body.Password = string(hashedPassword)
+			*body.Password = string(hashedPassword)
 		}
 	}
 

@@ -14,6 +14,9 @@ import (
 
 type userRepository struct {
 	db *gorm.DB
+
+	followRepo     FollowRepository
+	permissionRepo PermissionRepository
 }
 
 type UserRepository interface {
@@ -30,7 +33,7 @@ type UserRepository interface {
 }
 
 func NewUserRepository() UserRepository {
-	return userRepository{db: db.Postgres}
+	return userRepository{db: db.Postgres, followRepo: NewFollowRepository(), permissionRepo: NewPermissionRepository()}
 }
 
 func (u userRepository) Create(createModel *model.User) error {
@@ -60,25 +63,19 @@ func (u userRepository) Get(searchModel *model.User) (*dto.UserProfile, error) {
 
 	user.Permissions = []string{}
 
-	// Temp repos
-	// Tricky, not recommended, not performant
-	// But I don't care ;)
-	tempFollowRepo := NewFollowRepository()
-	tempPermissionRepo := NewPermissionRepository()
-
-	if count, err := tempFollowRepo.GetFollowersCount(user.ID); err != nil {
+	if count, err := u.followRepo.GetFollowersCount(user.ID); err != nil {
 		return nil, err
 	} else {
 		user.Followers = count
 	}
 
-	if count, err := tempFollowRepo.GetFollowingCount(user.ID); err != nil {
+	if count, err := u.followRepo.GetFollowingCount(user.ID); err != nil {
 		return nil, err
 	} else {
 		user.Following = count
 	}
 
-	if permissions, err := tempPermissionRepo.GetByUser(user.ID); err != nil {
+	if permissions, err := u.permissionRepo.GetByUser(user.ID); err != nil {
 		return nil, err
 	} else {
 		for _, permission := range permissions {

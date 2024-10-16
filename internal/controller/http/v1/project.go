@@ -126,8 +126,8 @@ func CreateProjectHandler(ctx *gin.Context) {
 	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
 
 	project := &dto.ProjectCreation{}
-	if err := ctx.BindJSON(project); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := ctx.Bind(project); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.InvalidBody})
 		return
 	}
 
@@ -314,7 +314,7 @@ func UpdateProjectHandler(ctx *gin.Context) {
 	project := ctx.Keys["project_lookup"].(*dto.ProjectInfo)
 
 	var body *dto.ProjectUpdate
-	if err := ctx.BindJSON(&body); err != nil {
+	if err := ctx.Bind(&body); err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.InvalidBody})
 		return

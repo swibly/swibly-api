@@ -78,7 +78,7 @@ type ComponentInfo struct {
 
 	IsPublic bool `json:"is_public"`
 
-	Holders int64 `json:"holders"`
-	Bought  bool  `json:"bought"`
+	Holders    int64 `json:"holders"`
+	Bought     bool  `json:"bought"`
 	TotalSells int64 `json:"total_sells"`
 }

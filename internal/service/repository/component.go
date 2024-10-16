@@ -222,7 +222,7 @@ func (cr *componentRepository) Create(createModel *dto.ComponentCreation) error 
 
 	if err := tx.Create(&model.ComponentOwner{
 		ComponentID: component.ID,
-		UserID:      createModel.OwnerID,
+		UserID:      &createModel.OwnerID,
 	}).Error; err != nil {
 		tx.Rollback()
 		return err
@@ -320,15 +320,24 @@ func (cr *componentRepository) Get(issuerID uint, componentModel *model.Componen
 		return nil, err
 	}
 
-	ownerProfile, err := cr.userRepo.Get(&model.User{ID: componentOwner.UserID})
-	if err != nil {
-		return nil, err
-	}
+	var owner dto.UserInfoLite
+	if componentOwner.UserID != nil {
+		ownerProfile, err := cr.userRepo.Get(&model.User{ID: *componentOwner.UserID})
+		if err != nil {
+			return nil, err
+		}
 
-	owner := dto.UserInfoLite{
-		ID:             ownerProfile.ID,
-		Username:       ownerProfile.Username,
-		ProfilePicture: ownerProfile.ProfilePicture,
+		owner = dto.UserInfoLite{
+			ID:             ownerProfile.ID,
+			Username:       ownerProfile.Username,
+			ProfilePicture: ownerProfile.ProfilePicture,
+		}
+	} else {
+		owner = dto.UserInfoLite{
+			ID:             0,
+			Username:       "",
+			ProfilePicture: "",
+		}
 	}
 
 	var paidPrice *int
@@ -467,23 +476,25 @@ func (cr *componentRepository) Buy(issuerID, componentID uint) error {
 		return err
 	}
 
-	err = cr.db.Where("id = ?", componentOwner.UserID).First(&owner).Error
-	if err != nil {
-		return err
-	}
+	if componentOwner.UserID != nil {
+		err = cr.db.Where("id = ?", *componentOwner.UserID).First(&owner).Error
+		if err != nil {
+			return err
+		}
 
-	if componentOwner.UserID == issuerID {
-		return ErrComponentOwnerCannotBuy
+		if *componentOwner.UserID == issuerID {
+			return ErrComponentOwnerCannotBuy
+		}
+
+		owner.Arkhoin += uint64(component.Price)
+		err = cr.db.Save(&owner).Error
+		if err != nil {
+			return err
+		}
 	}
 
 	user.Arkhoin -= uint64(component.Price)
 	err = cr.db.Save(&user).Error
-	if err != nil {
-		return err
-	}
-
-	owner.Arkhoin += uint64(component.Price)
-	err = cr.db.Save(&owner).Error
 	if err != nil {
 		return err
 	}
@@ -528,13 +539,13 @@ func (cr *componentRepository) Sell(issuerID, componentID uint) error {
 		return err
 	}
 
-	if componentOwner.UserID == issuerID {
+	if componentOwner.UserID != nil && *componentOwner.UserID == issuerID {
 		return ErrComponentOwnerCannotSell
 	}
 
 	refund := int(holder.PricePaid)
-
 	user.Arkhoin += uint64(refund)
+
 	err = cr.db.Save(&user).Error
 	if err != nil {
 		return err
@@ -566,7 +577,7 @@ func (cr *componentRepository) SafeDelete(componentID uint) error {
 		}
 
 		tx.Commit()
-    return nil
+		return nil
 	}
 
 	tx.Rollback()

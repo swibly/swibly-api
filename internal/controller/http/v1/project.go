@@ -147,7 +147,7 @@ func CreateProjectHandler(ctx *gin.Context) {
 
 	project.OwnerID = issuer.ID
 
-	if err := service.Project.Create(project); err != nil {
+	if id, err := service.Project.Create(project); err != nil {
 		if errors.Is(err, aws.ErrUnsupportedFileType) {
 			log.Print(err)
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UnsupportedFileType})
@@ -157,9 +157,9 @@ func CreateProjectHandler(ctx *gin.Context) {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
+	} else {
+		ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectCreated, "project": id})
 	}
-
-	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectCreated})
 }
 
 func DeleteTrashProjectsHandler(ctx *gin.Context) {
@@ -247,7 +247,7 @@ func ForkProjectHandler(ctx *gin.Context) {
 	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
 	project := ctx.Keys["project_lookup"].(*dto.ProjectInfo)
 
-	if err := service.Project.Fork(project.ID, issuer.ID); err != nil {
+	if id, err := service.Project.Fork(project.ID, issuer.ID); err != nil {
 		if errors.Is(err, repository.ErrUpstreamNotPublic) {
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": dict.UpstreamNotPublic})
 			return
@@ -256,9 +256,9 @@ func ForkProjectHandler(ctx *gin.Context) {
 		log.Print(err)
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
+	} else {
+		ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectForked, "project": id})
 	}
-
-	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectForked})
 }
 
 func UnlinkProjectHandler(ctx *gin.Context) {

@@ -6,6 +6,7 @@ import (
 
 	"github.com/swibly/swibly-api/internal/model"
 	"github.com/swibly/swibly-api/internal/model/dto"
+	"github.com/swibly/swibly-api/pkg/aws"
 	"github.com/swibly/swibly-api/pkg/db"
 	"github.com/swibly/swibly-api/pkg/pagination"
 	"gorm.io/gorm"
@@ -15,12 +16,8 @@ import (
 type userRepository struct {
 	db *gorm.DB
 
-	apiKeyRepo     APIKeyRepository
-	componentRepo  ComponentRepository
 	followRepo     FollowRepository
-	passwordRepo   PasswordResetRepository
 	permissionRepo PermissionRepository
-	projectRepo    ProjectRepository
 }
 
 type UserRepository interface {
@@ -37,18 +34,7 @@ type UserRepository interface {
 }
 
 func NewUserRepository() UserRepository {
-	userRepo := &userRepository{
-		db: db.Postgres,
-	}
-
-	userRepo.apiKeyRepo = NewAPIKeyRepository()
-	userRepo.componentRepo = NewComponentRepository(userRepo)
-	userRepo.followRepo = NewFollowRepository()
-	userRepo.passwordRepo = NewPasswordResetRepository()
-	userRepo.permissionRepo = NewPermissionRepository()
-	userRepo.projectRepo = NewProjectRepository(userRepo)
-
-	return userRepo
+	return &userRepository{db: db.Postgres, followRepo: NewFollowRepository(), permissionRepo: NewPermissionRepository()}
 }
 
 func (u userRepository) Create(createModel *model.User) error {
@@ -141,10 +127,63 @@ func (u userRepository) Delete(id uint) error {
 		return err
 	}
 
+	if err := tx.Where("project_id IN (?)", tx.Model(&model.ProjectOwner{}).Select("project_id").Where("user_id = ?", id)).Unscoped().Delete(&model.ProjectPublication{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	var projectIDs []uint
+	if err := tx.Model(&model.ProjectOwner{}).Where("user_id = ?", id).Pluck("project_id", &projectIDs).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	for _, projectID := range projectIDs {
+		if err := tx.Where("id = ?", projectID).Unscoped().Delete(&model.Project{}).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err := aws.DeleteProjectImage(projectID); err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	if err := tx.Where("user_id = ?", id).Unscoped().Delete(&model.ProjectUserPermission{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Where("user_id = ?", id).Unscoped().Delete(&model.ProjectUserFavorite{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Model(&model.ComponentOwner{}).Where("user_id = ?", id).Update("user_id", nil).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Where("user_id = ?", id).Delete(&model.ComponentHolder{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Where("follower_id = ? OR following_id = ?", id, id).Unscoped().Delete(&model.Follower{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Where("user_id = ?", id).Unscoped().Delete(&model.PasswordResetKey{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
 	if err := tx.Where("id = ?", id).Unscoped().Delete(&model.User{}).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
 
+	tx.Commit()
 	return nil
 }

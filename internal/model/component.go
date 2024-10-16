@@ -25,8 +25,8 @@ type ComponentOwner struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
-	ComponentID uint `gorm:"index;unique;not null;constraint:OnDelete:CASCADE;"`
-	UserID      uint `gorm:"index;not null;constraint:OnDelete:CASCADE;"`
+	ComponentID uint  `gorm:"index;unique;not null;constraint:OnDelete:CASCADE;"`
+	UserID      *uint `gorm:"index;constraint:OnDelete:CASCADE;"`
 }
 
 type ComponentPublication struct {

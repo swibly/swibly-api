@@ -15,19 +15,19 @@ func NewProjectUseCase() ProjectUseCase {
 	return ProjectUseCase{pr: repository.NewProjectRepository(repository.NewUserRepository())}
 }
 
-func (puc ProjectUseCase) Create(createModel *dto.ProjectCreation) error {
+func (puc ProjectUseCase) Create(createModel *dto.ProjectCreation) (uint, error) {
 	return puc.pr.Create(createModel)
 }
 
-func (puc ProjectUseCase) Fork(projectID, issuerID uint) error {
+func (puc ProjectUseCase) Fork(projectID, issuerID uint) (uint, error) {
 	content, err := puc.pr.GetContent(projectID)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	project, err := puc.pr.Get(issuerID, &model.Project{ID: projectID})
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	return puc.pr.Create(&dto.ProjectCreation{

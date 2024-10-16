@@ -17,9 +17,6 @@ type AWSService struct {
 var AWS *AWSService
 
 func NewAWSService() error {
-	fmt.Println("Access Key:", c.S3.Access)
-	fmt.Println("Secret Key:", c.S3.Secret)
-
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithRegion(c.S3.Region),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(

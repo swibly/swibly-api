@@ -16,6 +16,8 @@ type Project struct {
 	Name        string `gorm:"not null"`
 	Description string `gorm:"default:''"`
 
+	BannerURL string `gorm:"default:''"`
+
 	Width  int `gorm:"not null;default:30"`
 	Height int `gorm:"not null;default:30"`
 

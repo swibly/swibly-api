@@ -102,3 +102,4 @@ password_reset_email_template: |
   Obrigado,
   Equipe Swibly
 invalid_password_reset_key: A chave de redefinição de senha é inválida ou expirou.
+unsupported_file_type: O tipo de arquivo não é suportado.

@@ -61,7 +61,7 @@ func (svc *AWSService) DeleteFile(key string) error {
 func UploadProjectImage(projectID uint, file *multipart.FileHeader) (string, error) {
 	ext := strings.ToLower(path.Ext(file.Filename))
 
-  if !slices.Contains([]string{"png", "jpg", "jpeg"}, ext) {
+  if !slices.Contains([]string{".png", ".jpg", ".jpeg"}, ext) {
     return "", ErrUnsupportedFileType
   }
 

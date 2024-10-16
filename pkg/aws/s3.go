@@ -10,6 +10,7 @@ import (
 	"io"
 	"mime/multipart"
 	"path"
+	"slices"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -45,8 +46,24 @@ func (svc *AWSService) UploadFile(key string, file io.Reader) (string, error) {
 	return fileURL, nil
 }
 
+func (svc *AWSService) DeleteFile(key string) error {
+	_, err := svc.s3.DeleteObject(context.TODO(), &s3.DeleteObjectInput{
+		Bucket: aws.String(config.S3.Bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		return fmt.Errorf("unable to delete file from S3: %v", err)
+	}
+
+	return nil
+}
+
 func UploadProjectImage(projectID uint, file *multipart.FileHeader) (string, error) {
 	ext := strings.ToLower(path.Ext(file.Filename))
+
+  if !slices.Contains([]string{"png", "jpg", "jpeg"}, ext) {
+    return "", ErrUnsupportedFileType
+  }
 
 	src, err := file.Open()
 	if err != nil {
@@ -84,4 +101,8 @@ func UploadProjectImage(projectID uint, file *multipart.FileHeader) (string, err
 	}
 
 	return url, nil
+}
+
+func DeleteProjectImage(projectID uint) error {
+	return AWS.DeleteFile(fmt.Sprintf("projects/%d.webp", projectID))
 }

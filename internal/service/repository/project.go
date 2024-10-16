@@ -20,7 +20,7 @@ type projectRepository struct {
 }
 
 type ProjectRepository interface {
-	Create(createModel *dto.ProjectCreation) error
+	Create(createModel *dto.ProjectCreation) (uint, error)
 	Update(projectID uint, updateModel *dto.ProjectUpdate) error
 	Unlink(projectID uint) error
 
@@ -176,13 +176,13 @@ func convertToProjectInfo(jsonInfo *dto.ProjectInfoJSON) (dto.ProjectInfo, error
 	}, nil
 }
 
-func (pr *projectRepository) Create(createModel *dto.ProjectCreation) error {
+func (pr *projectRepository) Create(createModel *dto.ProjectCreation) (uint, error) {
 	tx := pr.db.Begin()
 
 	out, err := json.MarshalIndent(createModel.Content, "", "")
 	if err != nil {
 		tx.Rollback()
-		return err
+		return 0, err
 	}
 
 	project := &model.Project{
@@ -197,19 +197,19 @@ func (pr *projectRepository) Create(createModel *dto.ProjectCreation) error {
 
 	if err := tx.Create(&project).Error; err != nil {
 		tx.Rollback()
-		return err
+		return 0, err
 	}
 
 	if createModel.BannerImage != nil {
 		url, err := aws.UploadProjectImage(project.ID, createModel.BannerImage)
 		if err != nil {
 			tx.Rollback()
-			return err
+			return 0, err
 		}
 
 		if err := tx.Model(&model.Project{}).Where("id = ?", project.ID).Update("banner_url", url).Error; err != nil {
 			tx.Rollback()
-			return err
+			return 0, err
 		}
 	}
 
@@ -220,7 +220,7 @@ func (pr *projectRepository) Create(createModel *dto.ProjectCreation) error {
 
 	if err := tx.Create(&projectOwner).Error; err != nil {
 		tx.Rollback()
-		return err
+		return 0, err
 	}
 
 	if createModel.Public && createModel.Fork == nil {
@@ -230,11 +230,15 @@ func (pr *projectRepository) Create(createModel *dto.ProjectCreation) error {
 
 		if err := tx.Create(&projectPublication).Error; err != nil {
 			tx.Rollback()
-			return err
+			return 0, err
 		}
 	}
 
-	return tx.Commit().Error
+	if err := tx.Commit().Error; err != nil {
+		return 0, err
+	}
+
+	return project.ID, nil
 }
 
 func (pr *projectRepository) Update(projectID uint, updateModel *dto.ProjectUpdate) error {

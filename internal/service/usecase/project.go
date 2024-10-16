@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"log"
-
 	"github.com/swibly/swibly-api/internal/model"
 	"github.com/swibly/swibly-api/internal/model/dto"
 	"github.com/swibly/swibly-api/internal/service/repository"
@@ -31,8 +29,6 @@ func (puc ProjectUseCase) Fork(projectID, issuerID uint) error {
 	if err != nil {
 		return err
 	}
-
-	log.Print(projectID)
 
 	return puc.pr.Create(&dto.ProjectCreation{
 		Name:        project.Name,

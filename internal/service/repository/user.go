@@ -15,8 +15,12 @@ import (
 type userRepository struct {
 	db *gorm.DB
 
+	apiKeyRepo     APIKeyRepository
+	componentRepo  ComponentRepository
 	followRepo     FollowRepository
+	passwordRepo   PasswordResetRepository
 	permissionRepo PermissionRepository
+	projectRepo    ProjectRepository
 }
 
 type UserRepository interface {
@@ -33,7 +37,18 @@ type UserRepository interface {
 }
 
 func NewUserRepository() UserRepository {
-	return userRepository{db: db.Postgres, followRepo: NewFollowRepository(), permissionRepo: NewPermissionRepository()}
+	userRepo := &userRepository{
+		db: db.Postgres,
+	}
+
+	userRepo.apiKeyRepo = NewAPIKeyRepository()
+	userRepo.componentRepo = NewComponentRepository(userRepo)
+	userRepo.followRepo = NewFollowRepository()
+	userRepo.passwordRepo = NewPasswordResetRepository()
+	userRepo.permissionRepo = NewPermissionRepository()
+	userRepo.projectRepo = NewProjectRepository(userRepo)
+
+	return userRepo
 }
 
 func (u userRepository) Create(createModel *model.User) error {
@@ -108,5 +123,28 @@ func (u userRepository) SearchByName(name string, page, perPage int) (*dto.Pagin
 }
 
 func (u userRepository) Delete(id uint) error {
-	return u.db.Where("id = ?", id).Unscoped().Delete(&model.User{}).Error
+	tx := u.db.Begin()
+
+	user, err := u.Get(&model.User{ID: id})
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Where("owner = ?", user.Username).Unscoped().Delete(&model.APIKey{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Where("user_id = ?", id).Unscoped().Delete(&model.UserPermission{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Where("id = ?", id).Unscoped().Delete(&model.User{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return nil
 }

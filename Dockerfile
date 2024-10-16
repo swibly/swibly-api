@@ -6,7 +6,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN cd cmd/api && CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
+RUN cd cmd/api && CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o main .
 
 FROM alpine:latest
 RUN apk add --no-cache ca-certificates

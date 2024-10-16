@@ -105,6 +105,8 @@ type Translation struct {
 	PasswordResetEmailSubject  string `yaml:"password_reset_email_subject"`
 	PasswordResetEmailTemplate string `yaml:"password_reset_email_template"`
 	InvalidPasswordResetKey    string `yaml:"invalid_password_reset_key"`
+
+	UnsupportedFileType string `yaml:"unsupported_file_type"`
 }
 
 var Translations = make(map[string]Translation)

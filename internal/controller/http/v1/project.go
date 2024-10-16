@@ -11,6 +11,7 @@ import (
 	"github.com/swibly/swibly-api/internal/model/dto"
 	"github.com/swibly/swibly-api/internal/service"
 	"github.com/swibly/swibly-api/internal/service/repository"
+	"github.com/swibly/swibly-api/pkg/aws"
 	"github.com/swibly/swibly-api/pkg/middleware"
 	"github.com/swibly/swibly-api/pkg/utils"
 	"github.com/swibly/swibly-api/translations"
@@ -126,8 +127,8 @@ func CreateProjectHandler(ctx *gin.Context) {
 	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
 
 	project := &dto.ProjectCreation{}
-	if err := ctx.BindJSON(project); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := ctx.Bind(project); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.InvalidBody})
 		return
 	}
 
@@ -147,6 +148,12 @@ func CreateProjectHandler(ctx *gin.Context) {
 	project.OwnerID = issuer.ID
 
 	if err := service.Project.Create(project); err != nil {
+		if errors.Is(err, aws.ErrUnsupportedFileType) {
+			log.Print(err)
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UnsupportedFileType})
+			return
+		}
+
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
@@ -314,7 +321,7 @@ func UpdateProjectHandler(ctx *gin.Context) {
 	project := ctx.Keys["project_lookup"].(*dto.ProjectInfo)
 
 	var body *dto.ProjectUpdate
-	if err := ctx.BindJSON(&body); err != nil {
+	if err := ctx.Bind(&body); err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.InvalidBody})
 		return
@@ -329,6 +336,12 @@ func UpdateProjectHandler(ctx *gin.Context) {
 	}
 
 	if err := service.Project.Update(project.ID, body); err != nil {
+		if errors.Is(err, aws.ErrUnsupportedFileType) {
+			log.Print(err)
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UnsupportedFileType})
+			return
+		}
+
 		if errors.Is(err, repository.ErrProjectTrashed) {
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": dict.ProjectAlreadyTrashed})
 			return

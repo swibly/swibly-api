@@ -21,6 +21,15 @@ var (
 		ConnectionString string `yaml:"connection_string"`
 	}
 
+	S3 struct {
+		Access string `yaml:"access"`
+		Secret string `yaml:"secret"`
+		URL    string `yaml:"url"`
+		SURL   string `yaml:"surl"`
+		Region string `yaml:"region"`
+		Bucket string `yaml:"bucket"`
+	}
+
 	Security struct {
 		BcryptCost int    `yaml:"bcrypt_cost"`
 		JWTSecret  string `yaml:"jwt_secret"`
@@ -53,6 +62,8 @@ func Parse() {
 		"SMTP_USERNAME",
 		"SMTP_EMAIL",
 		"SMTP_PASSWORD",
+		"S3_ACCESS_KEY",
+		"S3_SECRET_KEY",
 	); len(missingVars) > 0 {
 		log.Println("You can override the following env variables to get rid of this error:")
 		log.Println(strings.Join(missingVars, ", "))
@@ -67,6 +78,10 @@ func Parse() {
 	}
 
 	if err := yaml.Unmarshal(read("postgres.yaml"), &Postgres); err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	if err := yaml.Unmarshal(read("s3.yaml"), &S3); err != nil {
 		log.Fatalf("error: %v", err)
 	}
 

@@ -6,9 +6,9 @@ import (
 
 	"github.com/swibly/swibly-api/internal/model"
 	"github.com/swibly/swibly-api/internal/model/dto"
+	"github.com/swibly/swibly-api/pkg/aws"
 	"github.com/swibly/swibly-api/pkg/db"
 	"github.com/swibly/swibly-api/pkg/pagination"
-	"github.com/swibly/swibly-api/pkg/utils"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -74,6 +74,7 @@ func (pr *projectRepository) baseProjectQuery(issuerID uint) *gorm.DB {
 			p.budget as budget,
       p.width as width,
       p.height as height,
+      p.banner_url as banner_url,
 			p.fork as fork,
 			u.id AS owner_id,
 			u.username AS owner_username,
@@ -163,6 +164,7 @@ func convertToProjectInfo(jsonInfo *dto.ProjectInfoJSON) (dto.ProjectInfo, error
 		Budget:              jsonInfo.Budget,
 		Width:               jsonInfo.Width,
 		Height:              jsonInfo.Height,
+		BannerURL:           jsonInfo.BannerURL,
 		IsPublic:            jsonInfo.IsPublic,
 		Fork:                jsonInfo.Fork,
 		OwnerID:             jsonInfo.OwnerID,
@@ -177,27 +179,38 @@ func convertToProjectInfo(jsonInfo *dto.ProjectInfoJSON) (dto.ProjectInfo, error
 func (pr *projectRepository) Create(createModel *dto.ProjectCreation) error {
 	tx := pr.db.Begin()
 
-	var contentJSON utils.JSON
-	var err error
-	if createModel.Content != nil {
-		contentJSON, err = json.Marshal(createModel.Content)
-		if err != nil {
-			tx.Rollback()
-			return err
-		}
+	out, err := json.MarshalIndent(createModel.Content, "", "")
+	if err != nil {
+		tx.Rollback()
+		return err
 	}
 
 	project := &model.Project{
 		Name:        createModel.Name,
 		Description: createModel.Description,
+		Width:       createModel.Width,
+		Height:      createModel.Height,
 		Budget:      createModel.Budget,
-		Content:     string(contentJSON),
+		Content:     string(out),
 		Fork:        createModel.Fork,
 	}
 
 	if err := tx.Create(&project).Error; err != nil {
 		tx.Rollback()
 		return err
+	}
+
+	if createModel.BannerImage != nil {
+		url, err := aws.UploadProjectImage(project.ID, createModel.BannerImage)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+
+		if err := tx.Model(&model.Project{}).Where("id = ?", project.ID).Update("banner_url", url).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
 	}
 
 	projectOwner := &model.ProjectOwner{
@@ -287,6 +300,19 @@ func (pr *projectRepository) Update(projectID uint, updateModel *dto.ProjectUpda
 	}
 	if updateModel.Budget != nil {
 		updates["budget"] = *updateModel.Budget
+	}
+
+	if updateModel.BannerImage != nil {
+		url, err := aws.UploadProjectImage(projectID, updateModel.BannerImage)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+
+		if err := tx.Model(&model.Project{}).Where("id = ?", projectID).Update("banner_url", url).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
 	}
 
 	if err := tx.Model(&model.Project{}).Where("id = ?", projectID).Updates(updates).Error; err != nil {
@@ -492,6 +518,7 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 		Budget:              project.Budget,
 		Width:               project.Width,
 		Height:              project.Height,
+		BannerURL:           project.BannerURL,
 		IsPublic:            isPublic,
 		Fork:                project.Fork,
 		IsFavorited:         isFavorited,

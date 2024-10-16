@@ -101,3 +101,4 @@ password_reset_email_template: |
   Спасибо,
   Команда Swibly
 invalid_password_reset_key: Ключ для сброса пароля недействителен или истек.
+unsupported_file_type: Тип файла не поддерживается.

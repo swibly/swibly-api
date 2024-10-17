@@ -706,6 +706,11 @@ func (pr *projectRepository) UnsafeDelete(id uint) error {
 		return err
 	}
 
+	if err := aws.DeleteProjectImage(id); err != nil {
+		tx.Rollback()
+		return err
+	}
+
 	if err := tx.Unscoped().Delete(&project).Error; err != nil {
 		tx.Rollback()
 		return err
@@ -804,6 +809,36 @@ func (pr *projectRepository) ClearTrash(userID uint) error {
 		Delete(&model.ProjectOwner{}).Error; err != nil {
 		tx.Rollback()
 		return err
+	}
+
+	projects := []model.Project{}
+	if err := tx.Unscoped().
+		Where("deleted_at IS NOT NULL").
+		Where(`
+			EXISTS (
+				SELECT 1
+				FROM project_owners po
+				WHERE po.project_id = projects.id
+				AND po.user_id = ?
+			)
+			OR EXISTS (
+				SELECT 1
+				FROM project_user_permissions pu
+				WHERE pu.project_id = projects.id
+				AND pu.user_id = ?
+				AND pu.allow_delete = true
+			)
+		`, userID, userID).
+		Find(&projects).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	for _, project := range projects {
+		if err := aws.DeleteProjectImage(project.ID); err != nil {
+			tx.Rollback()
+			return err
+		}
 	}
 
 	if err := tx.Unscoped().

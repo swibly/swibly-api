@@ -30,9 +30,11 @@ var (
 )
 
 func (svc *AWSService) UploadFile(key string, file io.Reader) (string, error) {
+	newKey := fmt.Sprintf("%s/%s", config.Router.Environment, key)
+
 	_, err := svc.s3.PutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket:      aws.String(config.S3.Bucket),
-		Key:         aws.String(key),
+		Key:         aws.String(newKey),
 		Body:        file,
 		ContentType: aws.String("application/octet-stream"),
 		ACL:         types.ObjectCannedACLPublicRead,
@@ -41,15 +43,17 @@ func (svc *AWSService) UploadFile(key string, file io.Reader) (string, error) {
 		return "", fmt.Errorf("unable to upload file to S3: %v", err)
 	}
 
-	fileURL := fmt.Sprintf("https://%s.%s/%s", config.S3.Bucket, config.S3.SURL, key)
+	fileURL := fmt.Sprintf("https://%s.%s/%s", config.S3.Bucket, config.S3.SURL, newKey)
 
 	return fileURL, nil
 }
 
 func (svc *AWSService) DeleteFile(key string) error {
+	newKey := fmt.Sprintf("%s/%s", config.Router.Environment, key)
+
 	_, err := svc.s3.DeleteObject(context.TODO(), &s3.DeleteObjectInput{
 		Bucket: aws.String(config.S3.Bucket),
-		Key:    aws.String(key),
+		Key:    aws.String(newKey),
 	})
 	if err != nil {
 		return fmt.Errorf("unable to delete file from S3: %v", err)

@@ -534,7 +534,7 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 }
 
 func (pr *projectRepository) GetByOwner(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
-	query := pr.baseProjectQuery(issuerID).Where("po.user_id = ?", userID)
+	query := pr.baseProjectQuery(issuerID).Where("deleted_at IS NULL").Where("po.user_id = ?", userID)
 
 	if onlyPublic {
 		query = query.Joins("JOIN project_publications pp ON pp.project_id = p.id")
@@ -550,7 +550,7 @@ func (pr *projectRepository) GetPublic(issuerID uint, page, perPage int) (*dto.P
 }
 
 func (pr *projectRepository) GetFavorited(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
-	query := pr.baseProjectQuery(issuerID).Joins("JOIN project_user_favorites f ON f.project_id = p.id AND f.user_id = ?", userID)
+	query := pr.baseProjectQuery(issuerID).Where("deleted_at IS NULL").Joins("JOIN project_user_favorites f ON f.project_id = p.id AND f.user_id = ?", userID)
 
 	if onlyPublic {
 		query = query.Joins("JOIN project_publications pp ON pp.project_id = p.id")
@@ -561,8 +561,7 @@ func (pr *projectRepository) GetFavorited(issuerID, userID uint, onlyPublic bool
 
 func (pr *projectRepository) GetTrashed(issuerID uint, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
 	query := pr.baseProjectQuery(issuerID).
-		Unscoped().
-		Where("p.deleted_at IS NOT NULL").
+		Where("deleted_at IS NOT NULL").
 		Where(`
 			u.id = ? OR 
 			EXISTS (
@@ -682,15 +681,133 @@ func (pr *projectRepository) UnsafeDelete(id uint) error {
 		return err
 	}
 
-	if project.DeletedAt.Valid {
-		return pr.db.Unscoped().Delete(&project).Error
+	if !project.DeletedAt.Valid {
+		return ErrProjectNotTrashed
 	}
 
-	return ErrProjectNotTrashed
+	tx := pr.db.Begin()
+
+	if err := tx.Unscoped().Where("project_id = ?", id).Delete(&model.ProjectUserFavorite{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Unscoped().Where("project_id = ?", id).Delete(&model.ProjectUserPermission{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Unscoped().Where("project_id = ?", id).Delete(&model.ProjectPublication{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Unscoped().Where("project_id = ?", id).Delete(&model.ProjectOwner{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Unscoped().Delete(&project).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return nil
 }
 
 func (pr *projectRepository) ClearTrash(userID uint) error {
-	err := pr.db.Unscoped().
+	tx := pr.db.Begin()
+
+	if err := tx.Unscoped().
+		Where(`
+			EXISTS (
+				SELECT 1
+				FROM project_owners po
+				WHERE po.project_id = project_user_favorites.project_id
+				AND po.user_id = ?
+			)
+			OR EXISTS (
+				SELECT 1
+				FROM project_user_permissions pu
+				WHERE pu.project_id = project_user_favorites.project_id
+				AND pu.user_id = ?
+				AND pu.allow_delete = true
+			)
+		`, userID, userID).
+		Delete(&model.ProjectUserFavorite{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Unscoped().
+		Where(`
+			EXISTS (
+				SELECT 1
+				FROM project_owners po
+				WHERE po.project_id = project_user_permissions.project_id
+				AND po.user_id = ?
+			)
+			OR EXISTS (
+				SELECT 1
+				FROM project_user_permissions pu
+				WHERE pu.project_id = project_user_permissions.project_id
+				AND pu.user_id = ?
+				AND pu.allow_delete = true
+			)
+		`, userID, userID).
+		Delete(&model.ProjectUserPermission{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Unscoped().
+		Where(`
+			EXISTS (
+				SELECT 1
+				FROM project_owners po
+				WHERE po.project_id = project_publications.project_id
+				AND po.user_id = ?
+			)
+			OR EXISTS (
+				SELECT 1
+				FROM project_user_permissions pu
+				WHERE pu.project_id = project_publications.project_id
+				AND pu.user_id = ?
+				AND pu.allow_delete = true
+			)
+		`, userID, userID).
+		Delete(&model.ProjectPublication{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Unscoped().
+		Where(`
+			EXISTS (
+				SELECT 1
+				FROM project_owners po
+				WHERE po.project_id = project_owners.project_id
+				AND po.user_id = ?
+			)
+			OR EXISTS (
+				SELECT 1
+				FROM project_user_permissions pu
+				WHERE pu.project_id = project_owners.project_id
+				AND pu.user_id = ?
+				AND pu.allow_delete = true
+			)
+		`, userID, userID).
+		Delete(&model.ProjectOwner{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Unscoped().
 		Where("deleted_at IS NOT NULL").
 		Where(`
 			EXISTS (
@@ -707,9 +824,13 @@ func (pr *projectRepository) ClearTrash(userID uint) error {
 				AND pu.allow_delete = true
 			)
 		`, userID, userID).
-		Delete(&model.Project{}).Error
+		Delete(&model.Project{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
 
-	if err != nil {
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
 		return err
 	}
 

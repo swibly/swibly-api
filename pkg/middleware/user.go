@@ -36,7 +36,7 @@ func UserPrivacy(requiredShow dto.UserShow) gin.HandlerFunc {
 				isAllowed = false
 			}
 
-			if requiredShow.Projects == true && !user.Show.Favorites && !issuer.HasPermissions(config.Permissions.ManageProjects) {
+			if requiredShow.Projects == true && !user.Show.Projects && !issuer.HasPermissions(config.Permissions.ManageProjects) {
 				isAllowed = false
 			}
 

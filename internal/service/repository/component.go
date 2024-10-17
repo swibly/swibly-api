@@ -94,8 +94,7 @@ func (cr *componentRepository) baseComponentQuery(issuerID uint) *gorm.DB {
       (SELECT ch.price_paid FROM component_holders ch WHERE ch.component_id = c.id AND ch.user_id = ?) AS sell_price
 		`, issuerID, issuerID, issuerID).
 		Joins("JOIN component_owners co ON co.component_id = c.id").
-		Joins("JOIN users u ON co.user_id = u.id").
-		Order("holders DESC")
+		Joins("JOIN users u ON co.user_id = u.id")
 }
 
 func (cr *componentRepository) paginateComponents(query *gorm.DB, page, perPage int) (*dto.Pagination[dto.ComponentInfo], error) {

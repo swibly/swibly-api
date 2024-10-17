@@ -607,15 +607,89 @@ func (cr *componentRepository) UnsafeDelete(componentID uint) error {
 		return err
 	}
 
-	if component.DeletedAt.Valid {
-		return cr.db.Unscoped().Delete(&component).Error
+	if !component.DeletedAt.Valid {
+		return ErrComponentNotTrashed
 	}
 
-	return ErrComponentNotTrashed
+	tx := cr.db.Begin()
+
+	if err := tx.Unscoped().Where("component_id = ?", componentID).Delete(&model.ComponentHolder{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Unscoped().Where("component_id = ?", componentID).Delete(&model.ComponentPublication{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Unscoped().Where("component_id = ?", componentID).Delete(&model.ComponentOwner{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Unscoped().Delete(&component).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return nil
 }
 
 func (cr *componentRepository) ClearTrash(userID uint) error {
-	err := cr.db.Unscoped().
+	tx := cr.db.Begin()
+
+	if err := tx.Unscoped().
+		Where("deleted_at IS NOT NULL").
+		Where(`
+			EXISTS (
+				SELECT 1
+				FROM component_owners co
+				WHERE co.component_id = component_holders.component_id
+				AND co.user_id = ?
+			)
+		`, userID).
+		Delete(&model.ComponentHolder{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Unscoped().
+		Where("deleted_at IS NOT NULL").
+		Where(`
+			EXISTS (
+				SELECT 1
+				FROM component_owners co
+				WHERE co.component_id = component_publications.component_id
+				AND co.user_id = ?
+			)
+		`, userID).
+		Delete(&model.ComponentPublication{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Unscoped().
+		Where("deleted_at IS NOT NULL").
+		Where(`
+			EXISTS (
+				SELECT 1
+				FROM component_owners co
+				WHERE co.component_id = component_owners.component_id
+				AND co.user_id = ?
+			)
+		`, userID).
+		Delete(&model.ComponentOwner{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Unscoped().
 		Where("deleted_at IS NOT NULL").
 		Where(`
 			EXISTS (
@@ -625,9 +699,13 @@ func (cr *componentRepository) ClearTrash(userID uint) error {
 				AND co.user_id = ?
 			)
 		`, userID).
-		Delete(&model.Component{}).Error
+		Delete(&model.Component{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
 
-	if err != nil {
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
 		return err
 	}
 

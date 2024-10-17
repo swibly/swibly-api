@@ -102,3 +102,6 @@ password_reset_email_template: |
   Команда Swibly
 invalid_password_reset_key: Ключ для сброса пароля недействителен или истек.
 unsupported_file_type: Тип файла не поддерживается.
+unable_to_decode_file: Невозможно декодировать файл.
+unable_to_encode_file: Невозможно кодировать файл.
+file_too_large: Файл слишком большой.

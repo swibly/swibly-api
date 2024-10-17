@@ -101,3 +101,6 @@ password_reset_email_template: |
   Swibly Team
 invalid_password_reset_key: The password reset key is invalid or has expired.
 unsupported_file_type: The file type is not supported.
+unable_to_decode_file: The file cannot be decoded.
+unable_to_encode_file: The file cannot be encoded.
+file_too_large: The file is too large.

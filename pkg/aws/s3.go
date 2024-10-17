@@ -59,11 +59,17 @@ func (svc *AWSService) DeleteFile(key string) error {
 }
 
 func UploadProjectImage(projectID uint, file *multipart.FileHeader) (string, error) {
+	const maxFileSize = 20 * 1024 * 1024
+
+	if file.Size > maxFileSize {
+		return "", ErrFileTooLarge
+	}
+
 	ext := strings.ToLower(path.Ext(file.Filename))
 
-  if !slices.Contains([]string{".png", ".jpg", ".jpeg"}, ext) {
-    return "", ErrUnsupportedFileType
-  }
+	if !slices.Contains([]string{".png", ".jpg", ".jpeg"}, ext) {
+		return "", ErrUnsupportedFileType
+	}
 
 	src, err := file.Open()
 	if err != nil {

@@ -107,6 +107,9 @@ type Translation struct {
 	InvalidPasswordResetKey    string `yaml:"invalid_password_reset_key"`
 
 	UnsupportedFileType string `yaml:"unsupported_file_type"`
+	UnableToDecodeFile  string `yaml:"unable_to_decode_file"`
+	UnableToEncodeFile  string `yaml:"unable_to_encode_file"`
+	FileTooLarge        string `yaml:"file_too_large"`
 }
 
 var Translations = make(map[string]Translation)

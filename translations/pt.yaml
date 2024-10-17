@@ -103,3 +103,6 @@ password_reset_email_template: |
   Equipe Swibly
 invalid_password_reset_key: A chave de redefinição de senha é inválida ou expirou.
 unsupported_file_type: O tipo de arquivo não é suportado.
+unable_to_decode_file: Não é possível decodificar o arquivo.
+unable_to_encode_file: Não é possível codificar o arquivo.
+file_too_large: O arquivo é muito grande.

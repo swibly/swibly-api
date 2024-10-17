@@ -1,0 +1,6 @@
+access: $S3_ACCESS_KEY
+secret: $S3_SECRET_KEY
+url: https://br-gru-1.linodeobjects.com
+surl: br-gru-1.linodeobjects.com
+region: br-gru-1
+bucket: swibly

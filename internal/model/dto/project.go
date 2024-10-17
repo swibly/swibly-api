@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"mime/multipart"
 	"time"
 
 	"github.com/swibly/swibly-api/pkg/utils"
@@ -8,27 +9,34 @@ import (
 )
 
 type ProjectCreation struct {
-	Name        string `validate:"required,min=3,max=32"    json:"name"`
-	Description string `validate:"omitempty,min=3,max=5000" json:"description"`
+	Name        string `validate:"required,min=3,max=32"    form:"name"`
+	Description string `validate:"omitempty,min=3,max=5000" form:"description"`
 
-	Content any `validate:"omitempty" json:"content"`
-	Budget  int `validate:"omitempty" json:"budget"`
+	BannerImage *multipart.FileHeader `validate:"omitempty" form:"banner"`
 
-	OwnerID uint `json:"-"` // Set using JWT
+	Content any `validate:"omitempty" form:"content"`
+	Budget  int `validate:"omitempty" form:"budget"`
 
-	Public bool `json:"-"` // Set in an URL query param
+	Width  int `validate:"omitempty,min=1,max=1000" form:"width"`
+	Height int `validate:"omitempty,min=1,max=1000" form:"height"`
 
-	Fork *uint `validate:"omitempty" json:"-"`
+	OwnerID uint `form:"-"` // Set using JWT
+
+	Public bool `form:"-"` // Set in an URL query param
+
+	Fork *uint `form:"-"` // Set in code during the clone procedure
 }
 
 type ProjectUpdate struct {
-	Name        *string `validate:"omitempty,min=3,max=32" json:"name"`
-	Description *string `validate:"omitempty,max=5000"     json:"description"`
+	Name        *string `validate:"omitempty,min=3,max=32" form:"name"`
+	Description *string `validate:"omitempty,max=5000"     form:"description"`
 
-	Content any  `validate:"omitempty" json:"content"`
-	Budget  *int `validate:"omitempty" json:"budget"`
+	BannerImage *multipart.FileHeader `validate:"omitempty" form:"banner"`
 
-	Published *bool `gorm:"-" validate:"omitempty" json:"-"`
+	Content any  `validate:"omitempty" form:"-"` // Set in code
+	Budget  *int `validate:"omitempty" form:"budget"`
+
+	Published *bool `validate:"omitempty" form:"-"`
 }
 
 type ProjectAssign struct {
@@ -79,6 +87,11 @@ type ProjectInfoJSON struct {
 
 	Budget int `json:"budget"`
 
+	Width  int `json:"width"`
+	Height int `json:"height"`
+
+	BannerURL string `json:"banner_url"`
+
 	IsPublic bool  `json:"is_public"`
 	Fork     *uint `json:"fork"`
 
@@ -102,6 +115,11 @@ type ProjectInfo struct {
 	Description string `json:"description"`
 
 	Budget int `json:"budget"`
+
+	Width  int `json:"width"`
+	Height int `json:"height"`
+
+	BannerURL string `json:"banner_url"`
 
 	IsPublic bool  `json:"is_public"`
 	Fork     *uint `json:"fork"`

@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -53,8 +52,6 @@ func ProjectIsAllowed(requiredPermissions dto.Allow) gin.HandlerFunc {
 
 		if project.OwnerUsername != issuer.Username && !issuer.HasPermissions(config.Permissions.ManageProjects) {
 			isAllowed := false
-
-			fmt.Println(requiredPermissions.View && project.IsPublic)
 
 			if requiredPermissions.View && project.IsPublic {
 				isAllowed = true

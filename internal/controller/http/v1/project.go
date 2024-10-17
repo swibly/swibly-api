@@ -7,13 +7,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/swibly/swibly-api/internal/model/dto"
 	"github.com/swibly/swibly-api/internal/service"
 	"github.com/swibly/swibly-api/internal/service/repository"
+	"github.com/swibly/swibly-api/pkg/aws"
 	"github.com/swibly/swibly-api/pkg/middleware"
 	"github.com/swibly/swibly-api/pkg/utils"
 	"github.com/swibly/swibly-api/translations"
-	"github.com/gin-gonic/gin"
 )
 
 func newProjectRoutes(handler *gin.RouterGroup) {
@@ -29,8 +30,8 @@ func newProjectRoutes(handler *gin.RouterGroup) {
 
 		byUser := h.Group("/user/:username", middleware.UserLookup)
 		{
-			byUser.GET("", GetProjectsByUserHandler)
-			byUser.GET("/favorite", GetFavoriteProjectsByUserHandler)
+			byUser.GET("", middleware.UserPrivacy(dto.UserShow{Projects: true}), GetProjectsByUserHandler)
+			byUser.GET("/favorite", middleware.UserPrivacy(dto.UserShow{Favorites: true}), GetFavoriteProjectsByUserHandler)
 		}
 	}
 
@@ -126,8 +127,8 @@ func CreateProjectHandler(ctx *gin.Context) {
 	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
 
 	project := &dto.ProjectCreation{}
-	if err := ctx.BindJSON(project); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := ctx.Bind(project); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.InvalidBody})
 		return
 	}
 
@@ -146,13 +147,19 @@ func CreateProjectHandler(ctx *gin.Context) {
 
 	project.OwnerID = issuer.ID
 
-	if err := service.Project.Create(project); err != nil {
+	if id, err := service.Project.Create(project); err != nil {
+		if errors.Is(err, aws.ErrUnsupportedFileType) {
+			log.Print(err)
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UnsupportedFileType})
+			return
+		}
+
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
+	} else {
+		ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectCreated, "project": id})
 	}
-
-	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectCreated})
 }
 
 func DeleteTrashProjectsHandler(ctx *gin.Context) {
@@ -240,7 +247,7 @@ func ForkProjectHandler(ctx *gin.Context) {
 	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
 	project := ctx.Keys["project_lookup"].(*dto.ProjectInfo)
 
-	if err := service.Project.Fork(project.ID, issuer.ID); err != nil {
+	if id, err := service.Project.Fork(project.ID, issuer.ID); err != nil {
 		if errors.Is(err, repository.ErrUpstreamNotPublic) {
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": dict.UpstreamNotPublic})
 			return
@@ -249,9 +256,9 @@ func ForkProjectHandler(ctx *gin.Context) {
 		log.Print(err)
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
+	} else {
+		ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectForked, "project": id})
 	}
-
-	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectForked})
 }
 
 func UnlinkProjectHandler(ctx *gin.Context) {
@@ -314,7 +321,7 @@ func UpdateProjectHandler(ctx *gin.Context) {
 	project := ctx.Keys["project_lookup"].(*dto.ProjectInfo)
 
 	var body *dto.ProjectUpdate
-	if err := ctx.BindJSON(&body); err != nil {
+	if err := ctx.Bind(&body); err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.InvalidBody})
 		return
@@ -329,6 +336,12 @@ func UpdateProjectHandler(ctx *gin.Context) {
 	}
 
 	if err := service.Project.Update(project.ID, body); err != nil {
+		if errors.Is(err, aws.ErrUnsupportedFileType) {
+			log.Print(err)
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UnsupportedFileType})
+			return
+		}
+
 		if errors.Is(err, repository.ErrProjectTrashed) {
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": dict.ProjectAlreadyTrashed})
 			return

@@ -7,13 +7,13 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/swibly/swibly-api/internal/model/dto"
 	"github.com/swibly/swibly-api/internal/service"
 	"github.com/swibly/swibly-api/internal/service/repository"
 	"github.com/swibly/swibly-api/pkg/middleware"
 	"github.com/swibly/swibly-api/pkg/utils"
 	"github.com/swibly/swibly-api/translations"
-	"github.com/gin-gonic/gin"
 )
 
 func newComponentRoutes(handler *gin.RouterGroup) {
@@ -28,7 +28,7 @@ func newComponentRoutes(handler *gin.RouterGroup) {
 
 		byUser := h.Group("/user/:username", middleware.UserLookup)
 		{
-			byUser.GET("", GetComponentsByUserHandler)
+			byUser.GET("", middleware.UserPrivacy(dto.UserShow{Components: true}), GetComponentsByUserHandler)
 			byUser.GET("/owned", GetOwnedComponentsByUserHandler)
 		}
 	}

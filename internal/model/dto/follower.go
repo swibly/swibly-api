@@ -15,4 +15,10 @@ type Follower struct {
 	Verified       bool      `json:"verified"`
 	Username       string    `json:"username"`
 	Since          time.Time `json:"following_since"`
+	Show           struct {
+		Profile   bool `json:"profile"`
+		Image     bool `json:"image"`
+		Followers bool `json:"followers"`
+		Following bool `json:"following"`
+	} `gorm:"embedded;embeddedPrefix:show_" json:"show"`
 }

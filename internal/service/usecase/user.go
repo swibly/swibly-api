@@ -5,12 +5,12 @@ import (
 	"encoding/hex"
 	"fmt"
 
+	"github.com/gin-gonic/gin"
 	"github.com/swibly/swibly-api/config"
 	"github.com/swibly/swibly-api/internal/model"
 	"github.com/swibly/swibly-api/internal/model/dto"
 	"github.com/swibly/swibly-api/internal/service/repository"
 	"github.com/swibly/swibly-api/pkg/utils"
-	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )

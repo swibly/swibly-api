@@ -12,9 +12,10 @@ import (
 
 var (
 	Router struct {
-		GinMode string `yaml:"gin_mode"`
-		Address string `yaml:"addr"`
-		Port    uint16 `yaml:"port"`
+		GinMode     string `yaml:"gin_mode"`
+		Address     string `yaml:"addr"`
+		Port        uint16 `yaml:"port"`
+		Environment string `yaml:"environment"`
 	}
 
 	Postgres struct {
@@ -64,6 +65,7 @@ func Parse() {
 		"SMTP_PASSWORD",
 		"S3_ACCESS_KEY",
 		"S3_SECRET_KEY",
+		"ENVIRONMENT",
 	); len(missingVars) > 0 {
 		log.Println("You can override the following env variables to get rid of this error:")
 		log.Println(strings.Join(missingVars, ", "))

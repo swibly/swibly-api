@@ -117,8 +117,7 @@ func (pr *projectRepository) baseProjectQuery(issuerID uint) *gorm.DB {
 			) AS total_favorites
 		`, issuerID).
 		Joins("JOIN project_owners po ON po.project_id = p.id").
-		Joins("JOIN users u ON po.user_id = u.id").
-		Order("total_favorites DESC")
+		Joins("JOIN users u ON po.user_id = u.id")
 }
 
 func (pr *projectRepository) paginateProjects(query *gorm.DB, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {

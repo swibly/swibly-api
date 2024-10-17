@@ -154,6 +154,24 @@ func CreateProjectHandler(ctx *gin.Context) {
 			return
 		}
 
+		if errors.Is(err, aws.ErrUnableToDecode) {
+			log.Print(err)
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UnableToDecodeFile})
+			return
+		}
+
+		if errors.Is(err, aws.ErrUnableToEncode) {
+			log.Print(err)
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UnableToDecodeFile})
+			return
+		}
+
+		if errors.Is(err, aws.ErrFileTooLarge) {
+			log.Print(err)
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.FileTooLarge})
+			return
+		}
+
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
@@ -339,6 +357,24 @@ func UpdateProjectHandler(ctx *gin.Context) {
 		if errors.Is(err, aws.ErrUnsupportedFileType) {
 			log.Print(err)
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UnsupportedFileType})
+			return
+		}
+
+		if errors.Is(err, aws.ErrUnableToDecode) {
+			log.Print(err)
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UnableToDecodeFile})
+			return
+		}
+
+		if errors.Is(err, aws.ErrUnableToEncode) {
+			log.Print(err)
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UnableToDecodeFile})
+			return
+		}
+
+		if errors.Is(err, aws.ErrFileTooLarge) {
+			log.Print(err)
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.FileTooLarge})
 			return
 		}
 

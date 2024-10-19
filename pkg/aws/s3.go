@@ -63,7 +63,7 @@ func (svc *AWSService) DeleteFile(key string) error {
 }
 
 func UploadProjectImage(projectID uint, file *multipart.FileHeader) (string, error) {
-	const maxFileSize = 20 * 1024 * 1024
+	const maxFileSize = 5 * 1024 * 1024
 
 	if file.Size > maxFileSize {
 		return "", ErrFileTooLarge

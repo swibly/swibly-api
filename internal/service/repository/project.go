@@ -77,8 +77,11 @@ func (pr *projectRepository) baseProjectQuery(issuerID uint) *gorm.DB {
       p.banner_url as banner_url,
 			p.fork as fork,
 			u.id AS owner_id,
+			u.firstname AS owner_firstname,
+			u.lastname AS owner_lastname,
 			u.username AS owner_username,
-			u.profile_picture AS owner_profile_picture,
+			u.profile_picture AS owner_pfp,
+			u.verified AS owner_verified,
 			EXISTS (
 				SELECT 1 
 				FROM project_publications pp 
@@ -88,8 +91,11 @@ func (pr *projectRepository) baseProjectQuery(issuerID uint) *gorm.DB {
 				SELECT json_agg(
 					json_build_object(
 						'id', pu.user_id,
+						'firstname', puu.first_name,
+						'lastname', puu.last_name,
 						'username', puu.username,
-						'profile_picture', puu.profile_picture,
+						'pfp', puu.profile_picture,
+						'verified', puu.verified,
 						'allow_view', pu.allow_view,
 						'allow_edit', pu.allow_edit,
 						'allow_delete', pu.allow_delete,
@@ -167,8 +173,11 @@ func convertToProjectInfo(jsonInfo *dto.ProjectInfoJSON) (dto.ProjectInfo, error
 		IsPublic:            jsonInfo.IsPublic,
 		Fork:                jsonInfo.Fork,
 		OwnerID:             jsonInfo.OwnerID,
+		OwnerFirstName:      jsonInfo.OwnerFirstName,
+		OwnerLastName:       jsonInfo.OwnerLastName,
 		OwnerUsername:       jsonInfo.OwnerUsername,
 		OwnerProfilePicture: jsonInfo.OwnerProfilePicture,
+		OwnerVerified:       jsonInfo.OwnerVerified,
 		IsFavorited:         jsonInfo.IsFavorited,
 		TotalFavorites:      jsonInfo.TotalFavorites,
 		AllowedUsers:        allowedUsers,
@@ -472,8 +481,11 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 
 	owner := dto.UserInfoLite{
 		ID:             ownerProfile.ID,
+		FirstName:      ownerProfile.FirstName,
+		LastName:       ownerProfile.LastName,
 		Username:       ownerProfile.Username,
 		ProfilePicture: ownerProfile.ProfilePicture,
+		Verified:       ownerProfile.Verified,
 	}
 
 	allowedUserDTOs := []dto.ProjectUserPermissions{}
@@ -486,8 +498,11 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 
 		allowedUserDTOs = append(allowedUserDTOs, dto.ProjectUserPermissions{
 			ID:             userProfile.ID,
+			FirstName:      userProfile.FirstName,
+			LastName:       userProfile.LastName,
 			Username:       userProfile.Username,
 			ProfilePicture: userProfile.ProfilePicture,
+			Verified:       userProfile.Verified,
 			View:           userPerm.Allow.View,
 			Edit:           userPerm.Allow.Edit,
 			Delete:         userPerm.Allow.Delete,
@@ -514,8 +529,11 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 		UpdatedAt:           project.UpdatedAt,
 		DeletedAt:           project.DeletedAt,
 		OwnerID:             owner.ID,
+		OwnerFirstName:      owner.FirstName,
+		OwnerLastName:       owner.LastName,
 		OwnerUsername:       owner.Username,
 		OwnerProfilePicture: owner.ProfilePicture,
+		OwnerVerified:       owner.Verified,
 		Name:                project.Name,
 		Description:         project.Description,
 		Budget:              project.Budget,

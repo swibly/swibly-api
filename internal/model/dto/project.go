@@ -65,8 +65,11 @@ type Allow struct {
 
 type ProjectUserPermissions struct {
 	ID             uint   `json:"id"`
+	FirstName      string `json:"firstname"`
+	LastName       string `json:"lastname"`
 	Username       string `json:"username"`
-	ProfilePicture string `json:"profile_picture"`
+	ProfilePicture string `json:"pfp"`
+	Verified       bool   `json:"verified"`
 	View           bool   `json:"allow_view"`
 	Edit           bool   `json:"allow_edit"`
 	Delete         bool   `json:"allow_delete"`
@@ -96,8 +99,11 @@ type ProjectInfoJSON struct {
 	Fork     *uint `json:"fork"`
 
 	OwnerID             uint   `json:"owner_id"`
+	OwnerFirstName      string `json:"owner_firstname"`
+	OwnerLastName       string `json:"owner_lastname"`
 	OwnerUsername       string `json:"owner_username"`
-	OwnerProfilePicture string `json:"owner_profile_picture"`
+	OwnerProfilePicture string `json:"owner_pfp"`
+	OwnerVerified       bool   `json:"owner_verified"`
 
 	AllowedUsers utils.JSON `gorm:"type:jsonb" json:"allowed_users"`
 
@@ -125,8 +131,11 @@ type ProjectInfo struct {
 	Fork     *uint `json:"fork"`
 
 	OwnerID             uint   `json:"owner_id"`
+	OwnerFirstName      string `json:"owner_firstname"`
+	OwnerLastName       string `json:"owner_lastname"`
 	OwnerUsername       string `json:"owner_username"`
-	OwnerProfilePicture string `json:"owner_profile_picture"`
+	OwnerProfilePicture string `json:"owner_pfp"`
+	OwnerVerified       bool   `json:"owner_verified"`
 
 	AllowedUsers []ProjectUserPermissions `json:"allowed_users"`
 

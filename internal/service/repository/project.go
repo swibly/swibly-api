@@ -77,10 +77,10 @@ func (pr *projectRepository) baseProjectQuery(issuerID uint) *gorm.DB {
       p.banner_url as banner_url,
 			p.fork as fork,
 			u.id AS owner_id,
-			u.first_name AS owner_firstname,
-			u.last_name AS owner_lastname,
+			u.first_name AS owner_first_name,
+			u.last_name AS owner_last_name,
 			u.username AS owner_username,
-			u.profile_picture AS owner_pfp,
+			u.profile_picture AS owner_profile_picture,
 			u.verified AS owner_verified,
 			EXISTS (
 				SELECT 1 

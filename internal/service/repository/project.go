@@ -77,8 +77,11 @@ func (pr *projectRepository) baseProjectQuery(issuerID uint) *gorm.DB {
       p.banner_url as banner_url,
 			p.fork as fork,
 			u.id AS owner_id,
+			u.firstname AS owner_firstname,
+			u.lastname AS owner_lastname,
 			u.username AS owner_username,
-			u.profile_picture AS owner_profile_picture,
+			u.profile_picture AS owner_pfp,
+			u.verified AS owner_verified,
 			EXISTS (
 				SELECT 1 
 				FROM project_publications pp 
@@ -170,8 +173,11 @@ func convertToProjectInfo(jsonInfo *dto.ProjectInfoJSON) (dto.ProjectInfo, error
 		IsPublic:            jsonInfo.IsPublic,
 		Fork:                jsonInfo.Fork,
 		OwnerID:             jsonInfo.OwnerID,
+		OwnerFirstName:      jsonInfo.OwnerFirstName,
+		OwnerLastName:       jsonInfo.OwnerLastName,
 		OwnerUsername:       jsonInfo.OwnerUsername,
 		OwnerProfilePicture: jsonInfo.OwnerProfilePicture,
+		OwnerVerified:       jsonInfo.OwnerVerified,
 		IsFavorited:         jsonInfo.IsFavorited,
 		TotalFavorites:      jsonInfo.TotalFavorites,
 		AllowedUsers:        allowedUsers,
@@ -475,8 +481,11 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 
 	owner := dto.UserInfoLite{
 		ID:             ownerProfile.ID,
+		FirstName:      ownerProfile.FirstName,
+		LastName:       ownerProfile.LastName,
 		Username:       ownerProfile.Username,
 		ProfilePicture: ownerProfile.ProfilePicture,
+		Verified:       ownerProfile.Verified,
 	}
 
 	allowedUserDTOs := []dto.ProjectUserPermissions{}
@@ -520,8 +529,11 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 		UpdatedAt:           project.UpdatedAt,
 		DeletedAt:           project.DeletedAt,
 		OwnerID:             owner.ID,
+		OwnerFirstName:      owner.FirstName,
+		OwnerLastName:       owner.LastName,
 		OwnerUsername:       owner.Username,
 		OwnerProfilePicture: owner.ProfilePicture,
+		OwnerVerified:       owner.Verified,
 		Name:                project.Name,
 		Description:         project.Description,
 		Budget:              project.Budget,

@@ -102,8 +102,11 @@ type UserProfile struct {
 
 type UserInfoLite struct {
 	ID             uint   `json:"id"`
+	FirstName      string `json:"firstname"`
+	LastName       string `json:"lastname"`
 	Username       string `json:"username"`
 	ProfilePicture string `json:"pfp"`
+	Verified       bool   `json:"verified"`
 }
 
 type UserShow struct {

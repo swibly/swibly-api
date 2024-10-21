@@ -65,8 +65,11 @@ type Allow struct {
 
 type ProjectUserPermissions struct {
 	ID             uint   `json:"id"`
+	FirstName      string `json:"firstname"`
+	LastName       string `json:"lastname"`
 	Username       string `json:"username"`
-	ProfilePicture string `json:"profile_picture"`
+	ProfilePicture string `json:"pfp"`
+	Verified       bool   `json:"verified"`
 	View           bool   `json:"allow_view"`
 	Edit           bool   `json:"allow_edit"`
 	Delete         bool   `json:"allow_delete"`

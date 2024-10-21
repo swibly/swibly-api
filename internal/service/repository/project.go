@@ -88,8 +88,11 @@ func (pr *projectRepository) baseProjectQuery(issuerID uint) *gorm.DB {
 				SELECT json_agg(
 					json_build_object(
 						'id', pu.user_id,
+						'firstname', puu.first_name,
+						'lastname', puu.last_name,
 						'username', puu.username,
-						'profile_picture', puu.profile_picture,
+						'pfp', puu.profile_picture,
+						'verified', puu.verified,
 						'allow_view', pu.allow_view,
 						'allow_edit', pu.allow_edit,
 						'allow_delete', pu.allow_delete,
@@ -486,8 +489,11 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 
 		allowedUserDTOs = append(allowedUserDTOs, dto.ProjectUserPermissions{
 			ID:             userProfile.ID,
+			FirstName:      userProfile.FirstName,
+			LastName:       userProfile.LastName,
 			Username:       userProfile.Username,
 			ProfilePicture: userProfile.ProfilePicture,
+			Verified:       userProfile.Verified,
 			View:           userPerm.Allow.View,
 			Edit:           userPerm.Allow.Edit,
 			Delete:         userPerm.Allow.Delete,

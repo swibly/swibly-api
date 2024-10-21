@@ -551,7 +551,17 @@ func (pr *projectRepository) Get(userID uint, projectModel *model.Project) (*dto
 }
 
 func (pr *projectRepository) GetByOwner(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
-	query := pr.baseProjectQuery(issuerID).Where("deleted_at IS NULL").Where("po.user_id = ?", userID)
+	query := pr.baseProjectQuery(issuerID).
+		Where("deleted_at IS NULL").
+		Where(`
+			po.user_id = ? OR 
+			EXISTS (
+				SELECT 1 
+				FROM project_user_permissions pu 
+				WHERE pu.project_id = p.id 
+				AND pu.user_id = ? 
+				AND pu.allow_view = true
+			)`, userID, userID)
 
 	if onlyPublic {
 		query = query.Joins("JOIN project_publications pp ON pp.project_id = p.id")

@@ -4,12 +4,14 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"mime/multipart"
 
 	"github.com/gin-gonic/gin"
 	"github.com/swibly/swibly-api/config"
 	"github.com/swibly/swibly-api/internal/model"
 	"github.com/swibly/swibly-api/internal/model/dto"
 	"github.com/swibly/swibly-api/internal/service/repository"
+	"github.com/swibly/swibly-api/pkg/aws"
 	"github.com/swibly/swibly-api/pkg/utils"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -102,4 +104,27 @@ func (uuc UserUseCase) UnsafeGetByUsernameOrEmail(username, email string) (*mode
 
 func (uuc UserUseCase) Update(id uint, newModel *dto.UserUpdate) error {
 	return uuc.ur.Update(id, newModel)
+}
+
+func (uuc UserUseCase) SetProfilePicture(id uint, file *multipart.FileHeader) error {
+	url, err := aws.UploadUserImage(id, file)
+	if err != nil {
+		return err
+	}
+
+	return uuc.Update(id, &dto.UserUpdate{
+		ProfilePicture: &url,
+	})
+}
+
+func (uuc UserUseCase) RemoveProfilePicture(id uint, email string) error {
+	hasher := sha256.Sum256([]byte(email))
+
+	if err := aws.DeleteUserImage(id); err != nil {
+		return err
+	}
+
+	return uuc.Update(id, &dto.UserUpdate{
+		ProfilePicture: utils.ToPtr(fmt.Sprintf("https://www.gravatar.com/avatar/%s?s=512&d=monsterid&r=g", hex.EncodeToString(hasher[:]))),
+	})
 }

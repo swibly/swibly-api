@@ -61,6 +61,10 @@ func (puc ProjectUseCase) Assign(userID uint, projectID uint, allowList *dto.Pro
 	return puc.pr.Assign(userID, projectID, allowList)
 }
 
+func (puc ProjectUseCase) LeaveProject(issuerID, projectID uint) error {
+	return puc.pr.Assign(issuerID, projectID, &dto.ProjectAssign{})
+}
+
 func (puc ProjectUseCase) GetByID(issuerID, id uint) (*dto.ProjectInfo, error) {
 	return puc.pr.Get(issuerID, &model.Project{ID: id})
 }

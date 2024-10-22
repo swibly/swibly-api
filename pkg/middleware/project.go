@@ -136,3 +136,19 @@ func ProjectOwnership(ctx *gin.Context) {
 
 	ctx.Next()
 }
+
+func ProjectIsMember(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
+	project := ctx.Keys["project_lookup"].(*dto.ProjectInfo)
+
+	for _, allowedUser := range project.AllowedUsers {
+		if allowedUser.ID == issuer.ID {
+			ctx.Next()
+			return
+		}
+	}
+
+	ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": dict.ProjectMissingPermissions})
+}

@@ -52,6 +52,7 @@ func newProjectRoutes(handler *gin.RouterGroup) {
 		specific.DELETE("/unpublish", middleware.ProjectIsAllowed(dto.Allow{Publish: true}), UnpublishProjectHandler)
 		specific.DELETE("/unfavorite", middleware.ProjectIsAllowed(dto.Allow{View: true}), UnfavoriteProjectHandler)
 		specific.DELETE("/fork", middleware.ProjectIsAllowed(dto.Allow{Manage: dto.AllowManage{Metadata: true}}), UnlinkProjectHandler)
+    specific.DELETE("/leave", middleware.ProjectIsMember, LeaveProjectHandler)
 
 		trashActions := specific.Group("/trash")
 		{
@@ -296,6 +297,21 @@ func UnlinkProjectHandler(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectUnlinked})
+}
+
+func LeaveProjectHandler(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
+	project := ctx.Keys["project_lookup"].(*dto.ProjectInfo)
+
+	if err := service.Project.LeaveProject(issuer.ID, project.ID); err != nil {
+		log.Print(err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectUnassignedUser})
 }
 
 func UpdateProjectContentHandler(ctx *gin.Context) {

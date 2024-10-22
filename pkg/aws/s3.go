@@ -116,3 +116,58 @@ func UploadProjectImage(projectID uint, file *multipart.FileHeader) (string, err
 func DeleteProjectImage(projectID uint) error {
 	return AWS.DeleteFile(fmt.Sprintf("projects/%d.webp", projectID))
 }
+
+func UploadUserImage(userID uint, file *multipart.FileHeader) (string, error) {
+	const maxFileSize = 5 * 1024 * 1024
+
+	if file.Size > maxFileSize {
+		return "", ErrFileTooLarge
+	}
+
+	ext := strings.ToLower(path.Ext(file.Filename))
+
+	if !slices.Contains([]string{".png", ".jpg", ".jpeg"}, ext) {
+		return "", ErrUnsupportedFileType
+	}
+
+	src, err := file.Open()
+	if err != nil {
+		return "", fmt.Errorf("unable to open file: %v", err)
+	}
+	defer src.Close()
+
+	var img image.Image
+	switch ext {
+	case ".jpg", ".jpeg":
+		img, err = jpeg.Decode(src)
+		if err != nil {
+			return "", ErrUnableToDecode
+		}
+	case ".png":
+		img, err = png.Decode(src)
+		if err != nil {
+			return "", ErrUnableToDecode
+		}
+	default:
+		return "", ErrUnsupportedFileType
+	}
+
+	outputPath := fmt.Sprintf("users/%d.webp", userID)
+	var buf bytes.Buffer
+
+	err = webp.Encode(&buf, img, nil)
+	if err != nil {
+		return "", ErrUnableToEncode
+	}
+
+	url, err := AWS.UploadFile(outputPath, &buf)
+	if err != nil {
+		return "", ErrUnableToUploadFile
+	}
+
+	return url, nil
+}
+
+func DeleteUserImage(userID uint) error {
+	return AWS.DeleteFile(fmt.Sprintf("users/%d.webp", userID))
+}

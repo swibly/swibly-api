@@ -10,6 +10,7 @@ import (
 	"github.com/swibly/swibly-api/config"
 	"github.com/swibly/swibly-api/internal/model/dto"
 	"github.com/swibly/swibly-api/internal/service"
+	"github.com/swibly/swibly-api/pkg/aws"
 	"github.com/swibly/swibly-api/pkg/middleware"
 	"github.com/swibly/swibly-api/pkg/utils"
 	"github.com/swibly/swibly-api/translations"
@@ -26,7 +27,10 @@ func newAuthRoutes(handler *gin.RouterGroup) {
 		h.POST("/login", LoginHandler)
 
 		h.PATCH("/update", middleware.APIKeyHasEnabledUserActions, middleware.Auth, UpdateUserHandler)
+		h.PATCH("/image", middleware.APIKeyHasEnabledUserActions, middleware.Auth, UploadUserImage)
+
 		h.DELETE("/delete", middleware.APIKeyHasEnabledUserActions, middleware.Auth, DeleteUserHandler)
+		h.DELETE("/image", middleware.APIKeyHasEnabledUserActions, middleware.Auth, RemoveUserImage)
 	}
 
 	password := h.Group("/password")
@@ -202,6 +206,58 @@ func UpdateUserHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.AuthUserUpdated})
 }
 
+func UploadUserImage(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
+
+	userProfilePicture := &dto.UserProfilePicture{}
+	if err := ctx.Bind(userProfilePicture); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.InvalidBody})
+		return
+	}
+
+	if errs := utils.ValidateStruct(userProfilePicture); errs != nil {
+		err := utils.ValidateErrorMessage(ctx, errs[0])
+
+		log.Print(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": gin.H{err.Param: err.Message}})
+		return
+	}
+
+	if err := service.User.SetProfilePicture(issuer.ID, userProfilePicture.Image); err != nil {
+		if errors.Is(err, aws.ErrUnsupportedFileType) {
+			log.Print(err)
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UnsupportedFileType})
+			return
+		}
+
+		if errors.Is(err, aws.ErrUnableToDecode) {
+			log.Print(err)
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UnableToDecodeFile})
+			return
+		}
+
+		if errors.Is(err, aws.ErrUnableToEncode) {
+			log.Print(err)
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UnableToDecodeFile})
+			return
+		}
+
+		if errors.Is(err, aws.ErrFileTooLarge) {
+			log.Print(err)
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.FileTooLarge})
+			return
+		}
+
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": dict.AuthUserUpdated})
+}
+
 func DeleteUserHandler(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
@@ -214,6 +270,20 @@ func DeleteUserHandler(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.AuthUserDeleted})
+}
+
+func RemoveUserImage(ctx *gin.Context) {
+	dict := translations.GetTranslation(ctx)
+
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
+
+	if err := service.User.RemoveProfilePicture(issuer.ID, issuer.Email); err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": dict.AuthUserUpdated})
 }
 
 func RequestPasswordResetHandler(ctx *gin.Context) {

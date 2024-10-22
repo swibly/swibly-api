@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"mime/multipart"
 	"time"
 
 	"github.com/swibly/swibly-api/pkg/language"
@@ -53,6 +54,8 @@ type UserUpdate struct {
 	Country *string `validate:"omitempty,max=40" json:"country"`
 
 	Language *language.Language `validate:"omitempty,mustbesupportedlanguage" json:"language"`
+
+	ProfilePicture *string `validate:"omitempty" json:"-"`
 }
 
 type UserProfile struct {
@@ -120,6 +123,10 @@ type UserShow struct {
 	Following  bool
 	Inventory  bool
 	Formations bool
+}
+
+type UserProfilePicture struct {
+	Image *multipart.FileHeader `validate:"required" form:"image"`
 }
 
 func (u *UserProfile) HasPermissions(permissions ...string) bool {

@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"image"
-	"image/jpeg"
-	"image/png"
 	"io"
 	"mime/multipart"
 	"path"
@@ -17,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/chai2010/webp"
+	"github.com/disintegration/imaging"
 	"github.com/swibly/swibly-api/config"
 )
 
@@ -81,20 +79,9 @@ func UploadProjectImage(projectID uint, file *multipart.FileHeader) (string, err
 	}
 	defer src.Close()
 
-	var img image.Image
-	switch ext {
-	case ".jpg", ".jpeg":
-		img, err = jpeg.Decode(src)
-		if err != nil {
-			return "", ErrUnableToDecode
-		}
-	case ".png":
-		img, err = png.Decode(src)
-		if err != nil {
-			return "", ErrUnableToDecode
-		}
-	default:
-		return "", ErrUnsupportedFileType
+	img, err := imaging.Decode(src)
+	if err != nil {
+		return "", ErrUnableToDecode
 	}
 
 	outputPath := fmt.Sprintf("projects/%d.webp", projectID)
@@ -136,20 +123,9 @@ func UploadUserImage(userID uint, file *multipart.FileHeader) (string, error) {
 	}
 	defer src.Close()
 
-	var img image.Image
-	switch ext {
-	case ".jpg", ".jpeg":
-		img, err = jpeg.Decode(src)
-		if err != nil {
-			return "", ErrUnableToDecode
-		}
-	case ".png":
-		img, err = png.Decode(src)
-		if err != nil {
-			return "", ErrUnableToDecode
-		}
-	default:
-		return "", ErrUnsupportedFileType
+	img, err := imaging.Decode(src)
+	if err != nil {
+		return "", ErrUnableToDecode
 	}
 
 	outputPath := fmt.Sprintf("users/%d.webp", userID)

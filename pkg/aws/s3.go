@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"image"
-	"image/jpeg"
-	"image/png"
 	"io"
 	"mime/multipart"
 	"path"
@@ -17,11 +14,12 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/chai2010/webp"
+	"github.com/disintegration/imaging"
 	"github.com/swibly/swibly-api/config"
 )
 
 var (
-	ErrUnableToOpeFile     = fmt.Errorf("unable to open file")
+	ErrUnableToOpenFile    = fmt.Errorf("unable to open file")
 	ErrUnableToDecode      = fmt.Errorf("unable to decode file")
 	ErrUnableToEncode      = fmt.Errorf("unable to encode file")
 	ErrUnsupportedFileType = fmt.Errorf("unsupported file type")
@@ -77,24 +75,13 @@ func UploadProjectImage(projectID uint, file *multipart.FileHeader) (string, err
 
 	src, err := file.Open()
 	if err != nil {
-		return "", fmt.Errorf("unable to open file: %v", err)
+		return "", ErrUnableToOpenFile
 	}
 	defer src.Close()
 
-	var img image.Image
-	switch ext {
-	case ".jpg", ".jpeg":
-		img, err = jpeg.Decode(src)
-		if err != nil {
-			return "", ErrUnableToDecode
-		}
-	case ".png":
-		img, err = png.Decode(src)
-		if err != nil {
-			return "", ErrUnableToDecode
-		}
-	default:
-		return "", ErrUnsupportedFileType
+	img, err := imaging.Decode(src)
+	if err != nil {
+		return "", ErrUnableToDecode
 	}
 
 	outputPath := fmt.Sprintf("projects/%d.webp", projectID)
@@ -132,24 +119,13 @@ func UploadUserImage(userID uint, file *multipart.FileHeader) (string, error) {
 
 	src, err := file.Open()
 	if err != nil {
-		return "", fmt.Errorf("unable to open file: %v", err)
+		return "", ErrUnableToOpenFile
 	}
 	defer src.Close()
 
-	var img image.Image
-	switch ext {
-	case ".jpg", ".jpeg":
-		img, err = jpeg.Decode(src)
-		if err != nil {
-			return "", ErrUnableToDecode
-		}
-	case ".png":
-		img, err = png.Decode(src)
-		if err != nil {
-			return "", ErrUnableToDecode
-		}
-	default:
-		return "", ErrUnsupportedFileType
+	img, err := imaging.Decode(src)
+	if err != nil {
+		return "", ErrUnableToDecode
 	}
 
 	outputPath := fmt.Sprintf("users/%d.webp", userID)

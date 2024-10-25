@@ -801,6 +801,7 @@ func (pr *projectRepository) ClearTrash(userID uint) error {
 	tx := pr.db.Begin()
 
 	if err := tx.Unscoped().
+		Where("project_id IN (SELECT id FROM projects WHERE deleted_at IS NOT NULL)").
 		Where(`
 			EXISTS (
 				SELECT 1
@@ -822,6 +823,7 @@ func (pr *projectRepository) ClearTrash(userID uint) error {
 	}
 
 	if err := tx.Unscoped().
+		Where("project_id IN (SELECT id FROM projects WHERE deleted_at IS NOT NULL)").
 		Where(`
 			EXISTS (
 				SELECT 1
@@ -843,6 +845,7 @@ func (pr *projectRepository) ClearTrash(userID uint) error {
 	}
 
 	if err := tx.Unscoped().
+		Where("project_id IN (SELECT id FROM projects WHERE deleted_at IS NOT NULL)").
 		Where(`
 			EXISTS (
 				SELECT 1
@@ -864,6 +867,7 @@ func (pr *projectRepository) ClearTrash(userID uint) error {
 	}
 
 	if err := tx.Unscoped().
+		Where("project_id IN (SELECT id FROM projects WHERE deleted_at IS NOT NULL)").
 		Where(`
 			EXISTS (
 				SELECT 1

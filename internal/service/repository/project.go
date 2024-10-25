@@ -356,6 +356,14 @@ func (pr *projectRepository) Update(projectID uint, updateModel *dto.ProjectUpda
 		}
 	}
 
+	if updateModel.Width != nil {
+		updates["width"] = *updateModel.Width
+	}
+
+	if updateModel.Height != nil {
+		updates["height"] = *updateModel.Height
+	}
+
 	if err := tx.Model(&model.Project{}).Where("id = ?", projectID).Updates(updates).Error; err != nil {
 		tx.Rollback()
 		return err

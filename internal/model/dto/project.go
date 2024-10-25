@@ -36,6 +36,9 @@ type ProjectUpdate struct {
 	Content any  `validate:"omitempty" form:"-"` // Set in code
 	Budget  *int `validate:"omitempty" form:"budget"`
 
+	Width  *int `validate:"omitempty,min=1,max=1000" form:"width"`
+	Height *int `validate:"omitempty,min=1,max=1000" form:"height"`
+
 	Published *bool `validate:"omitempty" form:"-"`
 }
 

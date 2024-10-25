@@ -306,11 +306,14 @@ func (pr *projectRepository) Update(projectID uint, updateModel *dto.ProjectUpda
 			}
 
 			err := tx.
-				Where("project_id = ? AND user_id NOT IN (?)",
+				Where("project_id = ? AND user_id NOT IN (?) AND user_id NOT IN (?)",
 					projectID,
 					tx.Table("project_user_permissions").
 						Select("user_id").
-						Where("project_id = ? AND allow_view = true", projectID)).
+						Where("project_id = ? AND allow_view = true", projectID),
+					tx.Table("project_owners").
+						Select("user_id").
+						Where("project_id = ?", projectID)).
 				Unscoped().
 				Delete(&model.ProjectUserFavorite{}).Error
 			if err != nil {

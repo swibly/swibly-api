@@ -242,6 +242,19 @@ func (pr *projectRepository) Create(createModel *dto.ProjectCreation) (uint, err
 		}
 	}
 
+	if createModel.Fork != nil {
+		fork, err := pr.Get(createModel.OwnerID, &model.Project{ID: *createModel.Fork})
+		if err != nil {
+			tx.Rollback()
+			return 0, err
+		}
+
+		if err := tx.Create(&model.ProjectUserPermission{ProjectID: fork.ID, UserID: fork.OwnerID, Allow: dto.Allow{View: true}}).Error; err != nil {
+			tx.Rollback()
+			return 0, err
+		}
+	}
+
 	if err := tx.Commit().Error; err != nil {
 		return 0, err
 	}
@@ -288,6 +301,19 @@ func (pr *projectRepository) Update(projectID uint, updateModel *dto.ProjectUpda
 			}
 		case false:
 			if err := tx.Where("project_id = ?", projectID).Unscoped().Delete(&model.ProjectPublication{}).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
+
+			err := tx.
+				Where("project_id = ? AND user_id NOT IN (?)",
+					projectID,
+					tx.Table("project_user_permissions").
+						Select("user_id").
+						Where("project_id = ? AND allow_view = true", projectID)).
+				Unscoped().
+				Delete(&model.ProjectUserFavorite{}).Error
+			if err != nil {
 				tx.Rollback()
 				return err
 			}
@@ -369,6 +395,14 @@ func (pr *projectRepository) removePermissions(userID uint, projectID uint) erro
 		}
 
 		if err := tx.Delete(&userPermission).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Exec(`DELETE FROM project_user_favorites
+			WHERE project_id = ? AND user_id = ? AND NOT EXISTS (
+				SELECT 1 FROM project_publications 
+				WHERE project_publications.project_id = project_user_favorites.project_id
+			)`, projectID, userID).Error; err != nil {
 			return err
 		}
 

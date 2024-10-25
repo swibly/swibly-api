@@ -809,14 +809,7 @@ func (pr *projectRepository) ClearTrash(userID uint) error {
 				WHERE po.project_id = project_user_favorites.project_id
 				AND po.user_id = ?
 			)
-			OR EXISTS (
-				SELECT 1
-				FROM project_user_permissions pu
-				WHERE pu.project_id = project_user_favorites.project_id
-				AND pu.user_id = ?
-				AND pu.allow_delete = true
-			)
-		`, userID, userID).
+		`, userID).
 		Delete(&model.ProjectUserFavorite{}).Error; err != nil {
 		tx.Rollback()
 		return err
@@ -831,14 +824,7 @@ func (pr *projectRepository) ClearTrash(userID uint) error {
 				WHERE po.project_id = project_user_permissions.project_id
 				AND po.user_id = ?
 			)
-			OR EXISTS (
-				SELECT 1
-				FROM project_user_permissions pu
-				WHERE pu.project_id = project_user_permissions.project_id
-				AND pu.user_id = ?
-				AND pu.allow_delete = true
-			)
-		`, userID, userID).
+		`, userID).
 		Delete(&model.ProjectUserPermission{}).Error; err != nil {
 		tx.Rollback()
 		return err
@@ -853,14 +839,7 @@ func (pr *projectRepository) ClearTrash(userID uint) error {
 				WHERE po.project_id = project_publications.project_id
 				AND po.user_id = ?
 			)
-			OR EXISTS (
-				SELECT 1
-				FROM project_user_permissions pu
-				WHERE pu.project_id = project_publications.project_id
-				AND pu.user_id = ?
-				AND pu.allow_delete = true
-			)
-		`, userID, userID).
+		`, userID).
 		Delete(&model.ProjectPublication{}).Error; err != nil {
 		tx.Rollback()
 		return err
@@ -875,14 +854,7 @@ func (pr *projectRepository) ClearTrash(userID uint) error {
 				WHERE po.project_id = project_owners.project_id
 				AND po.user_id = ?
 			)
-			OR EXISTS (
-				SELECT 1
-				FROM project_user_permissions pu
-				WHERE pu.project_id = project_owners.project_id
-				AND pu.user_id = ?
-				AND pu.allow_delete = true
-			)
-		`, userID, userID).
+		`, userID).
 		Delete(&model.ProjectOwner{}).Error; err != nil {
 		tx.Rollback()
 		return err
@@ -898,14 +870,7 @@ func (pr *projectRepository) ClearTrash(userID uint) error {
 				WHERE po.project_id = projects.id
 				AND po.user_id = ?
 			)
-			OR EXISTS (
-				SELECT 1
-				FROM project_user_permissions pu
-				WHERE pu.project_id = projects.id
-				AND pu.user_id = ?
-				AND pu.allow_delete = true
-			)
-		`, userID, userID).
+		`, userID).
 		Find(&projects).Error; err != nil {
 		tx.Rollback()
 		return err
@@ -927,14 +892,7 @@ func (pr *projectRepository) ClearTrash(userID uint) error {
 				WHERE po.project_id = projects.id
 				AND po.user_id = ?
 			)
-			OR EXISTS (
-				SELECT 1
-				FROM project_user_permissions pu
-				WHERE pu.project_id = projects.id
-				AND pu.user_id = ?
-				AND pu.allow_delete = true
-			)
-		`, userID, userID).
+		`, userID).
 		Delete(&model.Project{}).Error; err != nil {
 		tx.Rollback()
 		return err

@@ -69,8 +69,12 @@ func (cr *componentRepository) baseComponentQuery(issuerID uint) *gorm.DB {
 			c.price as price,
       c.budget as budget,
 			co.id AS owner_id,
+			u.id AS owner_id,
+			u.first_name AS owner_first_name,
+			u.last_name AS owner_last_name,
 			u.username AS owner_username,
-			u.profile_picture AS owner_profile_picture,
+      u.profile_picture AS owner_profile_picture,
+			u.verified AS owner_verified,
 			COALESCE((
 				SELECT COUNT(*)
 				FROM component_holders ch
@@ -144,8 +148,11 @@ func convertToComponentInfo(jsonInfo *dto.ComponentInfoJSON) (dto.ComponentInfo,
 		PaidPrice:           jsonInfo.PaidPrice,
 		SellPrice:           jsonInfo.SellPrice,
 		OwnerID:             jsonInfo.OwnerID,
+		OwnerFirstName:      jsonInfo.OwnerFirstName,
+		OwnerLastName:       jsonInfo.OwnerLastName,
 		OwnerUsername:       jsonInfo.OwnerUsername,
 		OwnerProfilePicture: jsonInfo.OwnerProfilePicture,
+		OwnerVerified:       jsonInfo.OwnerVerified,
 		IsPublic:            jsonInfo.IsPublic,
 		Holders:             jsonInfo.Holders,
 		Bought:              jsonInfo.Bought,
@@ -335,14 +342,20 @@ func (cr *componentRepository) Get(issuerID uint, componentModel *model.Componen
 
 		owner = dto.UserInfoLite{
 			ID:             ownerProfile.ID,
+			FirstName:      ownerProfile.FirstName,
+			LastName:       ownerProfile.LastName,
 			Username:       ownerProfile.Username,
 			ProfilePicture: ownerProfile.ProfilePicture,
+			Verified:       ownerProfile.Verified,
 		}
 	} else {
 		owner = dto.UserInfoLite{
 			ID:             0,
+			FirstName:      "",
+			LastName:       "",
 			Username:       "",
 			ProfilePicture: "",
+			Verified:       false,
 		}
 	}
 
@@ -385,8 +398,11 @@ func (cr *componentRepository) Get(issuerID uint, componentModel *model.Componen
 		Description:         component.Description,
 		Content:             contentData,
 		OwnerID:             owner.ID,
+		OwnerFirstName:      owner.FirstName,
+		OwnerLastName:       owner.LastName,
 		OwnerUsername:       owner.Username,
 		OwnerProfilePicture: owner.ProfilePicture,
+		OwnerVerified:       owner.Verified,
 		Budget:              component.Budget,
 		Price:               component.Price,
 		PaidPrice:           paidPrice,

@@ -106,25 +106,29 @@ func (uuc UserUseCase) Update(id uint, newModel *dto.UserUpdate) error {
 	return uuc.ur.Update(id, newModel)
 }
 
-func (uuc UserUseCase) SetProfilePicture(id uint, file *multipart.FileHeader) error {
-	url, err := aws.UploadUserImage(id, file)
+func (uuc UserUseCase) SetProfilePicture(user *dto.UserProfile, file *multipart.FileHeader) error {
+	if err := aws.DeleteUserImage(user.ProfilePicture); err != nil {
+		return err
+	}
+
+	url, err := aws.UploadUserImage(user.ID, file)
 	if err != nil {
 		return err
 	}
 
-	return uuc.Update(id, &dto.UserUpdate{
+	return uuc.Update(user.ID, &dto.UserUpdate{
 		ProfilePicture: &url,
 	})
 }
 
-func (uuc UserUseCase) RemoveProfilePicture(id uint, email string) error {
-	hasher := sha256.Sum256([]byte(email))
+func (uuc UserUseCase) RemoveProfilePicture(user *dto.UserProfile) error {
+	hasher := sha256.Sum256([]byte(user.Email))
 
-	if err := aws.DeleteUserImage(id); err != nil {
+	if err := aws.DeleteUserImage(user.ProfilePicture); err != nil {
 		return err
 	}
 
-	return uuc.Update(id, &dto.UserUpdate{
+	return uuc.Update(user.ID, &dto.UserUpdate{
 		ProfilePicture: utils.ToPtr(fmt.Sprintf("https://www.gravatar.com/avatar/%s?s=512&d=monsterid&r=g", hex.EncodeToString(hasher[:]))),
 	})
 }

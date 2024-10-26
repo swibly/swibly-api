@@ -139,11 +139,20 @@ func (u userRepository) Delete(id uint) error {
 	}
 
 	for _, projectID := range projectIDs {
-		if err := tx.Where("id = ?", projectID).Unscoped().Delete(&model.Project{}).Error; err != nil {
+		var project model.Project
+		if err := tx.Where("id = ?", projectID).First(&project).Error; err != nil {
 			tx.Rollback()
 			return err
 		}
-		if err := aws.DeleteProjectImage(projectID); err != nil {
+
+		if project.BannerURL != "" {
+			if err := aws.DeleteProjectImage(project.BannerURL); err != nil {
+				tx.Rollback()
+				return err
+			}
+		}
+
+		if err := tx.Where("id = ?", projectID).Unscoped().Delete(&model.Project{}).Error; err != nil {
 			tx.Rollback()
 			return err
 		}

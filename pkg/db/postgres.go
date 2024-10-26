@@ -108,6 +108,7 @@ func Load() {
 		&model.ComponentPublication{},
 
 		&model.Notification{},
+		&model.NotificationPublication{},
 		&model.NotificationUser{},
 		&model.NotificationUserRead{},
 	}

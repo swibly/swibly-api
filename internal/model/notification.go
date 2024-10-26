@@ -19,6 +19,14 @@ type Notification struct {
 	Redirect *string
 }
 
+type NotificationPublication struct {
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+
+	NotificationID uint `gorm:"index"`
+}
+
 type NotificationUser struct {
 	ID        uint `gorm:"primarykey"`
 	CreatedAt time.Time

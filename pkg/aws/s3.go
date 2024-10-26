@@ -7,8 +7,10 @@ import (
 	"io"
 	"mime/multipart"
 	"path"
+	"path/filepath"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -84,7 +86,7 @@ func UploadProjectImage(projectID uint, file *multipart.FileHeader) (string, err
 		return "", ErrUnableToDecode
 	}
 
-	outputPath := fmt.Sprintf("projects/%d.webp", projectID)
+	outputPath := fmt.Sprintf("projects/%d-%d.webp", time.Now().Unix(), projectID)
 	var buf bytes.Buffer
 
 	err = webp.Encode(&buf, img, nil)
@@ -100,8 +102,8 @@ func UploadProjectImage(projectID uint, file *multipart.FileHeader) (string, err
 	return url, nil
 }
 
-func DeleteProjectImage(projectID uint) error {
-	return AWS.DeleteFile(fmt.Sprintf("projects/%d.webp", projectID))
+func DeleteProjectImage(filename string) error {
+	return AWS.DeleteFile(fmt.Sprintf("projects/%s", filepath.Base(filename)))
 }
 
 func UploadUserImage(userID uint, file *multipart.FileHeader) (string, error) {
@@ -128,7 +130,7 @@ func UploadUserImage(userID uint, file *multipart.FileHeader) (string, error) {
 		return "", ErrUnableToDecode
 	}
 
-	outputPath := fmt.Sprintf("users/%d.webp", userID)
+	outputPath := fmt.Sprintf("users/%d-%d.webp", time.Now().Unix(), userID)
 	var buf bytes.Buffer
 
 	err = webp.Encode(&buf, img, nil)
@@ -144,6 +146,6 @@ func UploadUserImage(userID uint, file *multipart.FileHeader) (string, error) {
 	return url, nil
 }
 
-func DeleteUserImage(userID uint) error {
-	return AWS.DeleteFile(fmt.Sprintf("users/%d.webp", userID))
+func DeleteUserImage(filename string) error {
+	return AWS.DeleteFile(fmt.Sprintf("users/%s", filepath.Base(filename)))
 }

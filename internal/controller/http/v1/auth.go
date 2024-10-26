@@ -225,7 +225,7 @@ func UploadUserImage(ctx *gin.Context) {
 		return
 	}
 
-	if err := service.User.SetProfilePicture(issuer.ID, userProfilePicture.Image); err != nil {
+	if err := service.User.SetProfilePicture(issuer, userProfilePicture.Image); err != nil {
 		if errors.Is(err, aws.ErrUnsupportedFileType) {
 			log.Print(err)
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.UnsupportedFileType})
@@ -277,7 +277,7 @@ func RemoveUserImage(ctx *gin.Context) {
 
 	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
 
-	if err := service.User.RemoveProfilePicture(issuer.ID, issuer.Email); err != nil {
+	if err := service.User.RemoveProfilePicture(issuer); err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return

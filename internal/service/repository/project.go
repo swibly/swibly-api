@@ -344,6 +344,19 @@ func (pr *projectRepository) Update(projectID uint, updateModel *dto.ProjectUpda
 	}
 
 	if updateModel.BannerImage != nil {
+		var project model.Project
+		if err := tx.Where("id = ?", projectID).First(&project).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+
+		if project.BannerURL != "" {
+			if err := aws.DeleteProjectImage(project.BannerURL); err != nil {
+				tx.Rollback()
+				return err
+			}
+		}
+
 		url, err := aws.UploadProjectImage(projectID, updateModel.BannerImage)
 		if err != nil {
 			tx.Rollback()
@@ -779,7 +792,7 @@ func (pr *projectRepository) UnsafeDelete(id uint) error {
 		return err
 	}
 
-	if err := aws.DeleteProjectImage(id); err != nil {
+	if err := aws.DeleteProjectImage(project.BannerURL); err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -877,7 +890,7 @@ func (pr *projectRepository) ClearTrash(userID uint) error {
 	}
 
 	for _, project := range projects {
-		if err := aws.DeleteProjectImage(project.ID); err != nil {
+		if err := aws.DeleteProjectImage(project.BannerURL); err != nil {
 			tx.Rollback()
 			return err
 		}

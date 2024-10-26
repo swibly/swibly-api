@@ -67,6 +67,7 @@ func (cr *componentRepository) baseComponentQuery(issuerID uint) *gorm.DB {
 			c.description as description,
 			c.content as content,
 			c.price as price,
+      c.budget as budget,
 			co.id AS owner_id,
 			u.username AS owner_username,
 			u.profile_picture AS owner_profile_picture,
@@ -138,6 +139,7 @@ func convertToComponentInfo(jsonInfo *dto.ComponentInfoJSON) (dto.ComponentInfo,
 		Name:                jsonInfo.Name,
 		Description:         jsonInfo.Description,
 		Content:             content,
+		Budget:              jsonInfo.Budget,
 		Price:               jsonInfo.Price,
 		PaidPrice:           jsonInfo.PaidPrice,
 		SellPrice:           jsonInfo.SellPrice,
@@ -211,6 +213,7 @@ func (cr *componentRepository) Create(createModel *dto.ComponentCreation) error 
 		Name:        createModel.Name,
 		Description: createModel.Description,
 		Content:     string(contentJSON),
+		Budget:      createModel.Budget,
 		Price:       createModel.Price,
 	}
 
@@ -282,6 +285,10 @@ func (cr *componentRepository) Update(componentID uint, updateModel *dto.Compone
 			return err
 		}
 		updates["content"] = string(contentJSON)
+	}
+
+	if updateModel.Budget != nil {
+		updates["budget"] = *updateModel.Budget
 	}
 
 	if updateModel.Price != nil {
@@ -380,6 +387,7 @@ func (cr *componentRepository) Get(issuerID uint, componentModel *model.Componen
 		OwnerID:             owner.ID,
 		OwnerUsername:       owner.Username,
 		OwnerProfilePicture: owner.ProfilePicture,
+		Budget:              component.Budget,
 		Price:               component.Price,
 		PaidPrice:           paidPrice,
 		SellPrice:           sellPrice,

@@ -45,8 +45,11 @@ type ComponentInfoJSON struct {
 	Content utils.JSON `json:"content"`
 
 	OwnerID             uint   `json:"owner_id"`
+	OwnerFirstName      string `json:"owner_firstname"`
+	OwnerLastName       string `json:"owner_lastname"`
 	OwnerUsername       string `json:"owner_username"`
-	OwnerProfilePicture string `json:"owner_profile_picture"`
+	OwnerProfilePicture string `json:"owner_pfp"`
+	OwnerVerified       bool   `json:"owner_verified"`
 
 	Budget    int  `json:"budget"`
 	Price     int  `json:"price"`
@@ -72,8 +75,11 @@ type ComponentInfo struct {
 	Content any `json:"content"`
 
 	OwnerID             uint   `json:"owner_id"`
+	OwnerFirstName      string `json:"owner_firstname"`
+	OwnerLastName       string `json:"owner_lastname"`
 	OwnerUsername       string `json:"owner_username"`
-	OwnerProfilePicture string `json:"owner_profile_picture"`
+	OwnerProfilePicture string `json:"owner_pfp"`
+	OwnerVerified       bool   `json:"owner_verified"`
 
 	Budget    int  `json:"budget"`
 	Price     int  `json:"price"`

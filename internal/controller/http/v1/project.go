@@ -413,6 +413,11 @@ func PublishProjectHandler(ctx *gin.Context) {
 	project := ctx.Keys["project_lookup"].(*dto.ProjectInfo)
 
 	if err := service.Project.Publish(project.ID); err != nil {
+		if errors.Is(err, repository.ErrUpstreamNotPublic) {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": dict.UpstreamNotPublic})
+			return
+		}
+
 		if errors.Is(err, repository.ErrProjectTrashed) {
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": dict.ProjectAlreadyTrashed})
 			return

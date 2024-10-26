@@ -1,14 +1,36 @@
 services:
+    swibly-api:
+        container_name: swibly-api
+        build:
+            context: .
+            dockerfile: Dockerfile
+        env_file:
+         - .env
+        ports:
+          - '$API_HOST:$API_PORT:8080'
+        networks:
+          - "swibly_internal"
+          - "swibly_external"
+        depends_on:
+          - "postgres"
+        restart: unless-stopped
+
     postgres:
         image: postgres:latest
-        container_name: $DEBUG_POSTGRES_CONTAINER_NAME
+        container_name: swibly-api-db
         environment:
-            POSTGRES_DB: $DEBUG_POSTGRES_DATABASE
-            POSTGRES_USER: $DEBUG_POSTGRES_USER
-            POSTGRES_PASSWORD: $DEBUG_POSTGRES_PASSWORD
+            POSTGRES_DB: $POSTGRES_DATABASE
+            POSTGRES_USER: $POSTGRES_USER
+            POSTGRES_PASSWORD: $POSTGRES_PASSWORD
         env_file:
           - .env
-        ports:
-            - '5432:5432'
         volumes:
             - ./pgdata:/var/lib/postgresql/data
+        networks:
+          - "swibly_internal"
+        restart: unless-stopped
+
+networks:
+  swibly_internal:
+    internal: true
+  swibly_external:

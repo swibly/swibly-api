@@ -243,13 +243,11 @@ func (pr *projectRepository) Create(createModel *dto.ProjectCreation) (uint, err
 	}
 
 	if createModel.Fork != nil {
-		fork, err := pr.Get(createModel.OwnerID, &model.Project{ID: *createModel.Fork})
-		if err != nil {
-			tx.Rollback()
-			return 0, err
+		var userID uint
+		if err := tx.Model(&model.ProjectOwner{}).Where("project_id = ?", createModel.Fork).Pluck("user_id", userID); err != nil {
 		}
 
-		if err := tx.Create(&model.ProjectUserPermission{ProjectID: fork.ID, UserID: fork.OwnerID, Allow: dto.Allow{View: true}}).Error; err != nil {
+		if err := tx.Create(&model.ProjectUserPermission{ProjectID: project.ID, UserID: userID, Allow: dto.Allow{View: true}}).Error; err != nil {
 			tx.Rollback()
 			return 0, err
 		}

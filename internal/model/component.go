@@ -17,7 +17,8 @@ type Component struct {
 
 	Content any `gorm:"type:jsonb;not null"`
 
-	Price int `gorm:"default:0"`
+	Price  int `gorm:"default:0"`
+	Budget int `gorm:"default:0"`
 }
 
 type ComponentOwner struct {

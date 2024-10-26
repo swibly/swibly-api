@@ -13,7 +13,8 @@ type ComponentCreation struct {
 
 	Content any `validate:"required" json:"content"`
 
-	Price int `validate:"omitempty" json:"price"`
+	Price  int `validate:"omitempty" json:"price"`
+	Budget int `validate:"omitempty" json:"budget"`
 
 	OwnerID uint `json:"-"` // Set using JWT
 
@@ -26,7 +27,8 @@ type ComponentUpdate struct {
 
 	Content *any `validate:"omitempty" json:"content"`
 
-	Price *int `validate:"omitempty,min=0,max=1000000" json:"price"`
+	Price  *int `validate:"omitempty,min=0,max=1000000" json:"price"`
+	Budget *int `validate:"omitempty,min=0" json:"budget"`
 
 	Public *bool `validate:"omitempty" json:"public"`
 }
@@ -43,9 +45,13 @@ type ComponentInfoJSON struct {
 	Content utils.JSON `json:"content"`
 
 	OwnerID             uint   `json:"owner_id"`
+	OwnerFirstName      string `json:"owner_firstname"`
+	OwnerLastName       string `json:"owner_lastname"`
 	OwnerUsername       string `json:"owner_username"`
-	OwnerProfilePicture string `json:"owner_profile_picture"`
+	OwnerProfilePicture string `json:"owner_pfp"`
+	OwnerVerified       bool   `json:"owner_verified"`
 
+	Budget    int  `json:"budget"`
 	Price     int  `json:"price"`
 	PaidPrice *int `json:"paid_price"`
 	SellPrice *int `json:"sell_price"`
@@ -69,9 +75,13 @@ type ComponentInfo struct {
 	Content any `json:"content"`
 
 	OwnerID             uint   `json:"owner_id"`
+	OwnerFirstName      string `json:"owner_firstname"`
+	OwnerLastName       string `json:"owner_lastname"`
 	OwnerUsername       string `json:"owner_username"`
-	OwnerProfilePicture string `json:"owner_profile_picture"`
+	OwnerProfilePicture string `json:"owner_pfp"`
+	OwnerVerified       bool   `json:"owner_verified"`
 
+	Budget    int  `json:"budget"`
 	Price     int  `json:"price"`
 	PaidPrice *int `json:"paid_price"`
 	SellPrice *int `json:"sell_price"`

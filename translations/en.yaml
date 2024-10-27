@@ -59,7 +59,7 @@ project_unassigned_user: User has been successfully unassigned from the project.
 project_empty_assign: The user cannot have all fields empty. If you want to remove them from the project, try unassigning.
 project_user_not_assigned: The user is not assigned to the project.
 project_cannot_assign_owner: The project owner cannot be reassigned.
-upstream_not_public: The upstream project is not public.
+upstream_not_public: The original project is not published or accessible to the public.
 trash_cleared: Trash has been successfully cleared.
 insufficient_arkhoins: Insufficient Arkhoins to complete the transaction.
 component_created: Component successfully created.

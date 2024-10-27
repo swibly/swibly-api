@@ -296,8 +296,8 @@ func (pr *projectRepository) Update(projectID uint, updateModel *dto.ProjectUpda
 
 				var upstreamPublication model.ProjectPublication
 				if err := tx.Where("project_id = ?", upstreamProject.ID).First(&upstreamPublication).Error; err != nil {
+					tx.Rollback()
 					if errors.Is(err, gorm.ErrRecordNotFound) {
-						tx.Rollback()
 						return ErrUpstreamNotPublic
 					}
 					return err
@@ -813,6 +813,11 @@ func (pr *projectRepository) UnsafeDelete(id uint) error {
 		return err
 	}
 
+	if err := tx.Model(&model.Project{}).Where("fork = ?", id).Update("fork", nil).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
 	if err := tx.Commit().Error; err != nil {
 		tx.Rollback()
 		return err
@@ -922,6 +927,18 @@ func (pr *projectRepository) ClearTrash(userID uint) error {
 		Delete(&model.Project{}).Error; err != nil {
 		tx.Rollback()
 		return err
+	}
+
+	deletedProjectIDs := make([]uint, len(projects))
+	for i, project := range projects {
+		deletedProjectIDs[i] = project.ID
+	}
+
+	if len(deletedProjectIDs) > 0 {
+		if err := tx.Model(&model.Project{}).Where("fork IN ?", deletedProjectIDs).Update("fork", nil).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
 	}
 
 	if err := tx.Commit().Error; err != nil {

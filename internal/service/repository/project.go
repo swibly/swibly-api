@@ -123,7 +123,8 @@ func (pr *projectRepository) baseProjectQuery(issuerID uint) *gorm.DB {
 			) AS total_favorites
 		`, issuerID).
 		Joins("JOIN project_owners po ON po.project_id = p.id").
-		Joins("JOIN users u ON po.user_id = u.id")
+		Joins("JOIN users u ON po.user_id = u.id").
+		Order("created_at DESC")
 }
 
 func (pr *projectRepository) paginateProjects(query *gorm.DB, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
@@ -644,7 +645,7 @@ func (pr *projectRepository) GetPublic(issuerID uint, page, perPage int) (*dto.P
 }
 
 func (pr *projectRepository) GetFavorited(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
-	query := pr.baseProjectQuery(issuerID).Where("deleted_at IS NULL").Joins("JOIN project_user_favorites f ON f.project_id = p.id AND f.user_id = ?", userID)
+	query := pr.baseProjectQuery(issuerID).Where("deleted_at IS NULL").Joins("JOIN project_user_favorites f ON f.project_id = p.id AND f.user_id = ?", userID).Order("f.created_at ASC")
 
 	if onlyPublic {
 		query = query.Joins("JOIN project_publications pp ON pp.project_id = p.id")

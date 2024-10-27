@@ -801,9 +801,11 @@ func (pr *projectRepository) UnsafeDelete(id uint) error {
 		return err
 	}
 
-	if err := aws.DeleteProjectImage(project.BannerURL); err != nil {
-		tx.Rollback()
-		return err
+	if project.BannerURL != "" {
+		if err := aws.DeleteProjectImage(project.BannerURL); err != nil {
+			tx.Rollback()
+			return err
+		}
 	}
 
 	if err := tx.Unscoped().Delete(&project).Error; err != nil {
@@ -899,9 +901,11 @@ func (pr *projectRepository) ClearTrash(userID uint) error {
 	}
 
 	for _, project := range projects {
-		if err := aws.DeleteProjectImage(project.BannerURL); err != nil {
-			tx.Rollback()
-			return err
+		if project.BannerURL != "" {
+			if err := aws.DeleteProjectImage(project.BannerURL); err != nil {
+				tx.Rollback()
+				return err
+			}
 		}
 	}
 

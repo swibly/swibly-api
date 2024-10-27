@@ -34,6 +34,8 @@ func (puc ProjectUseCase) Fork(projectID, issuerID uint) (uint, error) {
 		Name:        project.Name,
 		Description: project.Description,
 		Budget:      project.Budget,
+		Width:       project.Width,
+		Height:      project.Height,
 		OwnerID:     issuerID,
 		Public:      false,
 		Content:     content,

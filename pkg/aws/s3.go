@@ -4,19 +4,17 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"image"
 	"io"
 	"mime/multipart"
-	"path"
 	"path/filepath"
-	"slices"
-	"strings"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/chai2010/webp"
 	"github.com/disintegration/imaging"
+	"github.com/rwcarlsen/goexif/exif"
 	"github.com/swibly/swibly-api/config"
 )
 
@@ -32,11 +30,62 @@ var (
 func (svc *AWSService) UploadFile(key string, file io.Reader) (string, error) {
 	newKey := fmt.Sprintf("%s/%s", config.Router.Environment, key)
 
-	_, err := svc.s3.PutObject(context.TODO(), &s3.PutObjectInput{
+	buf := new(bytes.Buffer)
+	_, err := io.Copy(buf, file)
+	if err != nil {
+		return "", fmt.Errorf("unable to read file: %v", err)
+	}
+
+	imgData := bytes.NewReader(buf.Bytes())
+
+	img, _, err := image.Decode(imgData)
+	if err != nil {
+		return "", fmt.Errorf("unable to decode image: %v", err)
+	}
+
+	imgData.Seek(0, io.SeekStart)
+
+	exifData, err := exif.Decode(imgData)
+	if err == nil {
+		orientTag, err := exifData.Get(exif.Orientation)
+		if err == nil {
+			orient, err := orientTag.Int(0)
+			if err == nil {
+				switch orient {
+				case 2:
+					img = imaging.FlipH(img)
+				case 3:
+					img = imaging.Rotate180(img)
+				case 4:
+					img = imaging.FlipV(img)
+				case 5:
+					img = imaging.Transpose(img)
+				case 6:
+					img = imaging.Rotate90(img)
+				case 7:
+					img = imaging.Transverse(img)
+				case 8:
+					img = imaging.Rotate270(img)
+				}
+			}
+		}
+	}
+
+	processedImgBuf := new(bytes.Buffer)
+	err = webp.Encode(processedImgBuf, img, &webp.Options{
+		Lossless: true,
+	})
+	if err != nil {
+		return "", fmt.Errorf("unable to encode image to WebP: %v", err)
+	}
+
+	newKey = newKey + ".webp"
+
+	_, err = svc.s3.PutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket:      aws.String(config.S3.Bucket),
 		Key:         aws.String(newKey),
-		Body:        file,
-		ContentType: aws.String("application/octet-stream"),
+		Body:        bytes.NewReader(processedImgBuf.Bytes()),
+		ContentType: aws.String("image/webp"),
 		ACL:         types.ObjectCannedACLPublicRead,
 	})
 	if err != nil {
@@ -69,41 +118,20 @@ func UploadProjectImage(projectID uint, file *multipart.FileHeader) (string, err
 		return "", ErrFileTooLarge
 	}
 
-	ext := strings.ToLower(path.Ext(file.Filename))
-
-	if !slices.Contains([]string{".png", ".jpg", ".jpeg"}, ext) {
-		return "", ErrUnsupportedFileType
-	}
-
 	src, err := file.Open()
 	if err != nil {
 		return "", ErrUnableToOpenFile
 	}
 	defer src.Close()
 
-	img, err := imaging.Decode(src)
-	if err != nil {
-		return "", ErrUnableToDecode
-	}
+	outputPath := fmt.Sprintf("projects/%d", projectID)
 
-	outputPath := fmt.Sprintf("projects/%d-%d.webp", time.Now().Unix(), projectID)
-	var buf bytes.Buffer
-
-	err = webp.Encode(&buf, img, nil)
-	if err != nil {
-		return "", ErrUnableToEncode
-	}
-
-	url, err := AWS.UploadFile(outputPath, &buf)
+	url, err := AWS.UploadFile(outputPath, src)
 	if err != nil {
 		return "", ErrUnableToUploadFile
 	}
 
 	return url, nil
-}
-
-func DeleteProjectImage(filename string) error {
-	return AWS.DeleteFile(fmt.Sprintf("projects/%s", filepath.Base(filename)))
 }
 
 func UploadUserImage(userID uint, file *multipart.FileHeader) (string, error) {
@@ -113,37 +141,24 @@ func UploadUserImage(userID uint, file *multipart.FileHeader) (string, error) {
 		return "", ErrFileTooLarge
 	}
 
-	ext := strings.ToLower(path.Ext(file.Filename))
-
-	if !slices.Contains([]string{".png", ".jpg", ".jpeg"}, ext) {
-		return "", ErrUnsupportedFileType
-	}
-
 	src, err := file.Open()
 	if err != nil {
 		return "", ErrUnableToOpenFile
 	}
 	defer src.Close()
 
-	img, err := imaging.Decode(src)
-	if err != nil {
-		return "", ErrUnableToDecode
-	}
+	outputPath := fmt.Sprintf("users/%d", userID)
 
-	outputPath := fmt.Sprintf("users/%d-%d.webp", time.Now().Unix(), userID)
-	var buf bytes.Buffer
-
-	err = webp.Encode(&buf, img, nil)
-	if err != nil {
-		return "", ErrUnableToEncode
-	}
-
-	url, err := AWS.UploadFile(outputPath, &buf)
+	url, err := AWS.UploadFile(outputPath, src)
 	if err != nil {
 		return "", ErrUnableToUploadFile
 	}
 
 	return url, nil
+}
+
+func DeleteProjectImage(filename string) error {
+	return AWS.DeleteFile(fmt.Sprintf("projects/%s", filepath.Base(filename)))
 }
 
 func DeleteUserImage(filename string) error {

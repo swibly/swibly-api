@@ -156,11 +156,11 @@ func adjustOrientation(reader io.Reader, img image.Image) image.Image {
 				case 5:
 					img = imaging.Transpose(img)
 				case 6:
-					img = imaging.Rotate90(img)
+					img = imaging.Rotate270(img)
 				case 7:
 					img = imaging.Transverse(img)
 				case 8:
-					img = imaging.Rotate270(img)
+					img = imaging.Rotate90(img)
 				}
 			}
 		}

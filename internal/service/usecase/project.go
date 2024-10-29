@@ -87,8 +87,8 @@ func (puc ProjectUseCase) GetTrashed(ownerID uint, page, perPage int) (*dto.Pagi
 	return puc.pr.GetTrashed(ownerID, page, perPage)
 }
 
-func (puc ProjectUseCase) SearchByName(issuerID uint, name string, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
-	return puc.pr.SearchByName(issuerID, name, page, perPage)
+func (puc ProjectUseCase) Search(issuerID uint, search *dto.SearchProject, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
+	return puc.pr.Search(issuerID, search, page, perPage)
 }
 
 func (puc ProjectUseCase) GetContent(projectID uint) (any, error) {

@@ -82,8 +82,8 @@ func (uuc UserUseCase) GetByUsernameOrEmail(username, email string) (*dto.UserPr
 	return uuc.ur.Get(&model.User{Username: username, Email: email})
 }
 
-func (uuc UserUseCase) SearchByName(name string, page, perpage int) (*dto.Pagination[dto.UserProfile], error) {
-	return uuc.ur.SearchByName(name, page, perpage)
+func (uuc UserUseCase) Search(issuerID uint, search *dto.SearchUser, page, perpage int) (*dto.Pagination[dto.UserProfile], error) {
+	return uuc.ur.Search(issuerID, search, page, perpage)
 }
 
 func (uuc UserUseCase) UnsafeGetByID(id uint) (*model.User, error) {

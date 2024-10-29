@@ -55,6 +55,10 @@ func (cuc *ComponentUseCase) GetHoldersByID(issuerID, componentID uint, page, pe
 	return cuc.cr.GetHoldersByID(issuerID, componentID, page, perPage)
 }
 
+func (cuc *ComponentUseCase) Search(issuerID uint, search *dto.SearchComponent, page, perPage int) (*dto.Pagination[dto.ComponentInfo], error) {
+	return cuc.cr.Search(issuerID, search, page, perPage)
+}
+
 func (cuc *ComponentUseCase) Buy(issuerID, componentID uint) error {
 	return cuc.cr.Buy(issuerID, componentID)
 }

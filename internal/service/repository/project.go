@@ -3,6 +3,7 @@ package repository
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/swibly/swibly-api/internal/model"
 	"github.com/swibly/swibly-api/internal/model/dto"
@@ -32,7 +33,7 @@ type ProjectRepository interface {
 	GetFavorited(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
 	GetTrashed(ownerID uint, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
 
-	SearchByName(issuerID uint, name string, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
+	Search(issuerID uint, options *dto.SearchProject, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error)
 
 	GetContent(projectID uint) (any, error)
 	SaveContent(projectID uint, content any) error
@@ -123,8 +124,7 @@ func (pr *projectRepository) baseProjectQuery(issuerID uint) *gorm.DB {
 			) AS total_favorites
 		`, issuerID).
 		Joins("JOIN project_owners po ON po.project_id = p.id").
-		Joins("JOIN users u ON po.user_id = u.id").
-		Order("created_at DESC")
+		Joins("JOIN users u ON po.user_id = u.id")
 }
 
 func (pr *projectRepository) paginateProjects(query *gorm.DB, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
@@ -671,9 +671,79 @@ func (pr *projectRepository) GetTrashed(issuerID uint, page, perPage int) (*dto.
 	return pr.paginateProjects(query, page, perPage)
 }
 
-func (pr *projectRepository) SearchByName(issuerID uint, name string, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
+func (pr *projectRepository) Search(issuerID uint, search *dto.SearchProject, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
 	query := pr.baseProjectQuery(issuerID).
-		Where(`to_tsvector('simple', p.name || ' ' || p.description || ' ' || u.username) @@ plainto_tsquery('simple', ?)`, name)
+		Where("deleted_at IS NULL").
+		Joins("JOIN project_publications pp on pp.project_id = p.id")
+
+	marshal, _ := json.MarshalIndent(search, "", "    ")
+	fmt.Println(string(marshal))
+
+	orderDirection := "DESC"
+	if search.OrderAscending {
+		orderDirection = "ASC"
+	}
+
+	if search.Name != nil {
+		query = query.
+			Where(`(
+        regexp_like(p.name, ?, 'i') OR
+        regexp_like(p.description, ?, 'i') OR
+        regexp_like(u.first_name, ?, 'i') OR
+        regexp_like(u.last_name, ?, 'i') OR
+        regexp_like(u.username, ?, 'i')
+      )`, *search.Name, *search.Name, *search.Name, *search.Name, *search.Name)
+
+		// TODO: Create ranking system
+	}
+
+	if search.MinArea > 0 || search.MaxArea > 0 {
+		if search.MinArea > 0 {
+			query = query.
+				Where("p.width * p.height >= ?", search.MinArea)
+		}
+
+		if search.MaxArea > 0 {
+			query = query.
+				Where("p.width * p.height <= ?", search.MaxArea)
+		}
+	}
+
+	if search.MinBudget > 0 || search.MaxBudget > 0 {
+		if search.MinBudget > 0 {
+			query = query.
+				Where("p.budget >= ?", search.MinBudget)
+		}
+
+		if search.MaxBudget > 0 {
+			query = query.
+				Where("p.budget <= ?", search.MaxBudget)
+		}
+	}
+
+	if search.FollowedUsersOnly {
+		query = query.
+			Joins("JOIN followers uf ON uf.follower_id = u.id").
+			Where("uf.following_id = ?", issuerID)
+	}
+
+	if search.OrderAlphabetic {
+		query = query.Order("p.name " + orderDirection)
+	} else if search.OrderCreationDate {
+		query = query.Order("p.created_at " + orderDirection)
+	} else if search.OrderModifiedDate {
+		query = query.Order("p.updated_at " + orderDirection)
+	} else {
+		query = query.Order("p.created_at " + orderDirection)
+	}
+
+	if search.MostFavorites {
+		query = query.Order("(SELECT COUNT(*) FROM project_user_favorites WHERE project_id = p.id) " + orderDirection)
+	}
+
+	if search.MostClones {
+		query = query.Order("(SELECT COUNT(*) FROM projects WHERE fork = p.id) " + orderDirection)
+	}
 
 	return pr.paginateProjects(query, page, perPage)
 }

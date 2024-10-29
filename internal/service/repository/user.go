@@ -89,6 +89,8 @@ func (u userRepository) Search(issuerID uint, search *dto.SearchUser, page, perp
 
 	if search.Name != nil {
 		query = query.Where("regexp_like(first_name, ?, 'i') OR regexp_like(last_name, ?, 'i') OR regexp_like(username, ?, 'i')", *search.Name, *search.Name, *search.Name)
+
+		// TODO: Create ranking system
 	}
 
 	if search.VerifiedOnly {

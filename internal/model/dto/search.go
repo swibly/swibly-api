@@ -18,7 +18,7 @@ type SearchUser struct {
 
 	VerifiedOnly bool `json:"verified_only"`
 
-	OrderMostFollowedUsers bool `json:"most_followed"`
+	MostFollowers bool `json:"most_followers"`
 }
 
 type SearchProject struct {

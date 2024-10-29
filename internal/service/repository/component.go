@@ -30,6 +30,8 @@ type ComponentRepository interface {
 	GetHoldersByID(issuerID, userID uint, page, perPage int) (*dto.Pagination[dto.ComponentInfo], error)
 	GetTrashed(ownerID uint, page, perPage int) (*dto.Pagination[dto.ComponentInfo], error)
 
+	Search(issuerID uint, search *dto.SearchComponent, page, perPage int) (*dto.Pagination[dto.ComponentInfo], error)
+
 	Buy(issuerID, componentID uint) error
 	Sell(issuerID, componentID uint) error
 
@@ -464,6 +466,51 @@ func (cr *componentRepository) GetHoldersByID(issuerID, componentID uint, page, 
 	query := cr.baseComponentQuery(issuerID).
 		Joins("JOIN component_holders ch ON ch.component_id = c.id").
 		Where("c.id = ?", componentID)
+
+	return cr.paginateComponents(query, page, perPage)
+}
+
+func (cr *componentRepository) Search(issuerID uint, search *dto.SearchComponent, page, perPage int) (*dto.Pagination[dto.ComponentInfo], error) {
+	query := cr.baseComponentQuery(issuerID).
+		Where("deleted_at IS NULL").
+		Joins("JOIN component_publications cp on cp.component_id = c.id")
+
+	orderDirection := "DESC"
+	if search.OrderAscending {
+		orderDirection = "ASC"
+	}
+
+	if search.Name != nil {
+		query = query.
+			Where(`(
+        regexp_like(c.name, ?, 'i') OR
+        regexp_like(c.description, ?, 'i') OR
+        regexp_like(u.first_name, ?, 'i') OR
+        regexp_like(u.last_name, ?, 'i') OR
+        regexp_like(u.username, ?, 'i')
+      )`, *search.Name, *search.Name, *search.Name, *search.Name, *search.Name)
+
+		// TODO: Create ranking system
+	}
+
+	if search.FollowedUsersOnly {
+		query = query.Joins("JOIN followers f ON f.following_id = users.id").
+			Where("f.follower_id = ?", issuerID)
+	}
+
+	if search.OrderAlphabetic {
+		query = query.Order("c.name " + orderDirection)
+	} else if search.OrderCreationDate {
+		query = query.Order("c.created_at " + orderDirection)
+	} else if search.OrderModifiedDate {
+		query = query.Order("c.updated_at " + orderDirection)
+	} else {
+		query = query.Order("c.created_at " + orderDirection)
+	}
+
+	if search.MostHolders {
+		query = query.Order("(SELECT COUNT(*) FROM component_holders ch WHERE ch.component_id = c.id) " + orderDirection)
+	}
 
 	return cr.paginateComponents(query, page, perPage)
 }

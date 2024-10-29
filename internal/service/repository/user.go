@@ -1,16 +1,12 @@
 package repository
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/swibly/swibly-api/internal/model"
 	"github.com/swibly/swibly-api/internal/model/dto"
 	"github.com/swibly/swibly-api/pkg/aws"
 	"github.com/swibly/swibly-api/pkg/db"
 	"github.com/swibly/swibly-api/pkg/pagination"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type userRepository struct {
@@ -28,7 +24,7 @@ type UserRepository interface {
 	UnsafeGet(*model.User) (*model.User, error)
 	Get(*model.User) (*dto.UserProfile, error)
 
-	SearchByName(name string, page, perpage int) (*dto.Pagination[dto.UserProfile], error)
+	Search(issuerID uint, search *dto.SearchUser, page, perpage int) (*dto.Pagination[dto.UserProfile], error)
 
 	Delete(uint) error
 }
@@ -87,25 +83,51 @@ func (u userRepository) Get(searchModel *model.User) (*dto.UserProfile, error) {
 	return user, nil
 }
 
-func (u userRepository) SearchByName(name string, page, perPage int) (*dto.Pagination[dto.UserProfile], error) {
-	terms := strings.Fields(name)
+func (u userRepository) Search(issuerID uint, search *dto.SearchUser, page, perpage int) (*dto.Pagination[dto.UserProfile], error) {
+	query := u.db.Model(&model.User{}).
+		Where("show_profile = TRUE")
 
-	var query = u.db.Model(&model.User{})
+	if search.Name != nil {
+		query = query.Where("regexp_like(first_name, ?, 'i') OR regexp_like(last_name, ?, 'i') OR regexp_like(username, ?, 'i')", *search.Name, *search.Name, *search.Name)
 
-	for _, term := range terms {
-		alike := fmt.Sprintf("%%%s%%", strings.ToLower(term))
-		query = query.Or("LOWER(username) LIKE ? OR LOWER(first_name) LIKE ? OR LOWER(last_name) LIKE ?", alike, alike, alike)
+		// TODO: Create ranking system
 	}
 
-	query = query.Order(clause.OrderBy{
-		Expression: clause.Expr{
-			SQL:                "CASE WHEN LOWER(username) = LOWER(?) THEN 1 ELSE 2 END",
-			Vars:               []any{name},
-			WithoutParentheses: true,
-		},
-	})
+	if search.VerifiedOnly {
+		query = query.Where("verified = ?", true)
+	}
 
-	return pagination.Generate[dto.UserProfile](query, page, perPage)
+	if search.FollowedUsersOnly {
+		query = query.Joins("JOIN followers uf ON uf.following_id = users.id").
+			Where("uf.follower_id = ?", issuerID)
+	}
+
+	orderDirection := "DESC"
+	if search.OrderAscending {
+		orderDirection = "ASC"
+	}
+
+	if search.OrderAlphabetic {
+		query = query.Order("username " + orderDirection)
+	} else if search.OrderCreationDate {
+		query = query.Order("created_at " + orderDirection)
+	} else if search.OrderModifiedDate {
+		query = query.Order("updated_at " + orderDirection)
+	} else {
+		query = query.Order("created_at DESC")
+	}
+
+	if search.MostFollowers {
+		query = query.Joins(`
+			LEFT JOIN (
+				SELECT following_id, COUNT(*) AS follower_count
+				FROM followers
+				GROUP BY following_id
+			) follower_counts ON follower_counts.following_id = users.id`).
+			Order("follower_count DESC NULLS LAST")
+	}
+
+	return pagination.Generate[dto.UserProfile](query, page, perpage)
 }
 
 func (u userRepository) Delete(id uint) error {

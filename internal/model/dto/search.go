@@ -33,3 +33,9 @@ type SearchProject struct {
 	MinBudget int `json:"min_budget"`
 	MaxBudget int `json:"max_budget"`
 }
+
+type SearchComponent struct {
+	search
+
+	MostHolders bool `json:"most_holders"`
+}

@@ -3,7 +3,6 @@ package repository
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 
 	"github.com/swibly/swibly-api/internal/model"
 	"github.com/swibly/swibly-api/internal/model/dto"
@@ -727,9 +726,8 @@ func (pr *projectRepository) Search(issuerID uint, search *dto.SearchProject, pa
 	}
 
 	if search.FollowedUsersOnly {
-		query = query.
-			Joins("JOIN followers uf ON uf.follower_id = u.id").
-			Where("uf.following_id = ?", issuerID)
+		query = query.Joins("JOIN followers f ON f.following_id = users.id").
+			Where("f.follower_id = ?", issuerID)
 	}
 
 	if search.OrderAlphabetic {

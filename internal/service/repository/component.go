@@ -499,13 +499,13 @@ func (cr *componentRepository) Search(issuerID uint, search *dto.SearchComponent
 	}
 
 	if search.OrderAlphabetic {
-		query = query.Order("p.name " + orderDirection)
+		query = query.Order("c.name " + orderDirection)
 	} else if search.OrderCreationDate {
-		query = query.Order("p.created_at " + orderDirection)
+		query = query.Order("c.created_at " + orderDirection)
 	} else if search.OrderModifiedDate {
-		query = query.Order("p.updated_at " + orderDirection)
+		query = query.Order("c.updated_at " + orderDirection)
 	} else {
-		query = query.Order("p.created_at " + orderDirection)
+		query = query.Order("c.created_at " + orderDirection)
 	}
 
 	if search.MostHolders {

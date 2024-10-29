@@ -629,7 +629,8 @@ func (pr *projectRepository) GetByOwner(issuerID, userID uint, onlyPublic bool, 
 				WHERE pu.project_id = p.id 
 				AND pu.user_id = ? 
 				AND pu.allow_view = true
-			)`, userID, userID)
+			)`, userID, userID).
+		Order("created_at DESC")
 
 	if onlyPublic {
 		query = query.Joins("JOIN project_publications pp ON pp.project_id = p.id")
@@ -639,13 +640,19 @@ func (pr *projectRepository) GetByOwner(issuerID, userID uint, onlyPublic bool, 
 }
 
 func (pr *projectRepository) GetPublic(issuerID uint, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
-	query := pr.baseProjectQuery(issuerID).Where("deleted_at IS NULL").Where("EXISTS (SELECT 1 FROM project_publications pp WHERE pp.project_id = p.id)")
+	query := pr.baseProjectQuery(issuerID).
+		Where("deleted_at IS NULL").
+		Where("EXISTS (SELECT 1 FROM project_publications pp WHERE pp.project_id = p.id)").
+		Order("created_at DESC")
 
 	return pr.paginateProjects(query, page, perPage)
 }
 
 func (pr *projectRepository) GetFavorited(issuerID, userID uint, onlyPublic bool, page, perPage int) (*dto.Pagination[dto.ProjectInfo], error) {
-	query := pr.baseProjectQuery(issuerID).Where("deleted_at IS NULL").Joins("JOIN project_user_favorites f ON f.project_id = p.id AND f.user_id = ?", userID).Order("f.created_at ASC")
+	query := pr.baseProjectQuery(issuerID).
+		Where("deleted_at IS NULL").
+		Joins("JOIN project_user_favorites f ON f.project_id = p.id AND f.user_id = ?", userID).
+		Order("f.created_at ASC")
 
 	if onlyPublic {
 		query = query.Joins("JOIN project_publications pp ON pp.project_id = p.id")
@@ -666,7 +673,8 @@ func (pr *projectRepository) GetTrashed(issuerID uint, page, perPage int) (*dto.
 				AND pu.user_id = ?
 				AND pu.allow_delete = true
 			)
-		`, issuerID, issuerID)
+		`, issuerID, issuerID).
+		Order("deleted_at DESC")
 
 	return pr.paginateProjects(query, page, perPage)
 }
@@ -675,9 +683,6 @@ func (pr *projectRepository) Search(issuerID uint, search *dto.SearchProject, pa
 	query := pr.baseProjectQuery(issuerID).
 		Where("deleted_at IS NULL").
 		Joins("JOIN project_publications pp on pp.project_id = p.id")
-
-	marshal, _ := json.MarshalIndent(search, "", "    ")
-	fmt.Println(string(marshal))
 
 	orderDirection := "DESC"
 	if search.OrderAscending {

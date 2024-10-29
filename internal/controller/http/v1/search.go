@@ -4,9 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/swibly/swibly-api/internal/model/dto"
@@ -20,18 +18,20 @@ func newSearchRoutes(handler *gin.RouterGroup) {
 	h := handler.Group("/search")
 	h.Use(middleware.APIKeyHasEnabledSearch, middleware.Auth)
 	{
-		h.GET("/user", SearchUserByNameHandler)
+		h.POST("/user", SearchUserHandler)
 		h.POST("/project", SearchProjectHandler)
 	}
 }
 
-func SearchUserByNameHandler(ctx *gin.Context) {
+func SearchUserHandler(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
-	name := ctx.Query("name")
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
 
-	if !regexp.MustCompile(`[a-zA-Z ]`).MatchString(name) || strings.TrimSpace(name) == "" {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.SearchIncorrect})
+	var body *dto.SearchUser
+	if err := ctx.BindJSON(&body); err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.InvalidBody})
 		return
 	}
 
@@ -48,7 +48,7 @@ func SearchUserByNameHandler(ctx *gin.Context) {
 		perpage = i
 	}
 
-	users, err := service.User.SearchByName(name, page, perpage)
+	users, err := service.User.Search(issuer.ID, body, page, perpage)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": dict.SearchNoResults})

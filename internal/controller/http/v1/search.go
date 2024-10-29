@@ -21,7 +21,7 @@ func newSearchRoutes(handler *gin.RouterGroup) {
 	h.Use(middleware.APIKeyHasEnabledSearch, middleware.Auth)
 	{
 		h.GET("/user", SearchUserByNameHandler)
-		h.GET("/project", SearchProjectByNameHandler)
+		h.POST("/project", SearchProjectHandler)
 	}
 }
 
@@ -63,17 +63,17 @@ func SearchUserByNameHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, users)
 }
 
-func SearchProjectByNameHandler(ctx *gin.Context) {
+func SearchProjectHandler(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
-	name := ctx.Query("name")
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
 
-	if !regexp.MustCompile(`[a-zA-Z ]`).MatchString(name) || strings.TrimSpace(name) == "" {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.SearchIncorrect})
+	var body *dto.SearchProject
+	if err := ctx.BindJSON(&body); err != nil {
+		log.Print(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": dict.InvalidBody})
 		return
 	}
-
-	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
 
 	var (
 		page    int = 1
@@ -88,7 +88,7 @@ func SearchProjectByNameHandler(ctx *gin.Context) {
 		perpage = i
 	}
 
-	projects, err := service.Project.SearchByName(issuer.ID, name, page, perpage)
+	projects, err := service.Project.Search(issuer.ID, body, page, perpage)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": dict.SearchNoResults})

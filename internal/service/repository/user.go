@@ -108,7 +108,7 @@ func (u userRepository) Search(issuerID uint, search *dto.SearchUser, page, perp
 	}
 
 	if search.OrderAlphabetic {
-		query = query.Order("username " + orderDirection)
+		query = query.Order("first_name " + orderDirection + ", last_name " + orderDirection)
 	} else if search.OrderCreationDate {
 		query = query.Order("created_at " + orderDirection)
 	} else if search.OrderModifiedDate {
@@ -124,7 +124,7 @@ func (u userRepository) Search(issuerID uint, search *dto.SearchUser, page, perp
 				FROM followers
 				GROUP BY following_id
 			) follower_counts ON follower_counts.following_id = users.id`).
-			Order("follower_count DESC NULLS LAST")
+			Order("follower_count" + orderDirection + "NULLS LAST")
 	}
 
 	return pagination.Generate[dto.UserProfile](query, page, perpage)

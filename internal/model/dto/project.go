@@ -15,7 +15,7 @@ type ProjectCreation struct {
 	BannerImage *multipart.FileHeader `validate:"omitempty" form:"banner"`
 
 	Content any `validate:"omitempty" form:"content"`
-	Budget  int `validate:"omitempty" form:"budget"`
+	Budget  int `validate:"omitempty,max=1000000000000" form:"budget"`
 
 	Width  int `validate:"omitempty,min=1,max=1000" form:"width"`
 	Height int `validate:"omitempty,min=1,max=1000" form:"height"`
@@ -34,7 +34,7 @@ type ProjectUpdate struct {
 	BannerImage *multipart.FileHeader `validate:"omitempty" form:"banner"`
 
 	Content any  `validate:"omitempty" form:"-"` // Set in code
-	Budget  *int `validate:"omitempty" form:"budget"`
+	Budget  *int `validate:"omitempty,max=1000000000000" form:"budget"`
 
 	Width  *int `validate:"omitempty,min=1,max=1000" form:"width"`
 	Height *int `validate:"omitempty,min=1,max=1000" form:"height"`

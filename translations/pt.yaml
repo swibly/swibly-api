@@ -5,6 +5,15 @@ auth_user_deleted: Usuário deletado.
 auth_user_updated: Usuário atualizado.
 auth_wrong_credentials: Email, nome de usuário ou senha estão incorretos ou não existem.
 hello: Olá!
+notification_welcome: Bem-vindo, %s ao Arkhon!
+notification_welcome_body: Bem-vindo ao Arkhon, sua plataforma de arquitetura! Explore ferramentas, insights e uma comunidade vibrante que levará seus projetos e ideias a um novo patamar.
+notification_new_login_detected: Uma nova entrada na sua conta foi detectada. Se não foi você, revise a segurança da sua conta.
+notification_invalid: O ID fornecido é inválido. Verifique e tente novamente.
+notification_already_read: Esta notificação já foi lida.
+notification_not_read: Esta notificação ainda não foi lida.
+notification_not_assigned: Esta notificação não está atribuída.
+notification_marked_as_read: A notificação foi marcada como lida.
+notification_marked_as_unread: A notificação foi marcada como não lida.
 internal_server_error: Erro interno de servidor. Por favor, tente novamente mais tarde.
 invalid_api_key: Chave de API inválida.
 invalid_body:

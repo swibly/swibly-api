@@ -11,6 +11,7 @@ import (
 	"github.com/swibly/swibly-api/config"
 	"github.com/swibly/swibly-api/internal/model"
 	"github.com/swibly/swibly-api/pkg/language"
+	"github.com/swibly/swibly-api/pkg/notification"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -83,6 +84,10 @@ func Load() {
 		log.Fatal(err)
 	}
 
+	if err := typeCheckAndCreate(db, "notification_type", notification.ArrayString); err != nil {
+		log.Fatal(err)
+	}
+
 	models := []any{
 		&model.APIKey{},
 		&model.User{},
@@ -101,6 +106,10 @@ func Load() {
 		&model.ComponentOwner{},
 		&model.ComponentHolder{},
 		&model.ComponentPublication{},
+
+		&model.Notification{},
+		&model.NotificationUser{},
+		&model.NotificationUserRead{},
 	}
 
 	if err := db.AutoMigrate(models...); err != nil {

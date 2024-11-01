@@ -105,6 +105,5 @@ func DeleteUnreadNotificationHandler(ctx *gin.Context) {
 		return
 	}
 
-  log.Print("reached")
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.NotificationMarkedAsUnread})
 }

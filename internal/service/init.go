@@ -10,6 +10,7 @@ var (
 	Project       usecase.ProjectUseCase
 	Component     usecase.ComponentUseCase
 	PasswordReset usecase.PasswordResetUseCase
+	Notification  usecase.NotificationUseCase
 )
 
 func Init() {
@@ -20,4 +21,5 @@ func Init() {
 	Project = usecase.NewProjectUseCase()
 	Component = usecase.NewComponentUseCase()
 	PasswordReset = usecase.NewPasswordResetUseCase()
+	Notification = usecase.NewNotificationUseCase()
 }

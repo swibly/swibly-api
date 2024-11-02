@@ -9,6 +9,7 @@ import (
 	"github.com/swibly/swibly-api/pkg/aws"
 	"github.com/swibly/swibly-api/pkg/db"
 	"github.com/swibly/swibly-api/pkg/pagination"
+	"github.com/swibly/swibly-api/pkg/utils"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -702,7 +703,13 @@ func (pr *projectRepository) Search(issuerID uint, search *dto.SearchProject, pa
         regexp_like(u.first_name, ?, 'i') OR
         regexp_like(u.last_name, ?, 'i') OR
         regexp_like(u.username, ?, 'i')
-      )`, *search.Name, *search.Name, *search.Name, *search.Name, *search.Name)
+      )`,
+				utils.RegexPrepareName(*search.Name),
+				utils.RegexPrepareName(*search.Name),
+				utils.RegexPrepareName(*search.Name),
+				utils.RegexPrepareName(*search.Name),
+				utils.RegexPrepareName(*search.Name),
+			)
 
 		// TODO: Create ranking system
 	}

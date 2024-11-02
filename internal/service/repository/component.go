@@ -504,12 +504,10 @@ func (cr *componentRepository) Search(issuerID uint, search *dto.SearchComponent
 		query = query.Order("c.created_at " + orderDirection)
 	} else if search.OrderModifiedDate {
 		query = query.Order("c.updated_at " + orderDirection)
+	} else if search.MostHolders {
+		query = query.Order("(SELECT COUNT(*) FROM component_holders ch WHERE ch.component_id = c.id) " + orderDirection)
 	} else {
 		query = query.Order("c.created_at " + orderDirection)
-	}
-
-	if search.MostHolders {
-		query = query.Order("(SELECT COUNT(*) FROM component_holders ch WHERE ch.component_id = c.id) " + orderDirection)
 	}
 
 	return cr.paginateComponents(query, page, perPage)

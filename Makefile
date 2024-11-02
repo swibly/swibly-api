@@ -7,68 +7,42 @@ GOBUILD := $(GO) build
 GOCLEAN := $(GO) clean
 GOTEST := $(GO) test
 
-# .env should exist by the moment we start running make scripts
 include .env
 export
 
 .PHONY: all build run clean tidy test up down psql
 
-all: build run
+all: up
 
-build:
-	$(GOBUILD) -race -o "$(BUILD_FOLDER)/$(BUILD_FILE)" -v ./cmd/api/main.go
+build: $(BUILD_FOLDER)/$(BUILD_FILE)
 
-run:
-	"$(BUILD_FOLDER)/$(BUILD_FILE)"
+$(BUILD_FOLDER)/$(BUILD_FILE): ./cmd/api/main.go
+	@mkdir -p $(BUILD_FOLDER)
+	$(GOBUILD) -race -o "$@" -v $<
 
-# Executing `go clean` removes any non-make-related builds, generated using `go build`, such as the api.exe binary produced by the api package.
-# `sudo rm -rf pgdata` will not return errors (related to rm at least)
+run: $(BUILD_FOLDER)/$(BUILD_FILE)
+	@echo "Starting $(BUILD_FILE) from $(BUILD_FOLDER)..."
+	"./$<"
+
 clean: down
 	$(GOCLEAN)
-	-rm -r $(BUILD_FOLDER)
-	sudo rm -rf pgdata/
+	@if [ -d "$(BUILD_FOLDER)" ]; then rm -r "$(BUILD_FOLDER)"; fi
+	@if [ -d "pgdata" ]; then sudo rm -rf pgdata/; fi
 
 tidy:
 	$(GOMOD) tidy -e
 
+test: TEST_DIR ?= ./tests
 test:
-	$(GOTEST) ./tests -v
+	$(GOTEST) $(TEST_DIR) -v
 
 psql:
-	docker exec -it $(DEBUG_POSTGRES_CONTAINER_NAME) psql -U $(DEBUG_POSTGRES_USER) -d $(DEBUG_POSTGRES_DATABASE)
+	@docker exec -it swibly-api-db psql -U "$(POSTGRES_USER)" -d "$(POSTGRES_DATABASE)" || \
+	echo "Failed to connect to database. Check container and environment variables."
 
 up:
-	docker compose up -d
+	@docker compose up -d postgres
+	@docker compose up --build --no-deps swibly-api
 
 down:
-	docker compose down
-
-# Generating mocks
-
-SRC_FILES := $(wildcard internal/service/repository/*.go)
-MOCK_FILES := $(patsubst internal/service/repository/%.go,internal/service/repository/mock_%.go,$(filter-out internal/service/repository/mock_%.go,$(SRC_FILES)))
-
-mock: $(MOCK_FILES)
-
-internal/service/repository/mock_%.go: internal/service/repository/%.go
-	@if [ "$(@F)" != "mock_$(*F)" ]; then \
-		mockgen -source="$<" -destination="$@" -package=repository; \
-	fi
-
-# Generating users
-
-USERS := \
-	'{"firstname": "John", "lastname": "Doe", "username": "johndoe", "email": "johndoe@example.com", "password": "T3st1ngP4$$w0rd"}', \
-	'{"firstname": "Jane", "lastname": "Smith", "username": "janesmith", "email": "janesmith@example.com", "password": "P@ssw0rd123"}', \
-	'{"firstname": "Alice", "lastname": "Johnson", "username": "alicejohnson", "email": "alicejohnson@example.com", "password": "qwerty"}', \
-	'{"firstname": "Bob", "lastname": "Brown", "username": "bobbrown", "email": "bobbrown@example.com", "password": "password123"}'
-ENDPOINT=http://localhost:8080/v1/auth/register
-
-create_users:
-	@echo "Creating users..."
-	@for user_data in $(USERS); do \
-		curl --silent --request POST \
-			--url $(ENDPOINT) \
-			--header 'Content-Type: application/json' \
-			--data "$$user_data"; \
-	done
+	@docker compose down

@@ -6,6 +6,7 @@ import (
 	"github.com/swibly/swibly-api/pkg/aws"
 	"github.com/swibly/swibly-api/pkg/db"
 	"github.com/swibly/swibly-api/pkg/pagination"
+	"github.com/swibly/swibly-api/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -88,7 +89,12 @@ func (u userRepository) Search(issuerID uint, search *dto.SearchUser, page, perp
 		Where("show_profile = TRUE")
 
 	if search.Name != nil {
-		query = query.Where("regexp_like(first_name, ?, 'i') OR regexp_like(last_name, ?, 'i') OR regexp_like(username, ?, 'i')", *search.Name, *search.Name, *search.Name)
+		query = query.Where(
+			"regexp_like(first_name, ?, 'i') OR regexp_like(last_name, ?, 'i') OR regexp_like(username, ?, 'i')",
+			utils.RegexPrepareName(*search.Name),
+			utils.RegexPrepareName(*search.Name),
+			utils.RegexPrepareName(*search.Name),
+		)
 
 		// TODO: Create ranking system
 	}
@@ -113,11 +119,7 @@ func (u userRepository) Search(issuerID uint, search *dto.SearchUser, page, perp
 		query = query.Order("created_at " + orderDirection)
 	} else if search.OrderModifiedDate {
 		query = query.Order("updated_at " + orderDirection)
-	} else {
-		query = query.Order("created_at DESC")
-	}
-
-	if search.MostFollowers {
+	} else if search.MostFollowers {
 		query = query.Joins(`
 			LEFT JOIN (
 				SELECT following_id, COUNT(*) AS follower_count
@@ -125,6 +127,8 @@ func (u userRepository) Search(issuerID uint, search *dto.SearchUser, page, perp
 				GROUP BY following_id
 			) follower_counts ON follower_counts.following_id = users.id`).
 			Order("follower_count" + orderDirection + "NULLS LAST")
+	} else {
+		query = query.Order("created_at " + orderDirection)
 	}
 
 	return pagination.Generate[dto.UserProfile](query, page, perpage)

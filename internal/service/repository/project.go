@@ -749,16 +749,12 @@ func (pr *projectRepository) Search(issuerID uint, search *dto.SearchProject, pa
 		query = query.Order("p.created_at " + orderDirection)
 	} else if search.OrderModifiedDate {
 		query = query.Order("p.updated_at " + orderDirection)
+	} else if search.MostFavorites {
+		query = query.Order("total_favorites " + orderDirection)
+	} else if search.MostClones {
+		query = query.Order("total_clones " + orderDirection)
 	} else {
 		query = query.Order("p.created_at " + orderDirection)
-	}
-
-	if search.MostFavorites {
-		query = query.Order("total_favorites " + orderDirection)
-	}
-
-	if search.MostClones {
-		query = query.Order("total_clones " + orderDirection)
 	}
 
 	return pr.paginateProjects(query, page, perPage)

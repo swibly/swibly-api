@@ -112,6 +112,7 @@ type ProjectInfoJSON struct {
 
 	IsFavorited    bool `json:"is_favorited"`
 	TotalFavorites int  `json:"total_favorites"`
+	TotalClones    int  `json:"total_clones"`
 }
 
 type ProjectInfo struct {
@@ -144,6 +145,7 @@ type ProjectInfo struct {
 
 	IsFavorited    bool `json:"is_favorited"`
 	TotalFavorites int  `json:"total_favorites"`
+	TotalClones    int  `json:"total_clones"`
 }
 
 func (a Allow) IsEmpty() bool {

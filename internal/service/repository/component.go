@@ -488,7 +488,13 @@ func (cr *componentRepository) Search(issuerID uint, search *dto.SearchComponent
         regexp_like(u.first_name, ?, 'i') OR
         regexp_like(u.last_name, ?, 'i') OR
         regexp_like(u.username, ?, 'i')
-      )`, *search.Name, *search.Name, *search.Name, *search.Name, *search.Name)
+      )`,
+				utils.RegexPrepareName(*search.Name),
+				utils.RegexPrepareName(*search.Name),
+				utils.RegexPrepareName(*search.Name),
+				utils.RegexPrepareName(*search.Name),
+				utils.RegexPrepareName(*search.Name),
+			)
 
 		// TODO: Create ranking system
 	}

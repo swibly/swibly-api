@@ -488,7 +488,13 @@ func (cr *componentRepository) Search(issuerID uint, search *dto.SearchComponent
         regexp_like(u.first_name, ?, 'i') OR
         regexp_like(u.last_name, ?, 'i') OR
         regexp_like(u.username, ?, 'i')
-      )`, *search.Name, *search.Name, *search.Name, *search.Name, *search.Name)
+      )`,
+				utils.RegexPrepareName(*search.Name),
+				utils.RegexPrepareName(*search.Name),
+				utils.RegexPrepareName(*search.Name),
+				utils.RegexPrepareName(*search.Name),
+				utils.RegexPrepareName(*search.Name),
+			)
 
 		// TODO: Create ranking system
 	}
@@ -504,12 +510,10 @@ func (cr *componentRepository) Search(issuerID uint, search *dto.SearchComponent
 		query = query.Order("c.created_at " + orderDirection)
 	} else if search.OrderModifiedDate {
 		query = query.Order("c.updated_at " + orderDirection)
+	} else if search.MostHolders {
+		query = query.Order("(SELECT COUNT(*) FROM component_holders ch WHERE ch.component_id = c.id) " + orderDirection)
 	} else {
 		query = query.Order("c.created_at " + orderDirection)
-	}
-
-	if search.MostHolders {
-		query = query.Order("(SELECT COUNT(*) FROM component_holders ch WHERE ch.component_id = c.id) " + orderDirection)
 	}
 
 	return cr.paginateComponents(query, page, perPage)

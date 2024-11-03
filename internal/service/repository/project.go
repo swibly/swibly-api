@@ -9,6 +9,7 @@ import (
 	"github.com/swibly/swibly-api/pkg/aws"
 	"github.com/swibly/swibly-api/pkg/db"
 	"github.com/swibly/swibly-api/pkg/pagination"
+	"github.com/swibly/swibly-api/pkg/utils"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -120,7 +121,12 @@ func (pr *projectRepository) baseProjectQuery(issuerID uint) *gorm.DB {
 				SELECT COUNT(*)
 				FROM project_user_favorites f
 				WHERE f.project_id = p.id
-			) AS total_favorites
+			) AS total_favorites,
+      (
+        SELECT COUNT(*)
+        FROM projects
+        WHERE fork = p.id
+      ) AS total_clones
 		`, issuerID).
 		Joins("JOIN project_owners po ON po.project_id = p.id").
 		Joins("JOIN users u ON po.user_id = u.id")
@@ -180,6 +186,7 @@ func convertToProjectInfo(jsonInfo *dto.ProjectInfoJSON) (dto.ProjectInfo, error
 		OwnerVerified:       jsonInfo.OwnerVerified,
 		IsFavorited:         jsonInfo.IsFavorited,
 		TotalFavorites:      jsonInfo.TotalFavorites,
+		TotalClones:         jsonInfo.TotalClones,
 		AllowedUsers:        allowedUsers,
 	}, nil
 }
@@ -696,7 +703,13 @@ func (pr *projectRepository) Search(issuerID uint, search *dto.SearchProject, pa
         regexp_like(u.first_name, ?, 'i') OR
         regexp_like(u.last_name, ?, 'i') OR
         regexp_like(u.username, ?, 'i')
-      )`, *search.Name, *search.Name, *search.Name, *search.Name, *search.Name)
+      )`,
+				utils.RegexPrepareName(*search.Name),
+				utils.RegexPrepareName(*search.Name),
+				utils.RegexPrepareName(*search.Name),
+				utils.RegexPrepareName(*search.Name),
+				utils.RegexPrepareName(*search.Name),
+			)
 
 		// TODO: Create ranking system
 	}
@@ -736,16 +749,12 @@ func (pr *projectRepository) Search(issuerID uint, search *dto.SearchProject, pa
 		query = query.Order("p.created_at " + orderDirection)
 	} else if search.OrderModifiedDate {
 		query = query.Order("p.updated_at " + orderDirection)
+	} else if search.MostFavorites {
+		query = query.Order("total_favorites " + orderDirection)
+	} else if search.MostClones {
+		query = query.Order("total_clones " + orderDirection)
 	} else {
 		query = query.Order("p.created_at " + orderDirection)
-	}
-
-	if search.MostFavorites {
-		query = query.Order("(SELECT COUNT(*) FROM project_user_favorites WHERE project_id = p.id) " + orderDirection)
-	}
-
-	if search.MostClones {
-		query = query.Order("(SELECT COUNT(*) FROM projects WHERE fork = p.id) " + orderDirection)
 	}
 
 	return pr.paginateProjects(query, page, perPage)

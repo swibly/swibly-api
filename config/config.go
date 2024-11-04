@@ -52,6 +52,12 @@ var (
 		ManageProjects    string `yaml:"manage_projects"`
 		ManageStore       string `yaml:"manage_store"`
 	}
+
+	Redirects struct {
+		SecurityTab string `yaml:"security"`
+		Profile     string `yaml:"profile"`
+		Project     string `yaml:"project"`
+	}
 )
 
 func Parse() {
@@ -96,6 +102,10 @@ func Parse() {
 	}
 
 	if err := yaml.Unmarshal(read("permissions.yaml"), &Permissions); err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	if err := yaml.Unmarshal(read("redirects.yaml"), &Redirects); err != nil {
 		log.Fatalf("error: %v", err)
 	}
 

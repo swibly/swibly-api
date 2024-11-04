@@ -5,6 +5,28 @@ auth_user_deleted: Пользователь удален.
 auth_user_updated: Пользователь обновлен.
 auth_wrong_credentials: Электронная почта, имя пользователя или пароль неверны или не существуют.
 hello: Привет!
+category_auth: Авторизация
+category_followers: Подписчики
+category_project: Проект
+category_component: Компонент
+notification_welcome_user_register: Добро пожаловать, %s! Спасибо за регистрацию.
+notification_new_login_detected: Обнаружен новый вход с другого устройства.
+notification_user_followed_you: "%s начал(а) следовать за вами."
+notification_new_project_created: Проект "%s" был создан.
+notification_user_cloned_your_project: '%s склонировал ваш проект "%s."'
+notification_your_project_published: Ваш проект "%s" был опубликован.
+notification_your_project_favorited: Ваш проект "%s" добавлен в избранное пользователем %s.
+notification_deleted_project_from_trash: Проект "%s" был удален из корзины.
+notification_restored_project_from_trash: Проект "%s" был восстановлен из корзины.
+notification_added_user_to_project: '%s был добавлен в проект "%s."'
+notification_removed_user_from_project: '%s был удален из проекта "%s."'
+notification_user_left_project: '%s покинул проект "%s."'
+notification_new_component_created: Компонент "%s" был создан.
+notification_your_component_published: Ваш компонент "%s" был опубликован.
+notification_deleted_component_from_trash: Компонент "%s" был удален из корзины.
+notification_restored_component_from_trash: Компонент "%s" был восстановлен из корзины.
+notification_your_component_bought: Ваш компонент "%s" был приобретен пользователем %s.
+notification_you_bought_component: Вы приобрели компонент "%s."
 notification_invalid: Указанный идентификатор недействителен. Пожалуйста, проверьте и попробуйте снова.
 notification_already_read: Это уведомление уже было прочитано.
 notification_not_read: Это уведомление ещё не прочитано.

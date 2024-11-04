@@ -5,6 +5,28 @@ auth_user_deleted: Usuário deletado.
 auth_user_updated: Usuário atualizado.
 auth_wrong_credentials: Email, nome de usuário ou senha estão incorretos ou não existem.
 hello: Olá!
+category_auth: Autenticação
+category_followers: Seguidores
+category_project: Projeto
+category_component: Componente
+notification_welcome_user_register: Bem-vindo(a), %s! Obrigado por se registrar.
+notification_new_login_detected: Novo login detectado a partir de outro dispositivo.
+notification_user_followed_you: "%s começou a seguir você."
+notification_new_project_created: O projeto "%s" foi criado.
+notification_user_cloned_your_project: '%s clonou o seu projeto "%s."'
+notification_your_project_published: Seu projeto "%s" foi publicado.
+notification_your_project_favorited: Seu projeto "%s" foi adicionado aos favoritos de %s.
+notification_deleted_project_from_trash: O projeto "%s" foi excluído da lixeira.
+notification_restored_project_from_trash: O projeto "%s" foi restaurado da lixeira.
+notification_added_user_to_project: '%s foi adicionado(a) ao projeto "%s."'
+notification_removed_user_from_project: '%s foi removido(a) do projeto "%s."'
+notification_user_left_project: '%s saiu do projeto "%s."'
+notification_new_component_created: O componente "%s" foi criado.
+notification_your_component_published: Seu componente "%s" foi publicado.
+notification_deleted_component_from_trash: O componente "%s" foi excluído da lixeira.
+notification_restored_component_from_trash: O componente "%s" foi restaurado da lixeira.
+notification_your_component_bought: Seu componente "%s" foi comprado por %s.
+notification_you_bought_component: Você comprou o componente "%s."
 notification_invalid: O ID fornecido é inválido. Verifique e tente novamente.
 notification_already_read: Esta notificação já foi lida.
 notification_not_read: Esta notificação ainda não foi lida.

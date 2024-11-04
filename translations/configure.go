@@ -45,6 +45,8 @@ type Translation struct {
 	NotificationRestoredProjectFromTrash   string `yaml:"notification_restored_project_from_trash"`
 	NotificationAddedUserToProject         string `yaml:"notification_added_user_to_project"`
 	NotificationRemovedUserFromProject     string `yaml:"notification_removed_user_from_project"`
+	NotificationAddedYouToProject          string `yaml:"notification_added_you_to_project"`
+	NotificationRemovedYouFromProject      string `yaml:"notification_removed_you_from_project"`
 	NotificationUserLeftProject            string `yaml:"notification_user_left_project"`
 	NotificationNewComponentCreated        string `yaml:"notification_new_component_created"`
 	NotificationYourComponentPublished     string `yaml:"notification_your_component_published"`

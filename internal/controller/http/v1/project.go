@@ -656,6 +656,13 @@ func AssignProjectHandler(ctx *gin.Context) {
 		Type:    notification.Danger,
 	}, project.OwnerID)
 
+	service.CreateNotification(dto.CreateNotification{
+		Title:    dict.CategoryProject,
+		Message:  fmt.Sprintf(dict.NotificationAddedYouToProject, project.Name),
+		Type:     notification.Information,
+		Redirect: utils.ToPtr(fmt.Sprintf(config.Redirects.Project, project.ID)),
+	}, user.ID)
+
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectAssignedUser})
 }
 
@@ -681,6 +688,13 @@ func UnassignProjectHandler(ctx *gin.Context) {
 		Message: fmt.Sprintf(dict.NotificationRemovedUserFromProject, user.FirstName+user.LastName, project.Name),
 		Type:    notification.Danger,
 	}, project.OwnerID)
+
+	service.CreateNotification(dto.CreateNotification{
+		Title:    dict.CategoryProject,
+		Message:  fmt.Sprintf(dict.NotificationRemovedYouFromProject, project.Name),
+		Type:     notification.Information,
+		Redirect: utils.ToPtr(fmt.Sprintf(config.Redirects.Project, project.ID)),
+	}, user.ID)
 
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectUnassignedUser})
 }

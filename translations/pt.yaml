@@ -20,6 +20,8 @@ notification_deleted_project_from_trash: O projeto "%s" foi excluído da lixeira
 notification_restored_project_from_trash: O projeto "%s" foi restaurado da lixeira.
 notification_added_user_to_project: '%s foi adicionado(a) ao projeto "%s."'
 notification_removed_user_from_project: '%s foi removido(a) do projeto "%s."'
+notification_added_you_to_project: Você foi adicionado(a) ao projeto "%s."
+notification_removed_you_from_project: Você foi removido(a) do projeto "%s."
 notification_user_left_project: '%s saiu do projeto "%s."'
 notification_new_component_created: O componente "%s" foi criado.
 notification_your_component_published: Seu componente "%s" foi publicado.

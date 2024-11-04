@@ -20,6 +20,8 @@ notification_deleted_project_from_trash: Проект "%s" был удален �
 notification_restored_project_from_trash: Проект "%s" был восстановлен из корзины.
 notification_added_user_to_project: '%s был добавлен в проект "%s."'
 notification_removed_user_from_project: '%s был удален из проекта "%s."'
+notification_added_you_to_project: Вы были добавлены в проект "%s."
+notification_removed_you_from_project: Вы были удалены из проекта "%s."
 notification_user_left_project: '%s покинул проект "%s."'
 notification_new_component_created: Компонент "%s" был создан.
 notification_your_component_published: Ваш компонент "%s" был опубликован.

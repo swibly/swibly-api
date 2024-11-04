@@ -7,9 +7,12 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/swibly/swibly-api/config"
 	"github.com/swibly/swibly-api/internal/model/dto"
 	"github.com/swibly/swibly-api/internal/service"
 	"github.com/swibly/swibly-api/pkg/middleware"
+	"github.com/swibly/swibly-api/pkg/notification"
+	"github.com/swibly/swibly-api/pkg/utils"
 	"github.com/swibly/swibly-api/translations"
 )
 
@@ -115,6 +118,13 @@ func FollowUserHandler(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
+
+	service.CreateNotification(dto.CreateNotification{
+		Title:    dict.CategoryFollowers,
+		Message:  fmt.Sprintf(dict.NotificationUserFollowedYou, issuer.FirstName+issuer.LastName),
+		Type:     notification.Information,
+		Redirect: utils.ToPtr(fmt.Sprintf(config.Redirects.Profile, issuer.Username)),
+	}, receiver.ID)
 
 	ctx.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf(dict.UserFollowingStarted, receiver.Username)})
 }

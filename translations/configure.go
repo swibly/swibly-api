@@ -29,15 +29,12 @@ type Translation struct {
 	AuthUserUpdated      string `yaml:"auth_user_updated"`
 	AuthWrongCredentials string `yaml:"auth_wrong_credentials"`
 
-	NotificationWelcome          string `yaml:"notification_welcome"`
-	NotificationWelcomeBody      string `yaml:"notification_welcome_body"`
-	NotificationNewLoginDetected string `yaml:"notification_new_login_detected"`
-	NotificationInvalid          string `yaml:"notification_invalid"`
-	NotificationAlreadyRead      string `yaml:"notification_already_read"`
-	NotificationNotRead          string `yaml:"notification_not_read"`
-	NotificationNotAssigned      string `yaml:"notification_not_assigned"`
-	NotificationMarkedAsRead     string `yaml:"notification_marked_as_read"`
-	NotificationMarkedAsUnread   string `yaml:"notification_marked_as_unread"`
+	NotificationInvalid        string `yaml:"notification_invalid"`
+	NotificationAlreadyRead    string `yaml:"notification_already_read"`
+	NotificationNotRead        string `yaml:"notification_not_read"`
+	NotificationNotAssigned    string `yaml:"notification_not_assigned"`
+	NotificationMarkedAsRead   string `yaml:"notification_marked_as_read"`
+	NotificationMarkedAsUnread string `yaml:"notification_marked_as_unread"`
 
 	SearchIncorrect string `yaml:"search_incorrect"`
 	SearchNoResults string `yaml:"search_no_results"`

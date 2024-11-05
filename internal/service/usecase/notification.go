@@ -17,8 +17,8 @@ func (nuc *NotificationUseCase) Create(createModel dto.CreateNotification) (uint
 	return nuc.nr.Create(createModel)
 }
 
-func (nuc *NotificationUseCase) GetForUser(userID uint, page, perPage int) (*dto.Pagination[dto.NotificationInfo], error) {
-	return nuc.nr.GetForUser(userID, page, perPage)
+func (nuc *NotificationUseCase) GetForUser(userID uint, onlyUnread bool, page, perPage int) (*dto.Pagination[dto.NotificationInfo], error) {
+	return nuc.nr.GetForUser(userID, onlyUnread, page, perPage)
 }
 
 func (nuc *NotificationUseCase) SendToAll(notificationID uint) error {

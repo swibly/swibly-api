@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/swibly/swibly-api/internal/model/dto"
@@ -33,6 +34,7 @@ func GetOwnNotificationsHandler(ctx *gin.Context) {
 
 	page := 1
 	perPage := 10
+	onlyUnread := false
 
 	if i, e := strconv.Atoi(ctx.Query("page")); e == nil && ctx.Query("page") != "" {
 		page = i
@@ -42,9 +44,14 @@ func GetOwnNotificationsHandler(ctx *gin.Context) {
 		perPage = i
 	}
 
+	unreadFlag := strings.ToLower(ctx.Query("unread"))
+	if unreadFlag == "true" || unreadFlag == "t" || unreadFlag == "1" {
+		onlyUnread = true
+	}
+
 	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
 
-	notifications, err := service.Notification.GetForUser(issuer.ID, page, perPage)
+	notifications, err := service.Notification.GetForUser(issuer.ID, onlyUnread, page, perPage)
 	if err != nil {
 		log.Print(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})

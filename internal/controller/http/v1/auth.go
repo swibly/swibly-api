@@ -12,6 +12,7 @@ import (
 	"github.com/swibly/swibly-api/internal/service"
 	"github.com/swibly/swibly-api/pkg/aws"
 	"github.com/swibly/swibly-api/pkg/middleware"
+	"github.com/swibly/swibly-api/pkg/notification"
 	"github.com/swibly/swibly-api/pkg/utils"
 	"github.com/swibly/swibly-api/translations"
 	"golang.org/x/crypto/bcrypt"
@@ -72,6 +73,12 @@ func RegisterHandler(ctx *gin.Context) {
 			log.Print(err)
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		} else {
+			service.CreateNotification(dto.CreateNotification{
+				Title:   dict.CategoryAuth,
+				Message: dict.NotificationWelcomeUserRegister,
+				Type:    notification.Information,
+			}, user.ID)
+
 			ctx.JSON(http.StatusOK, gin.H{"token": token})
 		}
 
@@ -150,6 +157,13 @@ func LoginHandler(ctx *gin.Context) {
 
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 	} else {
+		service.CreateNotification(dto.CreateNotification{
+			Title:    dict.CategoryAuth,
+			Message:  dict.NotificationNewLoginDetected,
+			Type:     notification.Warning,
+			Redirect: &config.Redirects.SecurityTab,
+		}, user.ID)
+
 		ctx.JSON(http.StatusOK, gin.H{"token": token})
 	}
 }

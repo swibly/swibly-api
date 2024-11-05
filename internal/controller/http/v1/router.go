@@ -12,5 +12,6 @@ func NewRouter(handler *gin.Engine) {
 		newSearchRoutes(g)
 		newProjectRoutes(g)
 		newComponentRoutes(g)
+		newNotificationRoutes(g)
 	}
 }

@@ -5,10 +5,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/swibly/swibly-api/pkg/language"
-	"github.com/swibly/swibly-api/translations"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/swibly/swibly-api/pkg/language"
+	"github.com/swibly/swibly-api/pkg/notification"
+	"github.com/swibly/swibly-api/translations"
 )
 
 var Validate *validator.Validate = newValidator()
@@ -29,6 +30,16 @@ func newValidator() *validator.Validate {
 		nn := fl.Field().Int()
 
 		return nn == 1 || nn == 0 || nn == -1
+	})
+
+	vv.RegisterValidation("mustbenotificationtype", func(fl validator.FieldLevel) bool {
+		_, valid := fl.Field().Interface().(notification.NotificationType)
+
+		if !valid {
+			return false
+		}
+
+		return true
 	})
 
 	vv.RegisterValidation("mustbesupportedlanguage", func(fl validator.FieldLevel) bool {

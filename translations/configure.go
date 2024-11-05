@@ -16,6 +16,11 @@ type Translation struct {
 	MaximumAPIKey           string `yaml:"maximum_api_key"`
 	RequirePermissionAPIKey string `yaml:"require_permission_api_key"`
 
+	CategoryAuth      string `yaml:"category_auth"`
+	CategoryFollowers string `yaml:"category_followers"`
+	CategoryProject   string `yaml:"category_project"`
+	CategoryComponent string `yaml:"category_component"`
+
 	InternalServerError string `yaml:"internal_server_error"`
 	Unauthorized        string `yaml:"unauthorized"`
 	InvalidBody         string `yaml:"invalid_body"`
@@ -28,6 +33,34 @@ type Translation struct {
 	AuthUserDeleted      string `yaml:"auth_user_deleted"`
 	AuthUserUpdated      string `yaml:"auth_user_updated"`
 	AuthWrongCredentials string `yaml:"auth_wrong_credentials"`
+
+	NotificationWelcomeUserRegister        string `yaml:"notification_welcome_user_register"`
+	NotificationNewLoginDetected           string `yaml:"notification_new_login_detected"`
+	NotificationUserFollowedYou            string `yaml:"notification_user_followed_you"`
+	NotificationNewProjectCreated          string `yaml:"notification_new_project_created"`
+	NotificationUserClonedYourProject      string `yaml:"notification_user_cloned_your_project"`
+	NotificationYourProjectPublished       string `yaml:"notification_your_project_published"`
+	NotificationYourProjectFavorited       string `yaml:"notification_your_project_favorited"`
+	NotificationDeletedProjectFromTrash    string `yaml:"notification_deleted_project_from_trash"`
+	NotificationRestoredProjectFromTrash   string `yaml:"notification_restored_project_from_trash"`
+	NotificationAddedUserToProject         string `yaml:"notification_added_user_to_project"`
+	NotificationRemovedUserFromProject     string `yaml:"notification_removed_user_from_project"`
+	NotificationAddedYouToProject          string `yaml:"notification_added_you_to_project"`
+	NotificationRemovedYouFromProject      string `yaml:"notification_removed_you_from_project"`
+	NotificationUserLeftProject            string `yaml:"notification_user_left_project"`
+	NotificationNewComponentCreated        string `yaml:"notification_new_component_created"`
+	NotificationYourComponentPublished     string `yaml:"notification_your_component_published"`
+	NotificationDeletedComponentFromTrash  string `yaml:"notification_deleted_component_from_trash"`
+	NotificationRestoredComponentFromTrash string `yaml:"notification_restored_component_from_trash"`
+	NotificationYourComponentBought        string `yaml:"notification_your_component_bought"`
+	NotificationYouBoughtComponent         string `yaml:"notification_you_bought_component"`
+
+	NotificationInvalid        string `yaml:"notification_invalid"`
+	NotificationAlreadyRead    string `yaml:"notification_already_read"`
+	NotificationNotRead        string `yaml:"notification_not_read"`
+	NotificationNotAssigned    string `yaml:"notification_not_assigned"`
+	NotificationMarkedAsRead   string `yaml:"notification_marked_as_read"`
+	NotificationMarkedAsUnread string `yaml:"notification_marked_as_unread"`
 
 	SearchIncorrect string `yaml:"search_incorrect"`
 	SearchNoResults string `yaml:"search_no_results"`

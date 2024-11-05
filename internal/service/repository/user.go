@@ -13,8 +13,9 @@ import (
 type userRepository struct {
 	db *gorm.DB
 
-	followRepo     FollowRepository
-	permissionRepo PermissionRepository
+	followRepo       FollowRepository
+	permissionRepo   PermissionRepository
+	notificationRepo NotificationRepository
 }
 
 type UserRepository interface {
@@ -31,7 +32,7 @@ type UserRepository interface {
 }
 
 func NewUserRepository() UserRepository {
-	return &userRepository{db: db.Postgres, followRepo: NewFollowRepository(), permissionRepo: NewPermissionRepository()}
+	return &userRepository{db: db.Postgres, followRepo: NewFollowRepository(), permissionRepo: NewPermissionRepository(), notificationRepo: NewNotificationRepository()}
 }
 
 func (u userRepository) Create(createModel *model.User) error {
@@ -79,6 +80,12 @@ func (u userRepository) Get(searchModel *model.User) (*dto.UserProfile, error) {
 		for _, permission := range permissions {
 			user.Permissions = append(user.Permissions, permission.Name)
 		}
+	}
+
+	if count, err := u.notificationRepo.GetUnreadCount(user.ID); err != nil {
+		return nil, err
+	} else {
+		user.UnreadNotifications = count
 	}
 
 	return user, nil

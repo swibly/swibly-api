@@ -76,7 +76,7 @@ func (nr *notificationRepository) GetForUser(userID uint, onlyUnread bool, page,
 	query := nr.baseNotificationQuery(userID).Order("n.created_at DESC")
 
 	if onlyUnread {
-		query = query.Where("is_read IS false")
+		query = query.Where("nur.created_at IS NULL")
 	}
 
 	paginationResult, err := pagination.Generate[dto.NotificationInfo](query, page, perPage)
@@ -89,7 +89,7 @@ func (nr *notificationRepository) GetForUser(userID uint, onlyUnread bool, page,
 
 func (nr *notificationRepository) GetUnreadCount(userID uint) (int64, error) {
 	count := int64(0)
-	if err := nr.baseNotificationQuery(userID).Where("is_read IS false").Count(&count).Error; err != nil {
+	if err := nr.baseNotificationQuery(userID).Where("nur.created_at IS NULL").Count(&count).Error; err != nil {
 		return 0, err
 	}
 
@@ -176,7 +176,7 @@ func (nr *notificationRepository) MarkAsRead(issuer dto.UserProfile, notificatio
 	var notificationUser model.NotificationUser
 	if err := tx.Where("notification_id = ? AND user_id = ?", notificationID, issuer.ID).First(&notificationUser).Error; err == gorm.ErrRecordNotFound {
 		tx.Rollback()
-		return ErrUserNotAssigned
+		return ErrNotificationNotAssigned
 	} else if err != nil {
 		tx.Rollback()
 		return err

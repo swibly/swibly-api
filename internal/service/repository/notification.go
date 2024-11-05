@@ -18,6 +18,7 @@ type NotificationRepository interface {
 	Create(createModel dto.CreateNotification) (uint, error)
 
 	GetForUser(userID uint, onlyUnread bool, page, perPage int) (*dto.Pagination[dto.NotificationInfo], error)
+	GetUnreadCount(userID uint) (int64, error)
 
 	SendToAll(notificationID uint) error
 	SendToIDs(notificationID uint, usersID []uint) error
@@ -39,6 +40,24 @@ func NewNotificationRepository() NotificationRepository {
 	return &notificationRepository{db: db.Postgres}
 }
 
+func (nr *notificationRepository) baseNotificationQuery(userID uint) *gorm.DB {
+	return nr.db.Table("notification_users AS nu").
+		Select(`
+			n.id AS id,
+			n.created_at AS created_at,
+			n.updated_at AS updated_at,
+			n.title AS title,
+			n.message AS message,
+			n.type AS type,
+			n.redirect AS redirect,
+			nur.created_at AS read_at,
+			CASE WHEN nur.created_at IS NOT NULL THEN true ELSE false END AS is_read
+		`).
+		Joins("JOIN notifications AS n ON n.id = nu.notification_id").
+		Joins("LEFT JOIN notification_user_reads AS nur ON n.id = nur.notification_id AND nur.user_id = ?", userID).
+		Where("nu.user_id = ?", userID)
+}
+
 func (nr *notificationRepository) Create(createModel dto.CreateNotification) (uint, error) {
 	notification := &model.Notification{
 		Title:    createModel.Title,
@@ -54,22 +73,7 @@ func (nr *notificationRepository) Create(createModel dto.CreateNotification) (ui
 }
 
 func (nr *notificationRepository) GetForUser(userID uint, onlyUnread bool, page, perPage int) (*dto.Pagination[dto.NotificationInfo], error) {
-	query := nr.db.Table("notification_users AS nu").
-		Select(`
-			n.id AS id,
-			n.created_at AS created_at,
-			n.updated_at AS updated_at,
-			n.title AS title,
-			n.message AS message,
-			n.type AS type,
-			n.redirect AS redirect,
-			nur.created_at AS read_at,
-			CASE WHEN nur.created_at IS NOT NULL THEN true ELSE false END AS is_read
-		`).
-		Joins("JOIN notifications AS n ON n.id = nu.notification_id").
-		Joins("LEFT JOIN notification_user_reads AS nur ON n.id = nur.notification_id AND nur.user_id = ?", userID).
-		Where("nu.user_id = ?", userID).
-		Order("n.created_at DESC")
+	query := nr.baseNotificationQuery(userID).Order("n.created_at DESC")
 
 	if onlyUnread {
 		query = query.Where("is_read IS false")
@@ -81,6 +85,15 @@ func (nr *notificationRepository) GetForUser(userID uint, onlyUnread bool, page,
 	}
 
 	return paginationResult, nil
+}
+
+func (nr *notificationRepository) GetUnreadCount(userID uint) (int64, error) {
+	count := int64(0)
+	if err := nr.baseNotificationQuery(userID).Where("is_read IS false").Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
 
 func (nr *notificationRepository) SendToAll(notificationID uint) error {

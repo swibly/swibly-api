@@ -2,17 +2,20 @@ package v1
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/swibly/swibly-api/config"
 	"github.com/swibly/swibly-api/internal/model/dto"
 	"github.com/swibly/swibly-api/internal/service"
 	"github.com/swibly/swibly-api/internal/service/repository"
 	"github.com/swibly/swibly-api/pkg/aws"
 	"github.com/swibly/swibly-api/pkg/middleware"
+	"github.com/swibly/swibly-api/pkg/notification"
 	"github.com/swibly/swibly-api/pkg/utils"
 	"github.com/swibly/swibly-api/translations"
 )
@@ -52,7 +55,7 @@ func newProjectRoutes(handler *gin.RouterGroup) {
 		specific.DELETE("/unpublish", middleware.ProjectIsAllowed(dto.Allow{Publish: true}), UnpublishProjectHandler)
 		specific.DELETE("/unfavorite", middleware.ProjectIsAllowed(dto.Allow{View: true}), UnfavoriteProjectHandler)
 		specific.DELETE("/fork", middleware.ProjectIsAllowed(dto.Allow{Manage: dto.AllowManage{Metadata: true}}), UnlinkProjectHandler)
-    specific.DELETE("/leave", middleware.ProjectIsMember, LeaveProjectHandler)
+		specific.DELETE("/leave", middleware.ProjectIsMember, LeaveProjectHandler)
 
 		trashActions := specific.Group("/trash")
 		{
@@ -177,6 +180,13 @@ func CreateProjectHandler(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	} else {
+		service.CreateNotification(dto.CreateNotification{
+			Title:    dict.CategoryProject,
+			Message:  fmt.Sprintf(dict.NotificationNewProjectCreated, project.Name),
+			Type:     notification.Information,
+			Redirect: utils.ToPtr(fmt.Sprintf(config.Redirects.Project, id)),
+		}, issuer.ID)
+
 		ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectCreated, "project": id})
 	}
 }
@@ -276,6 +286,20 @@ func ForkProjectHandler(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	} else {
+		service.CreateNotification(dto.CreateNotification{
+			Title:    dict.CategoryProject,
+			Message:  fmt.Sprintf(dict.NotificationUserClonedYourProject, issuer.FirstName+" "+issuer.LastName, project.Name),
+			Type:     notification.Information,
+			Redirect: utils.ToPtr(fmt.Sprintf(config.Redirects.Project, id)),
+		}, project.OwnerID)
+
+		service.CreateNotification(dto.CreateNotification{
+			Title:    dict.CategoryProject,
+			Message:  fmt.Sprintf(dict.NotificationNewProjectCreated, project.Name),
+			Type:     notification.Information,
+			Redirect: utils.ToPtr(fmt.Sprintf(config.Redirects.Project, id)),
+		}, issuer.ID)
+
 		ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectForked, "project": id})
 	}
 }
@@ -428,6 +452,18 @@ func PublishProjectHandler(ctx *gin.Context) {
 		return
 	}
 
+	ids := []uint{project.OwnerID}
+
+	for _, user := range project.AllowedUsers {
+		ids = append(ids, user.ID)
+	}
+
+	service.CreateNotification(dto.CreateNotification{
+		Title:   dict.CategoryProject,
+		Message: fmt.Sprintf(dict.NotificationYourProjectPublished, project.Name),
+		Type:    notification.Warning,
+	}, ids...)
+
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectPublished})
 }
 
@@ -466,6 +502,12 @@ func FavoriteProjectHandler(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
+
+	service.CreateNotification(dto.CreateNotification{
+		Title:   dict.CategoryProject,
+		Message: fmt.Sprintf(dict.NotificationYourProjectFavorited, project.Name, issuer.FirstName+" "+issuer.LastName),
+		Type:    notification.Information,
+	}, project.OwnerID)
 
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectFavorited})
 }
@@ -525,6 +567,13 @@ func RestoreProjectHandler(ctx *gin.Context) {
 		return
 	}
 
+	service.CreateNotification(dto.CreateNotification{
+		Title:    dict.CategoryProject,
+		Message:  fmt.Sprintf(dict.NotificationRestoredProjectFromTrash, project.Name),
+		Type:     notification.Warning,
+		Redirect: utils.ToPtr(fmt.Sprintf(config.Redirects.Project, project.ID)),
+	}, project.OwnerID)
+
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectRestored})
 }
 
@@ -543,6 +592,12 @@ func DeleteProjectForceHandler(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
+
+	service.CreateNotification(dto.CreateNotification{
+		Title:   dict.CategoryProject,
+		Message: fmt.Sprintf(dict.NotificationDeletedProjectFromTrash, project.Name),
+		Type:    notification.Danger,
+	}, project.OwnerID)
 
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectDeleted})
 }
@@ -595,6 +650,19 @@ func AssignProjectHandler(ctx *gin.Context) {
 		return
 	}
 
+	service.CreateNotification(dto.CreateNotification{
+		Title:   dict.CategoryProject,
+		Message: fmt.Sprintf(dict.NotificationAddedUserToProject, user.FirstName+user.LastName, project.Name),
+		Type:    notification.Danger,
+	}, project.OwnerID)
+
+	service.CreateNotification(dto.CreateNotification{
+		Title:    dict.CategoryProject,
+		Message:  fmt.Sprintf(dict.NotificationAddedYouToProject, project.Name),
+		Type:     notification.Information,
+		Redirect: utils.ToPtr(fmt.Sprintf(config.Redirects.Project, project.ID)),
+	}, user.ID)
+
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectAssignedUser})
 }
 
@@ -614,6 +682,19 @@ func UnassignProjectHandler(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
+
+	service.CreateNotification(dto.CreateNotification{
+		Title:   dict.CategoryProject,
+		Message: fmt.Sprintf(dict.NotificationRemovedUserFromProject, user.FirstName+user.LastName, project.Name),
+		Type:    notification.Danger,
+	}, project.OwnerID)
+
+	service.CreateNotification(dto.CreateNotification{
+		Title:    dict.CategoryProject,
+		Message:  fmt.Sprintf(dict.NotificationRemovedYouFromProject, project.Name),
+		Type:     notification.Information,
+		Redirect: utils.ToPtr(fmt.Sprintf(config.Redirects.Project, project.ID)),
+	}, user.ID)
 
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.ProjectUnassignedUser})
 }

@@ -1,0 +1,3 @@
+security: /settings?tab=security
+profile: /profile/%s
+project: /projects/%d

@@ -98,7 +98,8 @@ type UserProfile struct {
 	Country  string `json:"country"`
 	Language string `json:"language"`
 
-	Permissions []string `gorm:"-" json:"permissions"`
+	Permissions         []string `gorm:"-" json:"permissions"`
+	UnreadNotifications int64    `gorm:"-" json:"unread_notifications"`
 
 	ProfilePicture string `json:"pfp"`
 }

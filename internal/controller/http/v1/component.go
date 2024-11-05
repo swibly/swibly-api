@@ -2,6 +2,7 @@ package v1
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -12,6 +13,7 @@ import (
 	"github.com/swibly/swibly-api/internal/service"
 	"github.com/swibly/swibly-api/internal/service/repository"
 	"github.com/swibly/swibly-api/pkg/middleware"
+	"github.com/swibly/swibly-api/pkg/notification"
 	"github.com/swibly/swibly-api/pkg/utils"
 	"github.com/swibly/swibly-api/translations"
 )
@@ -145,6 +147,12 @@ func CreateComponentHandler(ctx *gin.Context) {
 		return
 	}
 
+	service.CreateNotification(dto.CreateNotification{
+		Title:   dict.CategoryComponent,
+		Message: fmt.Sprintf(dict.NotificationNewComponentCreated, component.Name),
+		Type:    notification.Information,
+	}, issuer.ID)
+
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.ComponentCreated})
 }
 
@@ -251,10 +259,10 @@ func UpdateComponentHandler(ctx *gin.Context) {
 func BuyComponentHandler(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
-	issuerID := ctx.Keys["auth_user"].(*dto.UserProfile).ID
-	componentID := ctx.Keys["component_lookup"].(*dto.ComponentInfo).ID
+	issuer := ctx.Keys["auth_user"].(*dto.UserProfile)
+	component := ctx.Keys["component_lookup"].(*dto.ComponentInfo)
 
-	if err := service.Component.Buy(issuerID, componentID); err != nil {
+	if err := service.Component.Buy(issuer.ID, component.ID); err != nil {
 		if errors.Is(err, repository.ErrInsufficientArkhoins) {
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": dict.InsufficientArkhoins})
 			return
@@ -272,6 +280,18 @@ func BuyComponentHandler(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
+
+	service.CreateNotification(dto.CreateNotification{
+		Title:   dict.CategoryComponent,
+		Message: fmt.Sprintf(dict.NotificationYourComponentBought, component.Name, issuer.FirstName+" "+issuer.LastName),
+		Type:    notification.Information,
+	}, component.OwnerID)
+
+	service.CreateNotification(dto.CreateNotification{
+		Title:   dict.CategoryComponent,
+		Message: fmt.Sprintf(dict.NotificationYouBoughtComponent, component.Name),
+		Type:    notification.Information,
+	}, issuer.ID)
 
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.ComponentBought})
 }
@@ -315,6 +335,12 @@ func PublishComponentHandler(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
+
+	service.CreateNotification(dto.CreateNotification{
+		Title:   dict.CategoryComponent,
+		Message: fmt.Sprintf(dict.NotificationYourComponentPublished, component.Name),
+		Type:    notification.Warning,
+	}, component.OwnerID)
 
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.ComponentPublished})
 }
@@ -373,6 +399,12 @@ func DeleteComponenttForceHandler(ctx *gin.Context) {
 		return
 	}
 
+	service.CreateNotification(dto.CreateNotification{
+		Title:   dict.CategoryComponent,
+		Message: fmt.Sprintf(dict.NotificationDeletedComponentFromTrash, component.Name),
+		Type:    notification.Danger,
+	}, component.OwnerID)
+
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.ComponentDeleted})
 }
 
@@ -391,6 +423,12 @@ func RestoreComponentHandler(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
 		return
 	}
+
+	service.CreateNotification(dto.CreateNotification{
+		Title:   dict.CategoryComponent,
+		Message: fmt.Sprintf(dict.NotificationRestoredComponentFromTrash, component.Name),
+		Type:    notification.Warning,
+	}, component.OwnerID)
 
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.ComponentRestored})
 }

@@ -121,7 +121,7 @@ func FollowUserHandler(ctx *gin.Context) {
 
 	service.CreateNotification(dto.CreateNotification{
 		Title:    dict.CategoryFollowers,
-		Message:  fmt.Sprintf(dict.NotificationUserFollowedYou, issuer.FirstName+issuer.LastName),
+		Message:  fmt.Sprintf(dict.NotificationUserFollowedYou, issuer.FirstName+" "+issuer.LastName),
 		Type:     notification.Information,
 		Redirect: utils.ToPtr(fmt.Sprintf(config.Redirects.Profile, issuer.Username)),
 	}, receiver.ID)

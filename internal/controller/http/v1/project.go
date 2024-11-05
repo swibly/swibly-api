@@ -288,7 +288,7 @@ func ForkProjectHandler(ctx *gin.Context) {
 	} else {
 		service.CreateNotification(dto.CreateNotification{
 			Title:    dict.CategoryProject,
-			Message:  fmt.Sprintf(dict.NotificationUserClonedYourProject, issuer.FirstName+issuer.LastName, project.Name),
+			Message:  fmt.Sprintf(dict.NotificationUserClonedYourProject, issuer.FirstName+" "+issuer.LastName, project.Name),
 			Type:     notification.Information,
 			Redirect: utils.ToPtr(fmt.Sprintf(config.Redirects.Project, id)),
 		}, project.OwnerID)
@@ -505,7 +505,7 @@ func FavoriteProjectHandler(ctx *gin.Context) {
 
 	service.CreateNotification(dto.CreateNotification{
 		Title:   dict.CategoryProject,
-		Message: fmt.Sprintf(dict.NotificationYourProjectFavorited, project.Name, issuer.FirstName+issuer.LastName),
+		Message: fmt.Sprintf(dict.NotificationYourProjectFavorited, project.Name, issuer.FirstName+" "+issuer.LastName),
 		Type:    notification.Information,
 	}, project.OwnerID)
 

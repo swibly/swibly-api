@@ -283,7 +283,7 @@ func BuyComponentHandler(ctx *gin.Context) {
 
 	service.CreateNotification(dto.CreateNotification{
 		Title:   dict.CategoryComponent,
-		Message: fmt.Sprintf(dict.NotificationYourComponentBought, component.Name, issuer.FirstName+issuer.LastName),
+		Message: fmt.Sprintf(dict.NotificationYourComponentBought, component.Name, issuer.FirstName+" "+issuer.LastName),
 		Type:    notification.Information,
 	}, component.OwnerID)
 

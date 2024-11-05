@@ -17,7 +17,7 @@ type notificationRepository struct {
 type NotificationRepository interface {
 	Create(createModel dto.CreateNotification) (uint, error)
 
-	GetForUser(userID uint, page, perPage int) (*dto.Pagination[dto.NotificationInfo], error)
+	GetForUser(userID uint, onlyUnread bool, page, perPage int) (*dto.Pagination[dto.NotificationInfo], error)
 
 	SendToAll(notificationID uint) error
 	SendToIDs(notificationID uint, usersID []uint) error
@@ -53,7 +53,7 @@ func (nr *notificationRepository) Create(createModel dto.CreateNotification) (ui
 	return notification.ID, nil
 }
 
-func (nr *notificationRepository) GetForUser(userID uint, page, perPage int) (*dto.Pagination[dto.NotificationInfo], error) {
+func (nr *notificationRepository) GetForUser(userID uint, onlyUnread bool, page, perPage int) (*dto.Pagination[dto.NotificationInfo], error) {
 	query := nr.db.Table("notification_users AS nu").
 		Select(`
 			n.id AS id,
@@ -70,6 +70,10 @@ func (nr *notificationRepository) GetForUser(userID uint, page, perPage int) (*d
 		Joins("LEFT JOIN notification_user_reads AS nur ON n.id = nur.notification_id AND nur.user_id = ?", userID).
 		Where("nu.user_id = ?", userID).
 		Order("n.created_at DESC")
+
+	if onlyUnread {
+		query = query.Where("is_read IS false")
+	}
 
 	paginationResult, err := pagination.Generate[dto.NotificationInfo](query, page, perPage)
 	if err != nil {

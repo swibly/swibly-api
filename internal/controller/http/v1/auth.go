@@ -161,7 +161,7 @@ func LoginHandler(ctx *gin.Context) {
 			Title:    dict.CategoryAuth,
 			Message:  dict.NotificationNewLoginDetected,
 			Type:     notification.Warning,
-			Redirect: config.Redirects.SecurityTab,
+			Redirect: &config.Redirects.SecurityTab,
 		}, user.ID)
 
 		ctx.JSON(http.StatusOK, gin.H{"token": token})

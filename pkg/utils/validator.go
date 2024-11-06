@@ -59,26 +59,7 @@ func newValidator() *validator.Validate {
 	vv.RegisterValidation("password", func(fl validator.FieldLevel) bool {
 		password := fl.Field().String()
 
-		if len(password) < 7 {
-			return false
-		}
-
-		// \d stands for digits [0-9]
-		// \W_ stands for [^a-zA-Z0-9_]
-
-		if !regexp.MustCompile(`\d`).MatchString(password) {
-			return false
-		}
-
-		if !regexp.MustCompile(`[A-Z]`).MatchString(password) {
-			return false
-		}
-
-		if !regexp.MustCompile(`[\W_]`).MatchString(password) {
-			return false
-		}
-
-		if !regexp.MustCompile(`[a-z]`).MatchString(password) {
+		if len(password) < 6 {
 			return false
 		}
 

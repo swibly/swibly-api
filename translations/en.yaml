@@ -57,7 +57,7 @@ user_following_started: User started following %s.
 user_following_stopped: User stopped following %s.
 user_not_found: User not found; are you sure this is their username?
 validator_incorrect_email_format: Email format is incorrect.
-validator_incorrect_password_format: The password should have a minimum of 8 characters, contain at least one uppercase letter, one lowercase letter, one special character, and one numeral.
+validator_incorrect_password_format: The password must be at least 6 characters long.
 validator_incorrect_username_format:
   Usernames must consist only of lowercase alphanumeric (a-z & 0-9)
   characters.

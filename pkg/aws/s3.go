@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"image"
 	"io"
+	"log"
 	"mime/multipart"
 	"path/filepath"
 	"time"
@@ -30,6 +31,8 @@ var (
 
 func (svc *AWSService) UploadFile(key string, file multipart.File) (string, error) {
 	newKey := fmt.Sprintf("%s/%s-%d.webp", config.Router.Environment, key, time.Now().Unix())
+
+  log.Printf("Saving file to: %s", newKey)
 
 	buf := new(bytes.Buffer)
 	_, err := io.Copy(buf, file)
@@ -73,6 +76,8 @@ func (svc *AWSService) UploadFile(key string, file multipart.File) (string, erro
 
 func (svc *AWSService) DeleteFile(key string) error {
 	newKey := fmt.Sprintf("%s/%s", config.Router.Environment, key)
+
+  log.Printf("Deleting file: %s", newKey)
 
 	_, err := svc.s3.DeleteObject(context.TODO(), &s3.DeleteObjectInput{
 		Bucket: aws.String(config.S3.Bucket),

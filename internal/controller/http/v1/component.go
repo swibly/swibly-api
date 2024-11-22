@@ -159,7 +159,11 @@ func CreateComponentHandler(ctx *gin.Context) {
 func DeleteTrashComponentsHandler(ctx *gin.Context) {
 	dict := translations.GetTranslation(ctx)
 
-	service.Component.ClearTrash(ctx.Keys["auth_user"].(*dto.UserProfile).ID)
+	if err := service.Component.ClearTrash(ctx.Keys["auth_user"].(*dto.UserProfile).ID); err != nil {
+		log.Print(err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": dict.InternalServerError})
+		return
+	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": dict.TrashCleared})
 }

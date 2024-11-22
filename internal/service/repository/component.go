@@ -719,7 +719,6 @@ func (cr *componentRepository) ClearTrash(userID uint) error {
 	tx := cr.db.Begin()
 
 	if err := tx.Unscoped().
-		Where("deleted_at IS NOT NULL").
 		Where(`
 			EXISTS (
 				SELECT 1
@@ -734,7 +733,6 @@ func (cr *componentRepository) ClearTrash(userID uint) error {
 	}
 
 	if err := tx.Unscoped().
-		Where("deleted_at IS NOT NULL").
 		Where(`
 			EXISTS (
 				SELECT 1
@@ -749,7 +747,6 @@ func (cr *componentRepository) ClearTrash(userID uint) error {
 	}
 
 	if err := tx.Unscoped().
-		Where("deleted_at IS NOT NULL").
 		Where(`
 			EXISTS (
 				SELECT 1
